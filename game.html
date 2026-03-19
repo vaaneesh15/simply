@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Horror Room Survival</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; touch-action: none; font-family: sans-serif; }
+        canvas { display: block; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; pointer-events: none; text-shadow: 2px 2px 2px #000; }
+        .bar-container { width: 150px; height: 10px; background: #333; margin-bottom: 5px; border: 1px solid #555; }
+        #battery-bar { height: 100%; background: #0f0; width: 100%; transition: width 0.3s; }
+        #noise-bar { height: 100%; background: #f00; width: 0%; transition: width 0.1s; }
+        #controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
+        .stick-area { width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; pointer-events: auto; }
+        .stick-handle { width: 50px; height: 50px; background: rgba(255,255,255,0.3); border-radius: 50%; position: absolute; top: 35px; left: 35px; }
+        #btn-crouch { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: auto; }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    ФОНАРЬ: <div class="bar-container"><div id="battery-bar"></div></div>
+    ШУМ: <div class="bar-container"><div id="noise-bar"></div></div>
+    <div id="status">Найдите ключ и выход</div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="controls">
+    <div id="left-stick" class="stick-area"><div class="stick-handle"></div></div>
+    <div id="btn-crouch">ПРИСЕД</div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const batteryBar = document.getElementById('battery-bar');
+const noiseBar = document.getElementById('noise-bar');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let gameRunning = true;
+
+const player = {
+    x: 50, y: 50, radius: 12,
+    speed: 3, noise: 0, battery: 100,
+    isCrouching: false, hasKey: false,
+    angle: 0
+};
+
+const monster = {
+    x: canvas.width - 50, y: canvas.height - 50,
+    baseSpeed: 1, chaseSpeed: 4.5, speed: 1,
+    targetX: canvas.width - 50, targetY: canvas.height - 50,
+    state: 'patrol', // patrol, chase, investigate
+    angle: 0
+};
+
+const key = { x: canvas.width/2, y: canvas.height/2, collected: false };
+const exit = { x: canvas.width - 40, y: 40 };
+
+// Управление стиком
+let stick = { active: false, startX: 0, startY: 0, curX: 0, curY: 0, moveX: 0, moveY: 0 };
+const stickArea = document.getElementById('left-stick');
+const stickHandle = stickArea.querySelector('.stick-handle');
+
+stickArea.addEventListener('touchstart', e => {
+    stick.active = true;
+    const rect = stickArea.getBoundingClientRect();
+    stick.startX = rect.left + rect.width/2;
+    stick.startY = rect.top + rect.height/2;
+});
+
+window.addEventListener('touchmove', e => {
+    if (!stick.active) return;
+    const touch = e.touches[0];
+    let dx = touch.clientX - stick.startX;
+    let dy = touch.clientY - stick.startY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const maxDist = 50;
+    
+    if (dist > maxDist) {
+        dx = dx / dist * maxDist;
+        dy = dy / dist * maxDist;
+    }
+    
+    stick.moveX = dx / maxDist;
+    stick.moveY = dy / maxDist;
+    stickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
+});
+
+window.addEventListener('touchend', () => {
+    stick.active = false;
+    stick.moveX = 0; stick.moveY = 0;
+    stickHandle.style.transform = `translate(0,0)`;
+});
+
+document.getElementById('btn-crouch').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    player.isCrouching = !player.isCrouching;
+    document.getElementById('btn-crouch').style.background = player.isCrouching ? 'rgba(255,0,0,0.4)' : 'rgba(255,255,255,0.2)';
+});
+
+function getNewPatrolPoint() {
+    monster.targetX = Math.random() * (canvas.width - 40) + 20;
+    monster.targetY = Math.random() * (canvas.height - 40) + 20;
+}
+
+function update() {
+    if (!gameRunning) return;
+
+    // 1. Движение игрока
+    let currentSpeed = player.isCrouching ? player.speed * 0.5 : player.speed;
+    player.x += stick.moveX * currentSpeed;
+    player.y += stick.moveY * currentSpeed;
+
+    // Границы
+    player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+    player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+    // 2. Фонарик (в 3 раза медленнее разряд: 0.01 вместо 0.03)
+    if (player.battery > 0) player.battery -= 0.01;
+    batteryBar.style.width = player.battery + '%';
+
+    // 3. Шум
+    let movement = Math.abs(stick.moveX) + Math.abs(stick.moveY);
+    if (movement > 0.1 && !player.isCrouching) {
+        player.noise = Math.min(100, player.noise + 1.5);
+    } else {
+        player.noise = Math.max(0, player.noise - 0.5);
+    }
+    noiseBar.style.width = player.noise + '%';
+
+    // 4. Логика монстра
+    const distToPlayer = Math.hypot(monster.x - player.x, monster.y - player.y);
+
+    if (player.noise > 50) {
+        monster.state = 'chase';
+        monster.targetX = player.x;
+        monster.targetY = player.y;
+        monster.speed = monster.chaseSpeed;
+    } else if (distToPlayer < 150 && player.battery > 5) {
+        // Монстр видит свет фонаря, если игрок рядом
+        monster.state = 'investigate';
+        monster.targetX = player.x;
+        monster.targetY = player.y;
+        monster.speed = monster.baseSpeed * 1.5;
+    } else if (monster.state === 'chase' && player.noise < 10) {
+        monster.state = 'patrol';
+        getNewPatrolPoint();
+    }
+
+    // Движение монстра к цели
+    const angle = Math.atan2(monster.targetY - monster.y, monster.targetX - monster.x);
+    monster.x += Math.cos(angle) * monster.speed;
+    monster.y += Math.sin(angle) * monster.speed;
+
+    // Если монстр дошел до точки патруля
+    if (monster.state === 'patrol' && Math.hypot(monster.x - monster.targetX, monster.y - monster.targetY) < 10) {
+        getNewPatrolPoint();
+        monster.speed = monster.baseSpeed;
+    }
+
+    // Столкновение с монстром
+    if (distToPlayer < 25) {
+        gameRunning = false;
+        alert("Монстр поймал тебя! Тьма поглотила всё...");
+        location.reload();
+    }
+
+    // Предметы
+    if (!player.hasKey && Math.hypot(player.x - key.x, player.y - key.y) < 30) {
+        player.hasKey = true;
+        document.getElementById('status').innerText = "Ключ взят! Беги к выходу!";
+    }
+
+    if (player.hasKey && Math.hypot(player.x - exit.x, player.y - exit.y) < 30) {
+        gameRunning = false;
+        alert("ТЫ ВЫБРАЛСЯ!");
+        location.reload();
+    }
+}
+
+function draw() {
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Отрисовка "видимости" (Свет фонаря)
+    const visionRadius = player.battery > 0 ? (player.isCrouching ? 180 : 150) : 40;
+    
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, visionRadius, 0, Math.PI * 2);
+    ctx.clip();
+
+    ctx.fillStyle = '#111'; // Пол в зоне видимости
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Ключ
+    if (!player.hasKey) {
+        ctx.fillStyle = 'gold';
+        ctx.fillRect(key.x - 10, key.y - 10, 20, 20);
+    }
+
+    // Выход
+    ctx.strokeStyle = player.hasKey ? '#0f0' : '#f00';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(exit.x - 20, exit.y - 20, 40, 40);
+
+    // Монстр (виден только в свету)
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(monster.x - 6, monster.y, 4, 0, Math.PI*2);
+    ctx.arc(monster.x + 6, monster.y, 4, 0, Math.PI*2);
+    ctx.fill();
+    
+    ctx.restore();
+
+    // Игрок (виден всегда чуть-чуть)
+    ctx.fillStyle = player.isCrouching ? '#aaa' : '#fff';
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+    ctx.fill();
+
+    update();
+    requestAnimationFrame(draw);
+}
+
+getNewPatrolPoint();
+draw();
+</script>
+</body>
+</html>
