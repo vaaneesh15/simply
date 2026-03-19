@@ -2,203 +2,247 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Dark Maze: Stealth Escape</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stealth Escape</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        canvas { border: 2px solid #333; }
-        #ui { position: absolute; top: 10px; left: 10px; color: #fff; font-family: sans-serif; pointer-events: none; }
+        body { margin: 0; background: #111; color: white; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        canvas { display: block; margin: 0 auto; background: #000; }
+        .ui-panel {
+            position: absolute; bottom: 20px; left: 20px; right: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            pointer-events: none;
+        }
+        .btn {
+            width: 80px; height: 80px; background: rgba(255,255,255,0.1);
+            border: 2px solid #fff; border-radius: 50%; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; pointer-events: auto; user-select: none;
+        }
+        .btn:active { background: rgba(255,255,255,0.4); }
+        .btn.active { background: #f00; }
+        #joystick-container { width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%; position: relative; pointer-events: auto; }
+        #joystick-stick { width: 50px; height: 50px; background: #fff; border-radius: 50%; position: absolute; top: 50px; left: 50px; }
+        #info { position: absolute; top: 10px; left: 10px; pointer-events: none; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        Заряд фонарика: <span id="battery">100</span>%<br>
-        Найдите <span style="color: gold;">КЛЮЧ</span> и доберитесь до <span style="color: #0f0;">ВЫХОДА</span><br>
-        Shift - присесть (увеличивает обзор, замедляет)
+
+<div id="info">Уровень: <span id="lvl">1</span> | Статус: <span id="status">Норма</span></div>
+
+<div class="ui-panel">
+    <div id="joystick-container">
+        <div id="joystick-stick"></div>
     </div>
-    <canvas id="gameCanvas"></canvas>
+    <div style="display: flex; gap: 10px;">
+        <div id="btn-run" class="btn">БЕГ</div>
+        <div id="btn-hide" class="btn">СКРЫТЬСЯ</div>
+    </div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const batteryEl = document.getElementById('battery');
+const lvlDisplay = document.getElementById('lvl');
+const statusDisplay = document.getElementById('status');
 
-canvas.width = 800;
-canvas.height = 600;
+// Параметры игры
+let tileSize = 40;
+let maze = [];
+let player = { x: 0, y: 0, targetX: 0, targetY: 0, size: 20, isHidden: false, isRunning: false };
+let enemies = [];
+let exit = { x: 0, y: 0 };
+let currentLevelIndex = 0;
+let noiseRadius = 0;
 
-const tileSize = 40;
-const cols = canvas.width / tileSize;
-const rows = canvas.height / tileSize;
+const levels = [
+    { cols: 11, rows: 11, enemies: 1, speed: 1.5 },
+    { cols: 15, rows: 15, enemies: 2, speed: 2.0 },
+    { cols: 19, rows: 19, enemies: 3, speed: 2.5 }
+];
 
-// Карта (0 - пол, 1 - стена)
-let map = [];
-function generateMap() {
-    for (let y = 0; y < rows; y++) {
-        map[y] = [];
-        for (let x = 0; x < cols; x++) {
-            // Края всегда стены, внутри — случайный шум
-            if (x === 0 || x === cols - 1 || y === 0 || y === rows - 1) {
-                map[y][x] = 1;
-            } else {
-                map[y][x] = Math.random() < 0.2 ? 1 : 0;
+// Управление джойстиком
+let moveDir = { x: 0, y: 0 };
+const stick = document.getElementById('joystick-stick');
+const container = document.getElementById('joystick-container');
+
+// Инициализация уровня
+function initLevel(config) {
+    tileSize = Math.min(window.innerWidth / config.cols, (window.innerHeight - 200) / config.rows);
+    canvas.width = config.cols * tileSize;
+    canvas.height = config.rows * tileSize;
+    
+    // Генерация пустой карты с границами
+    maze = [];
+    for(let y=0; y<config.rows; y++){
+        maze[y] = [];
+        for(let x=0; x<config.cols; x++){
+            const isWall = x === 0 || y === 0 || x === config.cols-1 || y === config.rows-1 || (Math.random() < 0.2);
+            const isLocker = !isWall && Math.random() < 0.05;
+            maze[y][x] = isWall ? 1 : (isLocker ? 2 : 0);
+        }
+    }
+
+    // Игрок и выход
+    maze[1][1] = 0;
+    player.x = 1.5 * tileSize;
+    player.y = 1.5 * tileSize;
+    
+    exit = { x: config.cols - 2, y: config.rows - 2 };
+    maze[exit.y][exit.x] = 3;
+
+    // Враги
+    enemies = [];
+    for(let i=0; i<config.enemies; i++) {
+        enemies.push({
+            x: (config.cols - 2) * tileSize,
+            y: (config.rows - 2) * tileSize,
+            speed: config.speed,
+            dirX: Math.random() > 0.5 ? 1 : -1,
+            dirY: 0
+        });
+    }
+    lvlDisplay.innerText = currentLevelIndex + 1;
+}
+
+// Рендеринг
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Стены и укрытия
+    for(let y=0; y<maze.length; y++) {
+        for(let x=0; x<maze[y].length; x++) {
+            if(maze[y][x] === 1) ctx.fillStyle = '#444'; 
+            else if(maze[y][x] === 2) ctx.fillStyle = '#0f0';
+            else if(maze[y][x] === 3) ctx.fillStyle = '#ff0';
+            else ctx.fillStyle = '#111';
+            
+            if(maze[y][x] !== 0) {
+                ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
             }
         }
     }
-    // Очищаем место старта игрока
-    map[1][1] = 0;
-    map[1][2] = 0;
-    map[2][1] = 0;
-}
 
-const player = {
-    x: 60,
-    y: 60,
-    radius: 12,
-    speed: 3,
-    battery: 100,
-    isCrouching: false,
-    hasKey: false
-};
+    // Шум
+    if (noiseRadius > 0) {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, noiseRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.stroke();
+    }
 
-const key = { x: 0, y: 0 };
-const exit = { x: 0, y: 0 };
-const enemy = { x: 400, y: 300, radius: 15, speed: 1.5 };
+    // Игрок
+    if(!player.isHidden) {
+        ctx.fillStyle = player.isRunning ? '#f80' : '#0cf';
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.size/2, 0, Math.PI*2);
+        ctx.fill();
+    }
 
-function initPositions() {
-    // Случайная позиция ключа на свободном месте
-    do {
-        key.x = Math.floor(Math.random() * (cols - 2) + 1) * tileSize + tileSize / 2;
-        key.y = Math.floor(Math.random() * (rows - 2) + 1) * tileSize + tileSize / 2;
-    } while (map[Math.floor(key.y / tileSize)][Math.floor(key.x / tileSize)] === 1);
-
-    // Случайная позиция выхода
-    do {
-        exit.x = (cols - 2) * tileSize;
-        exit.y = (rows - 2) * tileSize;
-    } while (map[Math.floor(exit.y / tileSize)][Math.floor(exit.x / tileSize)] === 1);
-}
-
-const keys = {};
-window.onkeydown = (e) => keys[e.code] = true;
-window.onkeyup = (e) => keys[e.code] = false;
-
-function checkCollision(newX, newY) {
-    const gridX = Math.floor(newX / tileSize);
-    const gridY = Math.floor(newY / tileSize);
-    return map[gridY][gridX] === 1;
+    // Враги
+    ctx.fillStyle = 'red';
+    enemies.forEach(e => {
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, player.size/2, 0, Math.PI*2);
+        ctx.fill();
+    });
 }
 
 function update() {
-    player.isCrouching = keys['ShiftLeft'] || keys['ShiftRight'];
-    let currentSpeed = player.isCrouching ? player.speed * 0.5 : player.speed;
-    
-    let nextX = player.x;
-    let nextY = player.y;
+    if(player.isHidden) return;
 
-    if (keys['KeyW']) nextY -= currentSpeed;
-    if (keys['KeyS']) nextY += currentSpeed;
-    if (keys['KeyA']) nextX -= currentSpeed;
-    if (keys['KeyD']) nextX += currentSpeed;
+    // Движение игрока
+    const speed = player.isRunning ? 4 : 2;
+    noiseRadius = player.isRunning ? 100 : (moveDir.x || moveDir.y ? 40 : 0);
 
-    // Коллизии по осям для плавного скольжения
-    if (!checkCollision(nextX, player.y)) player.x = nextX;
-    if (!checkCollision(player.x, nextY)) player.y = nextY;
+    let nextX = player.x + moveDir.x * speed;
+    let nextY = player.y + moveDir.y * speed;
 
-    // Батарейка
-    if (player.battery > 0) {
-        player.battery -= 0.05;
-        batteryEl.innerText = Math.ceil(player.battery);
+    // Столкновения со стенами
+    const gridX = Math.floor(nextX / tileSize);
+    const gridY = Math.floor(nextY / tileSize);
+
+    if (maze[gridY] && maze[gridY][gridX] !== 1) {
+        player.x = nextX;
+        player.y = nextY;
     }
 
-    // Логика врага (простое преследование)
-    const dx = player.x - enemy.x;
-    const dy = player.y - enemy.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    
-    // Если игрок крадется, монстр видит его только вблизи
-    const detectRange = player.isCrouching ? 150 : 300;
-    
-    if (dist < detectRange) {
-        enemy.x += (dx / dist) * enemy.speed;
-        enemy.y += (dy / dist) * enemy.speed;
+    // Проверка выхода
+    if (gridX === exit.x && gridY === exit.y) {
+        currentLevelIndex++;
+        if(currentLevelIndex < levels.length) initLevel(levels[currentLevelIndex]);
+        else alert("Победа!");
     }
 
-    // Проверка ключа
-    const distToKey = Math.sqrt((player.x - key.x)**2 + (player.y - key.y)**2);
-    if (distToKey < 20) player.hasKey = true;
+    // Логика врагов
+    enemies.forEach(e => {
+        // Простое движение
+        let nx = e.x + e.dirX * e.speed;
+        let ny = e.y + e.dirY * e.speed;
+        
+        let gx = Math.floor(nx / tileSize);
+        let gy = Math.floor(ny / tileSize);
 
-    // Смерть
-    if (dist < 20) {
-        alert("Монстр поймал вас!");
-        location.reload();
-    }
+        if (maze[gy] && maze[gy][gx] === 1) {
+            e.dirX *= -1; e.dirY = (Math.random() - 0.5) * 2;
+        } else {
+            e.x = nx; e.y = ny;
+        }
 
-    // Победа
-    if (player.hasKey && player.x > exit.x && player.y > exit.y) {
-        alert("Вы сбежали!");
-        location.reload();
-    }
-}
-
-function draw() {
-    // 1. Фон (полная тьма)
-    ctx.fillStyle = '#050505';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 2. Зона видимости (фонарик)
-    const visionRadius = player.battery > 0 ? (player.isCrouching ? 160 : 100) : 40;
-    
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, visionRadius, 0, Math.PI * 2);
-    ctx.clip();
-    
-    // Отрисовка пола внутри света
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Отрисовка стен в зоне света
-    ctx.fillStyle = '#222';
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            if (map[y][x] === 1) {
-                ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-                ctx.strokeStyle = '#333';
-                ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        // Поимка игрока
+        const dist = Math.hypot(player.x - e.x, player.y - e.y);
+        if (!player.isHidden && (dist < 25 || (dist < noiseRadius))) {
+            if(dist < 25) { 
+                alert("Вас поймали!"); 
+                initLevel(levels[currentLevelIndex]); 
+            } else {
+                // Враг идет на шум
+                e.x += (player.x - e.x) * 0.02;
+                e.y += (player.y - e.y) * 0.02;
             }
         }
-    }
-
-    // Ключ
-    if (!player.hasKey) {
-        ctx.fillStyle = 'gold';
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'gold';
-        ctx.fillRect(key.x - 5, key.y - 5, 10, 10);
-    }
-
-    // Выход
-    if (player.hasKey) {
-        ctx.fillStyle = '#0f0';
-        ctx.fillRect(exit.x + 5, exit.y + 5, 30, 30);
-    }
-    
-    ctx.restore();
-
-    // 3. Отрисовка игрока (всегда виден)
-    ctx.fillStyle = player.isCrouching ? '#55f' : '#00f';
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 4. Отрисовка врага (виден только если он в радиусе света)
-    const distToEnemy = Math.sqrt((player.x - enemy.x)**2 + (player.y - enemy.y)**2);
-    if (distToEnemy < visionRadius) {
-        ctx.fillStyle = 'red';
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
-        ctx.fill();
-    }
+    });
 }
+
+// Управление тачем
+container.addEventListener('touchstart', e => handleStick(e));
+container.addEventListener('touchmove', e => handleStick(e));
+container.addEventListener('touchend', () => {
+    moveDir = { x: 0, y: 0 };
+    stick.style.transform = `translate(0px, 0px)`;
+});
+
+function handleStick(e) {
+    const rect = container.getBoundingClientRect();
+    const touch = e.touches[0];
+    const centerX = rect.left + rect.width/2;
+    const centerY = rect.top + rect.height/2;
+    const dx = touch.clientX - centerX;
+    const dy = touch.clientY - centerY;
+    const dist = Math.min(50, Math.hypot(dx, dy));
+    const angle = Math.atan2(dy, dx);
+    
+    moveDir.x = Math.cos(angle) * (dist / 50);
+    moveDir.y = Math.sin(angle) * (dist / 50);
+    
+    stick.style.transform = `translate(${moveDir.x * 50}px, ${moveDir.y * 50}px)`;
+}
+
+document.getElementById('btn-run').onclick = function() {
+    player.isRunning = !player.isRunning;
+    this.classList.toggle('active');
+};
+
+document.getElementById('btn-hide').onclick = function() {
+    const gx = Math.floor(player.x / tileSize);
+    const gy = Math.floor(player.y / tileSize);
+    if (maze[gy][gx] === 2) {
+        player.isHidden = !player.isHidden;
+        statusDisplay.innerText = player.isHidden ? "В укрытии" : "Норма";
+        this.classList.toggle('active');
+    }
+};
 
 function gameLoop() {
     update();
@@ -206,9 +250,9 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-generateMap();
-initPositions();
+initLevel(levels[0]);
 gameLoop();
+
 </script>
 </body>
 </html>
