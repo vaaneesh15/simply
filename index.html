@@ -13,7 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ----- Светлая тема (по умолчанию) ----- */
+        /* ----- Светлая тема ----- */
         :root {
             --bg-page: #f5f5f7;
             --card-bg: #ffffff;
@@ -47,7 +47,7 @@
             --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2398989e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         }
 
-        /* ----- Цветовые акценты (без индиго) ----- */
+        /* ----- Цветовые акценты ----- */
         body.accent-blue { --accent-color: #007aff; }
         body.accent-purple { --accent-color: #6c5ce7; }
         body.accent-pink { --accent-color: #ff6b81; }
@@ -67,7 +67,6 @@
             width: 100%;
         }
 
-        /* Контейнеры */
         .auth-container, .app-container {
             height: 100%;
             display: flex;
@@ -134,13 +133,12 @@
             font-size: 0.9rem;
         }
 
-        /* Навигация — без фона, без пузыря */
+        /* Навигация */
         .nav-bar {
             display: flex;
             justify-content: center;
             gap: 1.2rem;
-            margin: calc(0.4rem + env(safe-area-inset-top, 0px)) 1rem 0.5rem 1rem;
-            z-index: 10;
+            margin: max(0.4rem, env(safe-area-inset-top, 0px)) 1rem 0.5rem 1rem;
         }
         .tab-btn {
             background: none;
@@ -152,13 +150,11 @@
             color: var(--text-secondary);
             cursor: pointer;
             transition: color 0.2s ease;
-            text-align: center;
         }
         .tab-btn.active {
             color: var(--accent-color);
         }
 
-        /* Страницы */
         .page {
             flex: 1;
             overflow-y: auto;
@@ -183,7 +179,8 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            max-width: 85%;
+            max-width: 90%;
+            position: relative;
         }
         .message-bubble {
             background: var(--message-bg);
@@ -191,9 +188,18 @@
             border-radius: 1.2rem;
             border: 1.5px solid transparent;
             word-break: break-word;
+            width: 100%;
         }
         .message-item.own-message .message-bubble {
             border-color: var(--accent-color);
+        }
+        .reply-context {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            border-left: 2px solid var(--accent-color);
+            padding-left: 8px;
+            margin-bottom: 6px;
+            opacity: 0.7;
         }
         .message-nick {
             font-size: 0.75rem;
@@ -207,16 +213,58 @@
             line-height: 1.4;
             color: var(--text-primary);
         }
+        .message-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 4px;
+            margin-left: 0.5rem;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 1rem;
+            transition: 0.2s;
+        }
+        .action-btn:hover {
+            background: var(--accent-light);
+            color: var(--accent-color);
+        }
 
-        /* Поле ввода — без фона, компактные отступы */
+        /* Поле ввода с плашкой ответа */
         .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 0.6rem 1rem;
+            margin: 0.2rem 1rem max(0.4rem, env(safe-area-inset-bottom, 0px));
+        }
+        .reply-indicator {
+            background: var(--message-bg);
+            border-radius: 1rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cancel-reply {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .input-row {
             display: flex;
             gap: 10px;
             align-items: flex-end;
-            padding: 0.6rem 1rem;
-            margin: 0.2rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
         }
-        .input-wrapper textarea {
+        .input-row textarea {
             flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--border-light);
@@ -232,7 +280,7 @@
             max-height: 120px;
             transition: height 0.1s ease;
         }
-        .input-wrapper textarea:focus {
+        .input-row textarea:focus {
             border-color: var(--accent-color);
         }
         .send-btn {
@@ -270,7 +318,7 @@
             font-weight: 500;
             font-size: 1rem;
         }
-        .nick-readonly {
+        .nick-readonly, .nick-input, .password-input {
             background: var(--input-bg);
             padding: 0.6rem 1rem;
             border-radius: 1rem;
@@ -279,16 +327,21 @@
             color: var(--text-primary);
             flex: 1;
         }
-        .logout-btn {
+        .small-btn, .danger-btn {
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .small-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+        .danger-btn {
             background: none;
             border: 1px solid #ff3b30;
             color: #ff3b30;
-            padding: 0.7rem;
-            border-radius: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 0.5rem;
         }
         .theme-select, .accent-select {
             background-color: var(--input-bg);
@@ -304,10 +357,6 @@
             background-position: right 0.8rem center;
             background-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .theme-select:hover, .accent-select:hover {
-            border-color: var(--accent-color);
         }
         .switch {
             position: relative;
@@ -358,7 +407,6 @@
             opacity: 0.5;
         }
 
-        /* Безопасные зоны — только для компенсации вырезов */
         @supports (padding-top: env(safe-area-inset-top)) {
             .auth-container, .app-container {
                 padding-top: env(safe-area-inset-top);
@@ -385,17 +433,37 @@
     </div>
     <div id="chatPage" class="page active-page">
         <div class="chat-messages" id="messagesContainer"></div>
-        <div class="input-wrapper">
-            <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
-            <button class="send-btn" id="sendBtn">➤</button>
+        <div class="input-wrapper" id="inputWrapper">
+            <div id="replyIndicator" class="reply-indicator" style="display: none;">
+                <span id="replyText">Ответ на сообщение...</span>
+                <button id="cancelReplyBtn" class="cancel-reply">✕</button>
+            </div>
+            <div class="input-row">
+                <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
+                <button class="send-btn" id="sendBtn">➤</button>
+            </div>
         </div>
     </div>
     <div id="settingsPage" class="page">
         <div class="settings-container">
             <div class="setting-row">
                 <span class="setting-label">Ваш ник</span>
-                <div id="displayNick" class="nick-readonly"></div>
+                <input type="text" id="nickInput" class="nick-input" placeholder="Новый ник">
+                <button id="changeNickBtn" class="small-btn">Сменить</button>
             </div>
+            <div class="setting-row">
+                <span class="setting-label">Сменить пароль</span>
+                <input type="password" id="oldPassword" placeholder="Старый пароль" class="password-input">
+                <input type="password" id="newPassword" placeholder="Новый пароль" class="password-input">
+                <button id="changePasswordBtn" class="small-btn">Обновить</button>
+            </div>
+            <hr>
+            <div class="setting-row">
+                <span class="setting-label">Удалить аккаунт</span>
+                <input type="password" id="deletePassword" placeholder="Пароль" class="password-input">
+                <button id="deleteAccountBtn" class="danger-btn">Удалить</button>
+            </div>
+            <hr>
             <div class="setting-row">
                 <span class="setting-label">Тема</span>
                 <select id="themeSelect" class="theme-select">
@@ -430,7 +498,7 @@
                     </div>
                 </div>
             </div>
-            <button id="logoutBtn" class="logout-btn">Выйти</button>
+            <button id="logoutBtn" class="danger-btn">Выйти</button>
         </div>
     </div>
 </div>
@@ -443,17 +511,17 @@
     let messages = [];
     let authToken = localStorage.getItem('simply_token');
     let systemThemeListener = null;
+    let replyToMessage = null; // { id, nick, text }
     
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || {
         theme: 'adaptive', accent: 'blue', systemFontEnabled: false, fontSizeStep: 3
     };
 
-    // --- Обновление цвета статус-бара (theme-color) мгновенно ---
+    // --- Обновление цвета статус-бара ---
     function updateStatusBarColor() {
         const meta = document.getElementById('themeColorMeta');
         if (!meta) return;
-        const bodyStyles = getComputedStyle(document.body);
-        const bgColor = bodyStyles.getPropertyValue('--bg-page').trim();
+        const bgColor = getComputedStyle(document.body).getPropertyValue('--bg-page').trim();
         meta.setAttribute('content', bgColor);
     }
 
@@ -468,13 +536,9 @@
         else if (theme === 'dark') body.classList.add('theme-dark');
         appSettings.theme = theme;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        updateStatusBarColor();  // меняем сразу
-        
-        // Если тема адаптивная — слушаем изменения системы
+        updateStatusBarColor();
         if (theme === 'adaptive') {
-            if (systemThemeListener) {
-                window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', systemThemeListener);
-            }
+            if (systemThemeListener) window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', systemThemeListener);
             systemThemeListener = (e) => {
                 if (appSettings.theme === 'adaptive') {
                     document.body.classList.remove('theme-light', 'theme-dark');
@@ -490,7 +554,6 @@
             }
         }
     }
-    
     function applyAccent(accent) {
         document.body.classList.remove('accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal');
         if (accent === 'blue') document.body.classList.add('accent-blue');
@@ -503,7 +566,6 @@
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
-    
     function applyFontSize(systemEnabled, step) {
         const root = document.documentElement;
         if (systemEnabled) root.style.fontSize = '';
@@ -512,7 +574,6 @@
             root.style.fontSize = `${sizes[step] || 1.05}rem`;
         }
     }
-    
     function toggleFontSliderVisibility() {
         const isSystem = document.getElementById('systemFontToggle').checked;
         const container = document.getElementById('fontSliderContainer');
@@ -528,7 +589,222 @@
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
 
-    // --- Переключение вкладок (без пузыря, просто активный класс) ---
+    // --- Чат ---
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    function renderMessages() {
+        const container = document.getElementById('messagesContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        messages.forEach(msg => {
+            const isOwn = currentUser && msg.nick === currentUser.nick;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message-item';
+            if (isOwn) msgDiv.classList.add('own-message');
+            let replyHtml = '';
+            if (msg.reply) {
+                replyHtml = `<div class="reply-context">↳ Ответ на <strong>${escapeHtml(msg.reply.nick)}</strong>: ${escapeHtml(msg.reply.text.substring(0, 50))}${msg.reply.text.length > 50 ? '…' : ''}</div>`;
+            }
+            msgDiv.innerHTML = `
+                <div class="message-nick">${escapeHtml(msg.nick)}</div>
+                <div class="message-bubble">
+                    ${replyHtml}
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                </div>
+                <div class="message-actions">
+                    <button class="action-btn reply-btn" data-id="${msg.id}" data-nick="${escapeHtml(msg.nick)}" data-text="${escapeHtml(msg.text.substring(0, 50))}">↩ Ответить</button>
+                    ${isOwn ? `<button class="action-btn delete-btn" data-id="${msg.id}">🗑 Удалить</button>` : ''}
+                </div>
+            `;
+            container.appendChild(msgDiv);
+        });
+        // Добавляем обработчики кнопок
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.dataset.id);
+                const nick = btn.dataset.nick;
+                const text = btn.dataset.text;
+                replyToMessage = { id, nick, text };
+                const replyIndicator = document.getElementById('replyIndicator');
+                document.getElementById('replyText').innerText = `Ответ @${nick}: ${text.substring(0, 40)}${text.length > 40 ? '…' : ''}`;
+                replyIndicator.style.display = 'flex';
+                document.getElementById('messageInput').focus();
+            });
+        });
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = parseInt(btn.dataset.id);
+                if (confirm('Удалить сообщение?')) {
+                    await fetch('/delete-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: authToken, messageId: id })
+                    });
+                }
+            });
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+    async function loadHistory() {
+        try {
+            const res = await fetch('/messages');
+            const data = await res.json();
+            messages = data;
+            renderMessages();
+        } catch(e) { console.error(e); }
+    }
+
+    // --- Авторизация ---
+    async function performAuth() {
+        const nick = document.getElementById('loginNick').value.trim();
+        const key = document.getElementById('loginKey').value.trim();
+        if (!nick || !key) { document.getElementById('authError').innerText = 'Заполните оба поля'; return; }
+        try {
+            const res = await fetch('/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nick, key })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = { nick: data.nick };
+                authToken = data.token;
+                localStorage.setItem('simply_token', authToken);
+                document.getElementById('authPage').style.display = 'none';
+                document.getElementById('appPage').style.display = 'flex';
+                document.getElementById('nickInput').value = data.nick;
+                if (socket) socket.disconnect();
+                socket = io();
+                socket.on('message received', (newMsg) => {
+                    messages.push(newMsg);
+                    renderMessages();
+                });
+                socket.on('message deleted', (msgId) => {
+                    messages = messages.filter(m => m.id !== msgId);
+                    renderMessages();
+                });
+                await loadHistory();
+                setActiveTab('chat');
+            } else {
+                document.getElementById('authError').innerText = data.error || 'Неизвестно';
+            }
+        } catch(e) { document.getElementById('authError').innerText = 'Ошибка соединения'; }
+    }
+
+    async function verifyToken() {
+        const token = localStorage.getItem('simply_token');
+        if (!token) return false;
+        try {
+            const res = await fetch('/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = { nick: data.nick };
+                authToken = token;
+                document.getElementById('authPage').style.display = 'none';
+                document.getElementById('appPage').style.display = 'flex';
+                document.getElementById('nickInput').value = data.nick;
+                socket = io();
+                socket.on('message received', (newMsg) => {
+                    messages.push(newMsg);
+                    renderMessages();
+                });
+                socket.on('message deleted', (msgId) => {
+                    messages = messages.filter(m => m.id !== msgId);
+                    renderMessages();
+                });
+                await loadHistory();
+                setActiveTab('chat');
+                return true;
+            }
+        } catch(e) {}
+        return false;
+    }
+
+    // --- Отправка сообщения (с ответом или без) ---
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text && !replyToMessage) return;
+        if (!text && replyToMessage) {
+            // Отмена ответа
+            replyToMessage = null;
+            document.getElementById('replyIndicator').style.display = 'none';
+            return;
+        }
+        if (!socket || !currentUser) return;
+        const payload = { nick: currentUser.nick, text };
+        if (replyToMessage) {
+            payload.reply_to_id = replyToMessage.id;
+        }
+        socket.emit('new message', payload);
+        input.value = '';
+        input.style.height = 'auto';
+        replyToMessage = null;
+        document.getElementById('replyIndicator').style.display = 'none';
+    }
+
+    function cancelReply() {
+        replyToMessage = null;
+        document.getElementById('replyIndicator').style.display = 'none';
+    }
+
+    // --- Настройки: смена ника, пароля, удаление аккаунта ---
+    async function changeNick() {
+        const newNick = document.getElementById('nickInput').value.trim();
+        if (!newNick || newNick === currentUser.nick) return;
+        const res = await fetch('/change-nick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: authToken, newNick })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser.nick = data.newNick;
+            alert('Ник изменён');
+            await loadHistory();
+        } else alert(data.error);
+    }
+    async function changePassword() {
+        const oldPass = document.getElementById('oldPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        if (!oldPass || !newPass) { alert('Заполните поля'); return; }
+        const res = await fetch('/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: authToken, oldPassword: oldPass, newPassword: newPass })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Пароль изменён');
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+        } else alert(data.error);
+    }
+    async function deleteAccount() {
+        const pass = document.getElementById('deletePassword').value;
+        if (!pass) { alert('Введите пароль'); return; }
+        if (!confirm('Удалить аккаунт? Все сообщения будут потеряны.')) return;
+        const res = await fetch('/delete-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: authToken, password: pass })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.removeItem('simply_token');
+            alert('Аккаунт удалён');
+            window.location.reload();
+        } else alert(data.error);
+    }
+    async function logout() {
+        if (authToken) await fetch('/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: authToken }) });
+        localStorage.removeItem('simply_token');
+        window.location.reload();
+    }
+
     function setActiveTab(tabId) {
         const chatPage = document.getElementById('chatPage');
         const settingsPage = document.getElementById('settingsPage');
@@ -553,129 +829,6 @@
         });
     }
 
-    // --- Чат ---
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m;});}
-    function renderMessages() {
-        const container = document.getElementById('messagesContainer');
-        if (!container) return;
-        container.innerHTML = '';
-        messages.forEach(msg => {
-            const isOwn = currentUser && msg.nick === currentUser.nick;
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message-item';
-            if (isOwn) msgDiv.classList.add('own-message');
-            msgDiv.innerHTML = `<div class="message-nick">${escapeHtml(msg.nick)}</div><div class="message-bubble"><div class="message-text">${escapeHtml(msg.text)}</div></div>`;
-            container.appendChild(msgDiv);
-        });
-        container.scrollTop = container.scrollHeight;
-    }
-    async function loadHistory() {
-        try {
-            const res = await fetch('/messages');
-            const data = await res.json();
-            messages = data.map(m => ({ id: m.id, nick: m.nick, text: m.text, created_at: m.created_at }));
-            renderMessages();
-        } catch(e) { console.error('История не загружена', e); }
-    }
-
-    // --- Авторизация / регистрация ---
-    async function performAuth() {
-        const nick = document.getElementById('loginNick').value.trim();
-        const key = document.getElementById('loginKey').value.trim();
-        if (!nick || !key) {
-            document.getElementById('authError').innerText = 'Заполните оба поля';
-            return;
-        }
-        try {
-            const res = await fetch('/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nick, key })
-            });
-            const data = await res.json();
-            if (data.success) {
-                currentUser = { nick: data.nick };
-                authToken = data.token;
-                localStorage.setItem('simply_token', authToken);
-                document.getElementById('authPage').style.display = 'none';
-                document.getElementById('appPage').style.display = 'flex';
-                document.getElementById('displayNick').innerText = currentUser.nick;
-                if (socket) socket.disconnect();
-                socket = io();
-                socket.on('message received', (newMsg) => {
-                    messages.push(newMsg);
-                    renderMessages();
-                });
-                await loadHistory();
-                setActiveTab('chat');
-            } else {
-                document.getElementById('authError').innerText = data.error || 'Неизвестно';
-            }
-        } catch(e) {
-            document.getElementById('authError').innerText = 'Ошибка соединения';
-        }
-    }
-
-    // Проверка сохранённого токена
-    async function verifyToken() {
-        const token = localStorage.getItem('simply_token');
-        if (!token) return false;
-        try {
-            const res = await fetch('/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token })
-            });
-            const data = await res.json();
-            if (data.success) {
-                currentUser = { nick: data.nick };
-                authToken = token;
-                document.getElementById('authPage').style.display = 'none';
-                document.getElementById('appPage').style.display = 'flex';
-                document.getElementById('displayNick').innerText = currentUser.nick;
-                socket = io();
-                socket.on('message received', (newMsg) => {
-                    messages.push(newMsg);
-                    renderMessages();
-                });
-                await loadHistory();
-                setActiveTab('chat');
-                return true;
-            }
-        } catch(e) {}
-        return false;
-    }
-
-    // --- Выход ---
-    async function logout() {
-        if (authToken) {
-            await fetch('/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: authToken })
-            });
-        }
-        localStorage.removeItem('simply_token');
-        if (socket) socket.disconnect();
-        currentUser = null;
-        authToken = null;
-        document.getElementById('appPage').style.display = 'none';
-        document.getElementById('authPage').style.display = 'flex';
-        document.getElementById('loginNick').value = '';
-        document.getElementById('loginKey').value = '';
-        document.getElementById('authError').innerText = '';
-    }
-
-    // --- Отправка сообщения ---
-    function sendMessage() {
-        const input = document.getElementById('messageInput');
-        const text = input.value.trim();
-        if (!text || !socket || !currentUser) return;
-        socket.emit('new message', { nick: currentUser.nick, text });
-        input.value = '';
-        input.style.height = 'auto';
-    }
-
     // --- Инициализация ---
     window.onload = async () => {
         applyTheme(appSettings.theme);
@@ -688,7 +841,12 @@
 
         document.getElementById('authBtn').onclick = performAuth;
         document.getElementById('sendBtn').onclick = sendMessage;
+        document.getElementById('cancelReplyBtn').onclick = cancelReply;
         document.getElementById('logoutBtn').onclick = logout;
+        document.getElementById('changeNickBtn').onclick = changeNick;
+        document.getElementById('changePasswordBtn').onclick = changePassword;
+        document.getElementById('deleteAccountBtn').onclick = deleteAccount;
+
         const msgInput = document.getElementById('messageInput');
         msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
         msgInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
