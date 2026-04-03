@@ -93,7 +93,7 @@ app.post('/change-nick', async (req, res) => {
   res.json({ success: true, newNick });
 });
 
-// Удаление аккаунта (требует пароль)
+// Удаление аккаунта
 app.post('/delete-account', async (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) return res.status(400).json({ success: false, error: 'Заполните поля' });
@@ -102,14 +102,12 @@ app.post('/delete-account', async (req, res) => {
   const user = userRes.rows[0];
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return res.json({ success: false, error: 'Неверный пароль' });
-  // Удаляем все сообщения пользователя
   await pool.query('DELETE FROM messages WHERE nick = $1', [user.nick]);
-  // Удаляем пользователя
   await pool.query('DELETE FROM users WHERE id = $1', [user.id]);
   res.json({ success: true });
 });
 
-// Удаление сообщения (только своего)
+// Удаление сообщения
 app.post('/delete-message', async (req, res) => {
   const { token, messageId } = req.body;
   if (!token || !messageId) return res.status(400).json({ success: false });
@@ -123,7 +121,7 @@ app.post('/delete-message', async (req, res) => {
   res.json({ success: true });
 });
 
-// Получение сообщений (с подгрузкой reply_to)
+// Получение сообщений (с подгрузкой ответов)
 app.get('/messages', async (req, res) => {
   const result = await pool.query(`
     SELECT m.id, m.nick, m.text, m.reply_to_id, m.created_at,
@@ -143,7 +141,7 @@ app.get('/messages', async (req, res) => {
   res.json(messages);
 });
 
-// Socket.IO – новые сообщения с поддержкой ответов
+// Socket.IO
 io.on('connection', (socket) => {
   console.log('Клиент подключился');
   socket.on('new message', async (data) => {
@@ -154,7 +152,6 @@ io.on('connection', (socket) => {
       [nick, text.trim(), reply_to_id || null]
     );
     const newMsgId = result.rows[0].id;
-    // Загружаем ответные данные, если есть
     let replyData = null;
     if (reply_to_id) {
       const replyRes = await pool.query('SELECT nick, text FROM messages WHERE id = $1', [reply_to_id]);
