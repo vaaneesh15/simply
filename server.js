@@ -34,6 +34,7 @@ async function initDB() {
       id SERIAL PRIMARY KEY,
       nick VARCHAR(50) NOT NULL,
       text TEXT NOT NULL,
+      reply_to_id INTEGER DEFAULT NULL,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
@@ -43,10 +44,11 @@ initDB();
 
 async function findUserByToken(token) {
   if (!token) return null;
-  const res = await pool.query('SELECT nick FROM users WHERE token = $1', [token]);
+  const res = await pool.query('SELECT id, nick FROM users WHERE token = $1', [token]);
   return res.rows[0] || null;
 }
 
+// Авторизация / регистрация
 app.post('/auth', async (req, res) => {
   const { nick, key } = req.body;
   if (!nick || !key) return res.status(400).json({ success: false, error: 'Заполните поля' });
@@ -74,34 +76,103 @@ app.post('/verify', async (req, res) => {
 
 app.post('/logout', async (req, res) => {
   const { token } = req.body;
-  if (token) {
-    await pool.query('UPDATE users SET token = NULL WHERE token = $1', [token]);
-  }
+  if (token) await pool.query('UPDATE users SET token = NULL WHERE token = $1', [token]);
   res.json({ success: true });
 });
 
-app.get('/messages', async (req, res) => {
-  const result = await pool.query('SELECT id, nick, text, created_at FROM messages ORDER BY created_at ASC LIMIT 200');
-  res.json(result.rows);
+// Смена ника
+app.post('/change-nick', async (req, res) => {
+  const { token, newNick } = req.body;
+  if (!token || !newNick) return res.status(400).json({ success: false, error: 'Данные неполные' });
+  const user = await findUserByToken(token);
+  if (!user) return res.json({ success: false, error: 'Сессия недействительна' });
+  const existing = await pool.query('SELECT id FROM users WHERE nick = $1', [newNick]);
+  if (existing.rows.length > 0) return res.json({ success: false, error: 'Ник уже занят' });
+  await pool.query('UPDATE users SET nick = $1 WHERE token = $2', [newNick, token]);
+  await pool.query('UPDATE messages SET nick = $1 WHERE nick = $2', [newNick, user.nick]);
+  res.json({ success: true, newNick });
 });
 
+// Удаление аккаунта (требует пароль)
+app.post('/delete-account', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ success: false, error: 'Заполните поля' });
+  const userRes = await pool.query('SELECT id, password_hash, nick FROM users WHERE token = $1', [token]);
+  if (userRes.rows.length === 0) return res.json({ success: false, error: 'Сессия недействительна' });
+  const user = userRes.rows[0];
+  const valid = await bcrypt.compare(password, user.password_hash);
+  if (!valid) return res.json({ success: false, error: 'Неверный пароль' });
+  // Удаляем все сообщения пользователя
+  await pool.query('DELETE FROM messages WHERE nick = $1', [user.nick]);
+  // Удаляем пользователя
+  await pool.query('DELETE FROM users WHERE id = $1', [user.id]);
+  res.json({ success: true });
+});
+
+// Удаление сообщения (только своего)
+app.post('/delete-message', async (req, res) => {
+  const { token, messageId } = req.body;
+  if (!token || !messageId) return res.status(400).json({ success: false });
+  const user = await findUserByToken(token);
+  if (!user) return res.json({ success: false });
+  const msgRes = await pool.query('SELECT nick FROM messages WHERE id = $1', [messageId]);
+  if (msgRes.rows.length === 0) return res.json({ success: false });
+  if (msgRes.rows[0].nick !== user.nick) return res.json({ success: false });
+  await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
+  io.emit('message deleted', messageId);
+  res.json({ success: true });
+});
+
+// Получение сообщений (с подгрузкой reply_to)
+app.get('/messages', async (req, res) => {
+  const result = await pool.query(`
+    SELECT m.id, m.nick, m.text, m.reply_to_id, m.created_at,
+           r.nick as reply_nick, r.text as reply_text
+    FROM messages m
+    LEFT JOIN messages r ON m.reply_to_id = r.id
+    ORDER BY m.created_at ASC LIMIT 200
+  `);
+  const messages = result.rows.map(row => ({
+    id: row.id,
+    nick: row.nick,
+    text: row.text,
+    reply_to_id: row.reply_to_id,
+    created_at: row.created_at,
+    reply: row.reply_to_id ? { nick: row.reply_nick, text: row.reply_text } : null
+  }));
+  res.json(messages);
+});
+
+// Socket.IO – новые сообщения с поддержкой ответов
 io.on('connection', (socket) => {
   console.log('Клиент подключился');
   socket.on('new message', async (data) => {
-    const { nick, text } = data;
+    const { nick, text, reply_to_id } = data;
     if (!nick || !text || !text.trim()) return;
     const result = await pool.query(
-      'INSERT INTO messages (nick, text) VALUES ($1, $2) RETURNING id, created_at',
-      [nick, text.trim()]
+      'INSERT INTO messages (nick, text, reply_to_id) VALUES ($1, $2, $3) RETURNING id, created_at',
+      [nick, text.trim(), reply_to_id || null]
     );
+    const newMsgId = result.rows[0].id;
+    // Загружаем ответные данные, если есть
+    let replyData = null;
+    if (reply_to_id) {
+      const replyRes = await pool.query('SELECT nick, text FROM messages WHERE id = $1', [reply_to_id]);
+      if (replyRes.rows.length) {
+        replyData = { nick: replyRes.rows[0].nick, text: replyRes.rows[0].text };
+      }
+    }
     const newMsg = {
-      id: result.rows[0].id,
+      id: newMsgId,
       nick,
       text: text.trim(),
-      created_at: result.rows[0].created_at
+      reply_to_id: reply_to_id || null,
+      created_at: result.rows[0].created_at,
+      reply: replyData
     };
     io.emit('message received', newMsg);
   });
+  socket.on('disconnect', () => console.log('Клиент отключился'));
 });
 
 const PORT = process.env.PORT || 3000;
