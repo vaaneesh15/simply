@@ -12,72 +12,376 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Переменные (темы, акценты) */
-        :root { --bg-page: #f5f5f7; --card-bg: #ffffff; --text-primary: #000000; --text-secondary: #5e5e66; --border-light: rgba(60, 60, 67, 0.08); --nav-bg: rgba(255, 255, 255, 0.85); --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02); --message-bg: #e9e9ef; --input-bg: rgba(255, 255, 255, 0.9); --placeholder: #8e8e93; --separator: rgba(60, 60, 67, 0.08); --toggle-bg: #e5e5ea; --toggle-active: #34c759; --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235e5e66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); --accent-color: #007aff; --accent-light: rgba(0, 122, 255, 0.15); }
-        body.theme-dark { --bg-page: #000000; --card-bg: #1c1c1e; --text-primary: #ffffff; --text-secondary: #8e8e93; --border-light: rgba(84, 84, 88, 0.2); --nav-bg: rgba(28, 28, 30, 0.85); --message-bg: #2c2c2e; --input-bg: rgba(28, 28, 30, 0.9); --placeholder: #636366; --separator: rgba(84, 84, 88, 0.2); --toggle-bg: #2c2c2e; --toggle-active: #30d158; --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); }
-        body.theme-night { --bg-page: #0b0b0e; --card-bg: #121214; --text-primary: #ededef; --text-secondary: #7c7c85; --border-light: rgba(99, 99, 102, 0.25); --nav-bg: rgba(18, 18, 20, 0.85); --message-bg: #1d1d1f; --input-bg: rgba(18, 18, 20, 0.9); --placeholder: #5a5a62; --separator: rgba(99, 99, 102, 0.2); --toggle-bg: #1d1d1f; --toggle-active: #5e5ce0; --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c7c85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); }
-        body.accent-blue { --accent-color: #007aff; --accent-light: rgba(0, 122, 255, 0.15); }
-        body.accent-purple { --accent-color: #af52de; --accent-light: rgba(175, 82, 222, 0.15); }
-        body.accent-pink { --accent-color: #ff2d55; --accent-light: rgba(255, 45, 85, 0.15); }
-        body.accent-red { --accent-color: #ff3b30; --accent-light: rgba(255, 59, 48, 0.15); }
-        body.accent-orange { --accent-color: #ff9500; --accent-light: rgba(255, 149, 0, 0.15); }
-        body.accent-green { --accent-color: #34c759; --accent-light: rgba(52, 199, 89, 0.15); }
-        body { background-color: var(--bg-page); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.2s ease, color 0.2s ease; height: 100vh; overflow: hidden; position: fixed; width: 100%; }
+        /* ----- Светлая тема (по умолчанию) ----- */
+        :root {
+            --bg-page: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #000000;
+            --text-secondary: #5e5e66;
+            --border-light: rgba(60, 60, 67, 0.08);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+            --message-bg: #e9e9ef;
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --placeholder: #8e8e93;
+            --separator: rgba(60, 60, 67, 0.08);
+            --toggle-bg: #e5e5ea;
+            --toggle-active: #34c759;
+            --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235e5e66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            --accent-color: #007aff;
+            --accent-light: rgba(0, 122, 255, 0.15);
+        }
 
-        /* Контейнеры */
-        .auth-container, .app-container { height: 100%; display: flex; flex-direction: column; background-color: var(--bg-page); overflow: hidden; }
-        .auth-container { justify-content: center; align-items: center; padding: 2rem; }
-        .auth-card { background: var(--card-bg); border-radius: 2rem; padding: 2rem 1.5rem; width: 100%; max-width: 340px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
-        .auth-title { font-size: 1.8rem; font-weight: 590; margin-bottom: 1.5rem; text-align: center; }
-        .input-group { margin-bottom: 1.2rem; }
-        .input-group input { width: 100%; padding: 0.9rem 1rem; background: var(--input-bg); border: 1px solid var(--border-light); border-radius: 1rem; font-size: 1rem; color: var(--text-primary); outline: none; transition: 0.2s; }
-        .input-group input:focus { border-color: var(--accent-color); }
-        .auth-btn { background: var(--accent-color); color: white; border: none; width: 100%; padding: 0.9rem; border-radius: 1rem; font-size: 1rem; font-weight: 590; margin-top: 0.8rem; cursor: pointer; transition: 0.2s; }
-        .error-text { color: #ff3b30; text-align: center; margin-top: 0.8rem; font-size: 0.9rem; }
+        /* ----- Тёмная тема ----- */
+        body.theme-dark {
+            --bg-page: #0c0c0d;
+            --card-bg: #1c1c1e;
+            --text-primary: #ffffff;
+            --text-secondary: #98989e;
+            --border-light: rgba(84, 84, 88, 0.3);
+            --nav-bg: rgba(28, 28, 30, 0.9);
+            --message-bg: #2c2c2e;
+            --input-bg: rgba(44, 44, 46, 0.9);
+            --placeholder: #636366;
+            --separator: rgba(84, 84, 88, 0.4);
+            --toggle-bg: #3a3a3c;
+            --toggle-active: #30d158;
+            --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2398989e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        /* ----- Ночная тема (ультратёмная) ----- */
+        body.theme-night {
+            --bg-page: #000000;
+            --card-bg: #111112;
+            --text-primary: #ecedef;
+            --text-secondary: #7c7c85;
+            --border-light: rgba(99, 99, 102, 0.3);
+            --nav-bg: rgba(17, 17, 18, 0.95);
+            --message-bg: #1d1d1f;
+            --input-bg: rgba(29, 29, 31, 0.9);
+            --placeholder: #5a5a62;
+            --separator: rgba(99, 99, 102, 0.3);
+            --toggle-bg: #2c2c2e;
+            --toggle-active: #5e5ce0;
+            --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c7c85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        /* ----- Цветовые акценты ----- */
+        body.accent-blue { --accent-color: #007aff; --accent-light: rgba(0, 122, 255, 0.15); }
+        body.accent-indigo { --accent-color: #5856d6; --accent-light: rgba(88, 86, 214, 0.15); }
+        body.accent-purple { --accent-color: #5e5ce0; --accent-light: rgba(94, 92, 224, 0.15); } /* фиолетовый ближе к синему */
+        body.accent-pink { --accent-color: #ff2d55; --accent-light: rgba(255, 45, 85, 0.15); }   /* нежный розовый */
+        body.accent-mint { --accent-color: #34c759; --accent-light: rgba(52, 199, 89, 0.15); }
+        body.accent-orange { --accent-color: #ff9f0a; --accent-light: rgba(255, 159, 10, 0.15); }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        /* Общие контейнеры */
+        .auth-container, .app-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-page);
+            overflow: hidden;
+        }
+        .auth-container {
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .auth-card {
+            background: var(--card-bg);
+            border-radius: 2rem;
+            padding: 2rem 1.5rem;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 590;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            border-color: var(--accent-color);
+        }
+        .auth-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 1rem;
+            font-size: 1rem;
+            font-weight: 590;
+            margin-top: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .error-text {
+            color: #ff3b30;
+            text-align: center;
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+        }
 
         /* Навигация */
-        .nav-bar { background: var(--nav-bg); backdrop-filter: blur(20px); display: flex; padding: 0.5rem; gap: 0.5rem; border-radius: 2rem; margin: 0.75rem 1rem; z-index: 10; box-shadow: var(--shadow-sm); }
-        .tab-btn { flex: 1; background: none; border: none; font-size: 1rem; font-weight: 500; padding: 0.65rem 0; border-radius: 1.8rem; color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; text-align: center; }
-        .tab-btn.active { color: white; background-color: var(--accent-color); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .nav-bar {
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            display: flex;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            border-radius: 2rem;
+            margin: 0.75rem 1rem;
+            z-index: 10;
+            box-shadow: var(--shadow-sm);
+        }
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.65rem 0;
+            border-radius: 1.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .tab-btn.active {
+            color: white;
+            background-color: var(--accent-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
 
         /* Страницы */
-        .page { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
-        .page.active-page { display: flex; }
+        .page {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+        }
+        .page.active-page {
+            display: flex;
+        }
 
         /* Чат */
-        .chat-messages { flex: 1; overflow-y: auto; padding: 1rem 1rem; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        .message-item { display: flex; flex-direction: column; align-items: flex-start; max-width: 85%; }
-        .message-bubble { background: var(--message-bg); padding: 0.7rem 1rem; border-radius: 1.2rem; border: 1.5px solid transparent; word-break: break-word; }
-        .message-item.own-message .message-bubble { border-color: var(--accent-color); }
-        .message-nick { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; margin-left: 0.5rem; }
-        .message-text { font-size: 1rem; line-height: 1.4; color: var(--text-primary); }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+        .message-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 85%;
+        }
+        .message-bubble {
+            background: var(--message-bg);
+            padding: 0.7rem 1rem;
+            border-radius: 1.2rem;
+            border: 1.5px solid transparent;
+            word-break: break-word;
+        }
+        .message-item.own-message .message-bubble {
+            border-color: var(--accent-color);
+        }
+        .message-nick {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            margin-left: 0.5rem;
+        }
+        .message-text {
+            font-size: 1rem;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
 
-        /* Панель ввода */
-        .input-wrapper { position: relative; background: var(--nav-bg); backdrop-filter: blur(20px); border-top: 0.5px solid var(--separator); padding: 0.7rem 1rem; transition: transform 0.1s ease; }
-        .input-bar { display: flex; gap: 10px; align-items: flex-end; }
-        .input-bar textarea { flex: 1; background: var(--input-bg); border: 1px solid var(--border-light); border-radius: 2rem; padding: 0.75rem 1rem; font-size: 1rem; color: var(--text-primary); outline: none; resize: none; overflow-y: hidden; font-family: inherit; line-height: 1.4; max-height: 120px; transition: height 0.1s ease; }
-        .input-bar textarea:focus { border-color: var(--accent-color); }
-        .send-btn { background: var(--accent-color); border: none; width: 2.75rem; height: 2.75rem; border-radius: 2.75rem; color: white; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; margin-bottom: 2px; }
+        /* Летающая панель ввода (как раньше) */
+        .input-bar {
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            padding: 0.7rem 1rem;
+            margin: 0.75rem 1rem 1rem 1rem;
+            border-radius: 2rem;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            box-shadow: var(--shadow-sm);
+        }
+        .input-bar textarea {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 2rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+            outline: none;
+            resize: none;
+            overflow-y: hidden;
+            font-family: inherit;
+            line-height: 1.4;
+            max-height: 120px;
+            transition: height 0.1s ease;
+        }
+        .input-bar textarea:focus {
+            border-color: var(--accent-color);
+        }
+        .send-btn {
+            background: var(--accent-color);
+            border: none;
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 2.75rem;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            flex-shrink: 0;
+            margin-bottom: 2px;
+        }
 
         /* Настройки */
-        .settings-container { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.8rem; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .setting-label { font-weight: 500; font-size: 1rem; }
-        .nick-readonly { background: var(--input-bg); padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid var(--border-light); font-size: 1rem; color: var(--text-primary); flex: 1; }
-        .theme-select, .accent-select { background-color: var(--card-bg); border: 1px solid var(--border-light); border-radius: 1rem; padding: 0.6rem 2rem 0.6rem 1rem; color: var(--text-primary); font-size: 0.9rem; appearance: none; background-image: var(--select-arrow); background-repeat: no-repeat; background-position: right 0.8rem center; background-size: 1.2rem; cursor: pointer; }
-        .switch { position: relative; display: inline-block; width: 52px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--toggle-bg); transition: 0.2s; border-radius: 28px; }
-        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 2px; bottom: 2px; background-color: white; transition: 0.2s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(24px); }
-        .font-slider { width: 100%; margin-top: 8px; accent-color: var(--accent-color); }
-        hr { border-color: var(--separator); opacity: 0.5; }
+        .settings-container {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .setting-label {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .nick-readonly, .password-input {
+            background: var(--input-bg);
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-light);
+            font-size: 1rem;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        .small-btn {
+            background: var(--accent-color);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .theme-select, .accent-select {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 0.6rem 2rem 0.6rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            appearance: none;
+            background-image: var(--select-arrow);
+            background-repeat: no-repeat;
+            background-position: right 0.8rem center;
+            background-size: 1.2rem;
+            cursor: pointer;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-bg);
+            transition: 0.2s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.2s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        .font-slider {
+            width: 100%;
+            margin-top: 8px;
+            accent-color: var(--accent-color);
+        }
+        hr {
+            border-color: var(--separator);
+            opacity: 0.5;
+        }
 
-        /* Безопасная зона */
+        /* Безопасные зоны */
         @supports (padding-top: env(safe-area-inset-top)) {
             .nav-bar { margin-top: max(0.75rem, env(safe-area-inset-top)); }
-            .input-wrapper { padding-bottom: max(0.7rem, env(safe-area-inset-bottom)); }
+            .input-bar { margin-bottom: max(1rem, env(safe-area-inset-bottom)); }
         }
     </style>
 </head>
@@ -100,58 +404,95 @@
     </div>
     <div id="chatPage" class="page active-page">
         <div class="chat-messages" id="messagesContainer"></div>
-        <div class="input-wrapper" id="inputWrapper">
-            <div class="input-bar">
-                <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
-                <button class="send-btn" id="sendBtn">➤</button>
-            </div>
+        <div class="input-bar">
+            <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn">➤</button>
         </div>
     </div>
     <div id="settingsPage" class="page">
         <div class="settings-container">
-            <div class="setting-row"><span class="setting-label">Ваш ник</span><div id="displayNick" class="nick-readonly"></div></div>
+            <div class="setting-row">
+                <span class="setting-label">Ваш ник</span>
+                <input type="text" id="nickInput" class="nick-readonly" placeholder="Новый ник">
+                <button id="changeNickBtn" class="small-btn">Сменить</button>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Сменить пароль</span>
+                <input type="password" id="oldPassword" placeholder="Старый пароль" class="password-input">
+                <input type="password" id="newPassword" placeholder="Новый пароль" class="password-input">
+                <button id="changePasswordBtn" class="small-btn">Обновить</button>
+            </div>
             <hr>
-            <div class="setting-row"><span class="setting-label">Тема</span><select id="themeSelect"><option value="adaptive">Адаптивная</option><option value="light">Светлая</option><option value="dark">Тёмная</option><option value="night">Ночная</option></select></div>
-            <div class="setting-row"><span class="setting-label">Оттенок</span><select id="accentSelect"><option value="blue">Синий</option><option value="purple">Фиолетовый</option><option value="pink">Розовый</option><option value="red">Красный</option><option value="orange">Оранжевый</option><option value="green">Зелёный</option></select></div>
+            <div class="setting-row">
+                <span class="setting-label">Тема</span>
+                <select id="themeSelect">
+                    <option value="adaptive">Адаптивная</option>
+                    <option value="light">Светлая</option>
+                    <option value="dark">Тёмная</option>
+                    <option value="night">Ночная</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Оттенок</span>
+                <select id="accentSelect">
+                    <option value="blue">Синий</option>
+                    <option value="indigo">Индиго</option>
+                    <option value="purple">Фиолетовый</option>
+                    <option value="pink">Розовый</option>
+                    <option value="mint">Мятный</option>
+                    <option value="orange">Оранжевый</option>
+                </select>
+            </div>
             <hr>
-            <div class="setting-row"><span class="setting-label">Системный размер текста</span><label class="switch"><input type="checkbox" id="systemFontToggle"><span class="slider"></span></label></div>
-            <div id="fontSliderContainer"><div class="setting-row" style="flex-direction: column; align-items: flex-start;"><span class="setting-label">Размер текста</span><input type="range" id="fontSizeSlider" min="0" max="6" step="1" value="3" class="font-slider"><div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.7rem; color: var(--text-secondary);"><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span></div></div></div>
+            <div class="setting-row">
+                <span class="setting-label">Системный размер текста</span>
+                <label class="switch"><input type="checkbox" id="systemFontToggle"><span class="slider"></span></label>
+            </div>
+            <div id="fontSliderContainer">
+                <div class="setting-row" style="flex-direction: column; align-items: flex-start;">
+                    <span class="setting-label">Размер текста</span>
+                    <input type="range" id="fontSizeSlider" min="0" max="6" step="1" value="3" class="font-slider">
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.7rem; color: var(--text-secondary);">
+                        <span>A</span><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
+    // --- Глобальные переменные ---
     let socket = null;
     let currentUser = null;
     let messages = [];
+    let authToken = localStorage.getItem('simply_token');
+    
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || {
         theme: 'adaptive', accent: 'blue', systemFontEnabled: false, fontSizeStep: 3
     };
 
     // --- Функции тем и размера ---
     function applyTheme(theme) {
-        const body = document.body;
-        body.classList.remove('theme-light', 'theme-dark', 'theme-night');
+        document.body.classList.remove('theme-light', 'theme-dark', 'theme-night');
         if (theme === 'adaptive') {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (prefersDark) body.classList.add('theme-dark');
-            else body.classList.add('theme-light');
-        } else if (theme === 'light') body.classList.add('theme-light');
-        else if (theme === 'dark') body.classList.add('theme-dark');
-        else if (theme === 'night') body.classList.add('theme-night');
+            document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+        } else if (theme === 'light') document.body.classList.add('theme-light');
+        else if (theme === 'dark') document.body.classList.add('theme-dark');
+        else if (theme === 'night') document.body.classList.add('theme-night');
         appSettings.theme = theme;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
     function applyAccent(accent) {
-        const body = document.body;
-        body.classList.remove('accent-blue', 'accent-purple', 'accent-pink', 'accent-red', 'accent-orange', 'accent-green');
-        if (accent === 'blue') body.classList.add('accent-blue');
-        else if (accent === 'purple') body.classList.add('accent-purple');
-        else if (accent === 'pink') body.classList.add('accent-pink');
-        else if (accent === 'red') body.classList.add('accent-red');
-        else if (accent === 'orange') body.classList.add('accent-orange');
-        else if (accent === 'green') body.classList.add('accent-green');
+        document.body.classList.remove('accent-blue', 'accent-indigo', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange');
+        if (accent === 'blue') document.body.classList.add('accent-blue');
+        else if (accent === 'indigo') document.body.classList.add('accent-indigo');
+        else if (accent === 'purple') document.body.classList.add('accent-purple');
+        else if (accent === 'pink') document.body.classList.add('accent-pink');
+        else if (accent === 'mint') document.body.classList.add('accent-mint');
+        else if (accent === 'orange') document.body.classList.add('accent-orange');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
@@ -161,15 +502,6 @@
         else {
             const sizes = [0.75,0.85,0.95,1.05,1.15,1.25,1.4];
             root.style.fontSize = `${sizes[step] || 1.05}rem`;
-        }
-        // Пересчитываем высоту textarea после изменения размера шрифта
-        autoResizeTextarea();
-    }
-    function autoResizeTextarea() {
-        const textarea = document.getElementById('messageInput');
-        if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
         }
     }
     function toggleFontSliderVisibility() {
@@ -212,11 +544,13 @@
         } catch(e) { console.error('История не загружена', e); }
     }
 
-    // --- Авторизация/регистрация ---
-    async function performAuth(nick, key, fromAuto = false) {
+    // --- Авторизация / регистрация ---
+    async function performAuth() {
+        const nick = document.getElementById('loginNick').value.trim();
+        const key = document.getElementById('loginKey').value.trim();
         if (!nick || !key) {
-            if (!fromAuto) document.getElementById('authError').innerText = 'Заполните оба поля';
-            return false;
+            document.getElementById('authError').innerText = 'Заполните оба поля';
+            return;
         }
         try {
             const res = await fetch('/auth', {
@@ -227,11 +561,13 @@
             const data = await res.json();
             if (data.success) {
                 currentUser = { nick: data.nick };
-                // Сохраняем ник и ключ в localStorage для автоматического входа
-                localStorage.setItem('simply_creds', JSON.stringify({ nick, key }));
+                authToken = data.token;
+                localStorage.setItem('simply_token', authToken);
+                localStorage.setItem('simply_nick', data.nick);
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appPage').style.display = 'flex';
-                document.getElementById('displayNick').innerText = currentUser.nick;
+                document.getElementById('nickInput').value = data.nick;
+                document.getElementById('displayNick').innerText = data.nick;
                 if (socket) socket.disconnect();
                 socket = io();
                 socket.on('message received', (newMsg) => {
@@ -240,37 +576,43 @@
                 });
                 await loadHistory();
                 setActiveTab('chat');
-                return true;
             } else {
-                if (!fromAuto) document.getElementById('authError').innerText = data.error || 'Неизвестно';
-                return false;
+                document.getElementById('authError').innerText = data.error || 'Неизвестно';
             }
         } catch(e) {
-            if (!fromAuto) document.getElementById('authError').innerText = 'Ошибка соединения с сервером';
-            return false;
+            document.getElementById('authError').innerText = 'Ошибка соединения';
         }
     }
 
-    async function tryAutoLogin() {
-        const saved = localStorage.getItem('simply_creds');
-        if (saved) {
-            try {
-                const { nick, key } = JSON.parse(saved);
-                if (nick && key) {
-                    const success = await performAuth(nick, key, true);
-                    if (!success) {
-                        // Если не удалось, очищаем сохранённые данные и показываем форму
-                        localStorage.removeItem('simply_creds');
-                        document.getElementById('authPage').style.display = 'flex';
-                        document.getElementById('appPage').style.display = 'none';
-                    }
-                } else {
-                    localStorage.removeItem('simply_creds');
-                }
-            } catch(e) {
-                localStorage.removeItem('simply_creds');
+    // Проверка сохранённого токена
+    async function verifyToken() {
+        const token = localStorage.getItem('simply_token');
+        if (!token) return false;
+        try {
+            const res = await fetch('/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = { nick: data.nick };
+                authToken = token;
+                document.getElementById('authPage').style.display = 'none';
+                document.getElementById('appPage').style.display = 'flex';
+                document.getElementById('nickInput').value = data.nick;
+                document.getElementById('displayNick').innerText = data.nick;
+                socket = io();
+                socket.on('message received', (newMsg) => {
+                    messages.push(newMsg);
+                    renderMessages();
+                });
+                await loadHistory();
+                setActiveTab('chat');
+                return true;
             }
-        }
+        } catch(e) {}
+        return false;
     }
 
     // --- Отправка сообщения ---
@@ -280,7 +622,53 @@
         if (!text || !socket || !currentUser) return;
         socket.emit('new message', { nick: currentUser.nick, text });
         input.value = '';
-        autoResizeTextarea();
+        input.style.height = 'auto';
+    }
+
+    // --- Смена ника ---
+    async function changeNick() {
+        const newNick = document.getElementById('nickInput').value.trim();
+        if (!newNick || newNick === currentUser.nick) return;
+        try {
+            const res = await fetch('/change-nick', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken, newNick })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser.nick = data.newNick;
+                localStorage.setItem('simply_nick', data.newNick);
+                document.getElementById('displayNick').innerText = data.newNick;
+                alert('Ник изменён');
+                // Обновляем сообщения (перезагрузим историю)
+                await loadHistory();
+            } else {
+                alert(data.error || 'Ошибка');
+            }
+        } catch(e) { alert('Ошибка соединения'); }
+    }
+
+    // --- Смена пароля ---
+    async function changePassword() {
+        const oldPass = document.getElementById('oldPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        if (!oldPass || !newPass) { alert('Заполните оба поля'); return; }
+        try {
+            const res = await fetch('/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken, oldPassword: oldPass, newPassword: newPass })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Пароль изменён');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+            } else {
+                alert(data.error || 'Ошибка');
+            }
+        } catch(e) { alert('Ошибка соединения'); }
     }
 
     // --- Переключение вкладок ---
@@ -308,45 +696,6 @@
         });
     }
 
-    // --- Мобильная клавиатура: только строка ввода поднимается ---
-    let originalTransform = '';
-    function handleKeyboard() {
-        const inputWrapper = document.getElementById('inputWrapper');
-        const textarea = document.getElementById('messageInput');
-        if (!inputWrapper || !textarea) return;
-        const onFocus = () => {
-            setTimeout(() => {
-                if (document.activeElement !== textarea) return;
-                const rect = inputWrapper.getBoundingClientRect();
-                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-                const keyboardHeight = viewportHeight - rect.bottom;
-                if (keyboardHeight > 50) {
-                    originalTransform = inputWrapper.style.transform;
-                    inputWrapper.style.transform = `translateY(-${keyboardHeight}px)`;
-                }
-            }, 100);
-        };
-        const onBlur = () => {
-            inputWrapper.style.transform = originalTransform;
-        };
-        textarea.addEventListener('focus', onFocus);
-        textarea.addEventListener('blur', onBlur);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => {
-                if (document.activeElement === textarea) {
-                    const rect = inputWrapper.getBoundingClientRect();
-                    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-                    const keyboardHeight = viewportHeight - rect.bottom;
-                    if (keyboardHeight > 50) {
-                        inputWrapper.style.transform = `translateY(-${keyboardHeight}px)`;
-                    } else {
-                        inputWrapper.style.transform = originalTransform;
-                    }
-                }
-            });
-        }
-    }
-
     // --- Инициализация ---
     window.onload = async () => {
         applyTheme(appSettings.theme);
@@ -357,15 +706,11 @@
         if (appSettings.systemFontEnabled) document.getElementById('fontSliderContainer').style.display = 'none';
         else document.getElementById('fontSliderContainer').style.display = 'block';
 
-        document.getElementById('authBtn').onclick = () => {
-            const nick = document.getElementById('loginNick').value.trim();
-            const key = document.getElementById('loginKey').value.trim();
-            performAuth(nick, key, false);
-        };
+        document.getElementById('authBtn').onclick = performAuth;
         document.getElementById('sendBtn').onclick = sendMessage;
         const msgInput = document.getElementById('messageInput');
         msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-        msgInput.addEventListener('input', autoResizeTextarea);
+        msgInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
 
         document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = () => setActiveTab(btn.getAttribute('data-tab')));
         document.getElementById('themeSelect').onchange = (e) => applyTheme(e.target.value);
@@ -377,9 +722,14 @@
             if (!appSettings.systemFontEnabled) applyFontSize(false, step);
             localStorage.setItem('simply_settings', JSON.stringify(appSettings));
         };
+        document.getElementById('changeNickBtn').onclick = changeNick;
+        document.getElementById('changePasswordBtn').onclick = changePassword;
 
-        handleKeyboard();
-        await tryAutoLogin();
+        const logged = await verifyToken();
+        if (!logged) {
+            document.getElementById('authPage').style.display = 'flex';
+            document.getElementById('appPage').style.display = 'none';
+        }
     };
 </script>
 </body>
