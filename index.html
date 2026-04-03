@@ -13,6 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* ----- Светлая тема ----- */
         :root {
             --bg-page: #f5f5f7;
             --card-bg: #ffffff;
@@ -30,6 +31,7 @@
             --accent-color: #007aff;
         }
 
+        /* ----- Тёмная тема ----- */
         body.theme-dark {
             --bg-page: #0c0c0d;
             --card-bg: #1c1c1e;
@@ -45,6 +47,7 @@
             --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2398989e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         }
 
+        /* ----- Цветовые акценты ----- */
         body.accent-blue { --accent-color: #007aff; }
         body.accent-purple { --accent-color: #6c5ce7; }
         body.accent-pink { --accent-color: #ff6b81; }
@@ -72,6 +75,7 @@
             overflow: hidden;
         }
 
+        /* Авторизация */
         .auth-container {
             justify-content: center;
             align-items: center;
@@ -140,9 +144,10 @@
             display: flex;
         }
 
-        /* Чат (общий стиль для паблика и комнат) */
+        /* Общий стиль чата (паблик и личные комнаты) */
         .chat-header {
             padding: 0.8rem 1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             border-bottom: 0.5px solid var(--separator);
             background: var(--nav-bg);
@@ -151,18 +156,16 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 1rem 1rem;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            scroll-behavior: smooth;
         }
         .message-item {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             max-width: 90%;
-            position: relative;
         }
         .message-bubble {
             background: var(--message-bg);
@@ -170,18 +173,9 @@
             border-radius: 1.2rem;
             border: 1.5px solid transparent;
             word-break: break-word;
-            width: 100%;
         }
         .message-item.own-message .message-bubble {
             border-color: var(--accent-color);
-        }
-        .reply-context {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            border-left: 2px solid var(--accent-color);
-            padding-left: 8px;
-            margin-bottom: 6px;
-            opacity: 0.7;
         }
         .message-nick {
             font-size: 0.75rem;
@@ -204,16 +198,11 @@
         .action-btn {
             background: none;
             border: none;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 2px 6px;
             border-radius: 1rem;
-            transition: 0.2s;
-        }
-        .action-btn:hover {
-            background: var(--accent-light);
-            color: var(--accent-color);
         }
 
         /* Поле ввода */
@@ -223,23 +212,6 @@
             gap: 6px;
             padding: 0.6rem 1rem;
             margin: 0.2rem 1rem 0.5rem 1rem;
-        }
-        .reply-indicator {
-            background: var(--message-bg);
-            border-radius: 1rem;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .cancel-reply {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: var(--text-secondary);
         }
         .input-row {
             display: flex;
@@ -273,61 +245,7 @@
             color: white;
             font-size: 1.3rem;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             flex-shrink: 0;
-            margin-bottom: 2px;
-        }
-
-        /* Страница "Чаты" (список комнат) */
-        .rooms-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-        .room-item {
-            background: var(--card-bg);
-            border-radius: 1rem;
-            padding: 0.8rem 1rem;
-            margin-bottom: 0.8rem;
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid var(--border-light);
-        }
-        .room-item:hover {
-            border-color: var(--accent-color);
-        }
-        .room-name {
-            font-weight: 500;
-        }
-        .create-room {
-            padding: 0.6rem 1rem;
-            margin: 0 1rem 1rem 1rem;
-            background: var(--card-bg);
-            border-radius: 2rem;
-            display: flex;
-            gap: 8px;
-            box-shadow: var(--shadow-sm);
-        }
-        .create-room input {
-            flex: 1;
-            background: var(--input-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 2rem;
-            padding: 0.6rem 1rem;
-            font-size: 1rem;
-            outline: none;
-        }
-        .create-room button {
-            background: var(--accent-color);
-            border: none;
-            width: 2.5rem;
-            border-radius: 2rem;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
         }
 
         /* Панель навигации (внизу) */
@@ -352,6 +270,52 @@
             color: var(--accent-color);
         }
 
+        /* Страница "Чаты" (список комнат) */
+        .rooms-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .room-item {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .room-item:hover {
+            background: var(--accent-light);
+        }
+        .room-name {
+            font-weight: 500;
+        }
+        .create-room {
+            display: flex;
+            gap: 8px;
+            margin: 0 1rem 1rem 1rem;
+        }
+        .create-room input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 2rem;
+            padding: 0.7rem 1rem;
+            font-size: 1rem;
+        }
+        .create-room button {
+            background: var(--accent-color);
+            border: none;
+            width: 44px;
+            border-radius: 2rem;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
         /* Настройки */
         .settings-container {
             padding: 1.5rem;
@@ -368,15 +332,12 @@
         }
         .setting-label {
             font-weight: 500;
-            font-size: 1rem;
         }
         .nick-input, .password-input {
             background: var(--input-bg);
             padding: 0.6rem 1rem;
             border-radius: 1rem;
             border: 1px solid var(--border-light);
-            font-size: 1rem;
-            color: var(--text-primary);
             flex: 1;
         }
         .small-btn, .danger-btn {
@@ -400,8 +361,6 @@
             border: 1px solid var(--border-light);
             border-radius: 1rem;
             padding: 0.6rem 2rem 0.6rem 1rem;
-            color: var(--text-primary);
-            font-size: 0.9rem;
             appearance: none;
             background-image: var(--select-arrow);
             background-repeat: no-repeat;
@@ -428,7 +387,6 @@
             right: 0;
             bottom: 0;
             background-color: var(--toggle-bg);
-            transition: 0.2s;
             border-radius: 28px;
         }
         .slider:before {
@@ -439,7 +397,6 @@
             left: 2px;
             bottom: 2px;
             background-color: white;
-            transition: 0.2s;
             border-radius: 50%;
         }
         input:checked + .slider {
@@ -462,10 +419,6 @@
             flex-direction: column;
             align-items: stretch;
         }
-        .full-width .setting-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
     </style>
 </head>
 <body>
@@ -481,23 +434,18 @@
 </div>
 
 <div id="appPage" class="app-container" style="display: none;">
-    <!-- Страница паблик -->
-    <div id="publicPage" class="page">
+    <!-- Три страницы: Паблик, Чаты (список комнат), Настройки -->
+    <div id="publicPage" class="page active-page">
         <div class="chat-header">Паблик</div>
         <div class="chat-messages" id="publicMessages"></div>
         <div class="input-wrapper">
-            <div id="publicReplyIndicator" class="reply-indicator" style="display: none;">
-                <span id="publicReplyText">Ответ...</span>
-                <button class="cancel-reply" data-reply="public">✕</button>
-            </div>
             <div class="input-row">
                 <textarea id="publicInput" placeholder="Сообщение..." rows="1"></textarea>
-                <button class="send-btn" data-room="public">➤</button>
+                <button class="send-btn" id="publicSendBtn">➤</button>
             </div>
         </div>
     </div>
 
-    <!-- Страница чатов (список комнат) -->
     <div id="roomsPage" class="page">
         <div class="rooms-list" id="roomsList"></div>
         <div class="create-room">
@@ -506,23 +454,6 @@
         </div>
     </div>
 
-    <!-- Страница личного чата (динамическая) -->
-    <div id="roomPage" class="page">
-        <div class="chat-header" id="roomHeader">Личный чат</div>
-        <div class="chat-messages" id="roomMessages"></div>
-        <div class="input-wrapper">
-            <div id="roomReplyIndicator" class="reply-indicator" style="display: none;">
-                <span id="roomReplyText">Ответ...</span>
-                <button class="cancel-reply" data-reply="room">✕</button>
-            </div>
-            <div class="input-row">
-                <textarea id="roomInput" placeholder="Сообщение..." rows="1"></textarea>
-                <button class="send-btn" data-room="room">➤</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Страница настроек -->
     <div id="settingsPage" class="page">
         <div class="settings-container">
             <div class="setting-row full-width">
@@ -575,7 +506,7 @@
         </div>
     </div>
 
-    <!-- Панель навигации внизу -->
+    <!-- Панель навигации внизу (всегда видна) -->
     <div class="nav-bar">
         <button class="tab-btn" data-tab="public">Паблик</button>
         <button class="tab-btn" data-tab="rooms">Чаты</button>
@@ -589,21 +520,24 @@
     let currentUser = null;
     let authToken = localStorage.getItem('simply_token');
     let systemThemeListener = null;
+
+    // Данные: publicMessages, privateRooms, currentRoom (если открыта комната)
+    let publicMessages = [];
+    let privateRooms = []; // { id, name, messages: [] }
+    let activeRoom = null; // { id, name, messages }
+    let currentPage = 'public';
+
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || {
         theme: 'adaptive', accent: 'blue', systemFontEnabled: false, fontSizeStep: 3
     };
-    let currentRoom = null; // для личной комнаты
-    let replyToMessage = { public: null, room: null };
 
-    // --- Обновление цвета статус-бара ---
+    // --- Функции тем ---
     function updateStatusBarColor() {
         const meta = document.getElementById('themeColorMeta');
         if (!meta) return;
         const bgColor = getComputedStyle(document.body).getPropertyValue('--bg-page').trim();
         meta.setAttribute('content', bgColor);
     }
-
-    // --- Функции тем, акцентов, размера ---
     function applyTheme(theme) {
         const body = document.body;
         body.classList.remove('theme-light', 'theme-dark');
@@ -667,108 +601,148 @@
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
 
-    // --- Вспомогательные функции чата ---
+    // --- Рендер сообщений (общая функция) ---
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
-    function renderMessages(containerId, messages, isOwn) {
+    function renderMessages(containerId, messages, isOwnMessage) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
         messages.forEach(msg => {
-            const own = currentUser && msg.nick === currentUser.nick;
+            const isOwn = currentUser && msg.nick === currentUser.nick;
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message-item';
-            if (own) msgDiv.classList.add('own-message');
-            let replyHtml = '';
-            if (msg.reply) {
-                replyHtml = `<div class="reply-context">↳ Ответ на <strong>${escapeHtml(msg.reply.nick)}</strong>: ${escapeHtml(msg.reply.text.substring(0, 50))}${msg.reply.text.length > 50 ? '…' : ''}</div>`;
-            }
+            if (isOwn) msgDiv.classList.add('own-message');
             msgDiv.innerHTML = `
                 <div class="message-nick">${escapeHtml(msg.nick)}</div>
-                <div class="message-bubble">
-                    ${replyHtml}
-                    <div class="message-text">${escapeHtml(msg.text)}</div>
-                </div>
-                <div class="message-actions">
-                    <button class="action-btn reply-btn" data-id="${msg.id}" data-nick="${escapeHtml(msg.nick)}" data-text="${escapeHtml(msg.text.substring(0, 50))}">↩ Ответить</button>
-                    ${own ? `<button class="action-btn delete-btn" data-id="${msg.id}">🗑 Удалить</button>` : ''}
-                </div>
+                <div class="message-bubble"><div class="message-text">${escapeHtml(msg.text)}</div></div>
+                ${isOwn ? `<div class="message-actions"><button class="action-btn delete-btn" data-id="${msg.id}">🗑 Удалить</button></div>` : ''}
             `;
             container.appendChild(msgDiv);
         });
-        // Обработчики для кнопок (будут добавлены позже через глобальные слушатели)
+        // Обработчики удаления (свои сообщения)
+        container.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = parseInt(btn.dataset.id);
+                if (confirm('Удалить сообщение?')) {
+                    await fetch('/delete-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: authToken, messageId: id, room: 'public' }) // в сервере room не используется, но оставим
+                    });
+                    // Локальное удаление
+                    const index = messages.findIndex(m => m.id === id);
+                    if (index !== -1) messages.splice(index, 1);
+                    renderMessages(containerId, messages, isOwnMessage);
+                }
+            });
+        });
         container.scrollTop = container.scrollHeight;
     }
 
-    // --- Загрузка истории ---
+    // --- Загрузка истории публичного чата ---
     async function loadPublicHistory() {
-        const res = await fetch('/messages/public');
-        const data = await res.json();
-        window.publicMessages = data;
-        renderMessages('publicMessages', window.publicMessages, true);
+        try {
+            const res = await fetch('/messages');
+            const data = await res.json();
+            publicMessages = data;
+            renderMessages('publicMessages', publicMessages);
+        } catch(e) { console.error(e); }
     }
-    async function loadRoomHistory(room) {
-        const res = await fetch(`/messages/${encodeURIComponent(room)}`);
-        const data = await res.json();
-        window.roomMessages = data;
-        renderMessages('roomMessages', window.roomMessages, true);
+
+    // --- Комнаты (личные чаты) ---
+    // Сохраняем комнаты в localStorage, сообщения тоже
+    function loadRoomsFromStorage() {
+        const stored = localStorage.getItem('simply_rooms');
+        if (stored) {
+            privateRooms = JSON.parse(stored);
+        } else {
+            privateRooms = [];
+        }
+        renderRoomsList();
     }
-    async function loadRooms() {
-        const res = await fetch('/rooms');
-        const rooms = await res.json();
+    function saveRoomsToStorage() {
+        localStorage.setItem('simply_rooms', JSON.stringify(privateRooms));
+    }
+    function renderRoomsList() {
         const container = document.getElementById('roomsList');
+        if (!container) return;
         container.innerHTML = '';
-        rooms.forEach(room => {
+        privateRooms.forEach(room => {
             const div = document.createElement('div');
             div.className = 'room-item';
-            div.innerHTML = `<div class="room-name">${escapeHtml(room.name)}</div>`;
-            div.onclick = () => openRoom(room.name);
+            div.innerHTML = `<span class="room-name">${escapeHtml(room.name)}</span><span style="color:var(--text-secondary)">→</span>`;
+            div.addEventListener('click', () => openRoom(room.id));
             container.appendChild(div);
         });
-    }
-
-    async function openRoom(roomName) {
-        currentRoom = roomName;
-        document.getElementById('roomHeader').innerText = `Чат: ${roomName}`;
-        if (socket) {
-            socket.emit('leave room', 'public');
-            if (window.currentRoom) socket.emit('leave room', window.currentRoom);
-            socket.emit('join room', roomName);
+        if (privateRooms.length === 0) {
+            const empty = document.createElement('div');
+            empty.textContent = 'Нет чатов. Создайте первый, нажав +';
+            empty.style.textAlign = 'center';
+            empty.style.color = 'var(--text-secondary)';
+            empty.style.padding = '2rem';
+            container.appendChild(empty);
         }
-        window.currentRoom = roomName;
-        await loadRoomHistory(roomName);
-        setActiveTab('room');
     }
-
-    // --- Отправка сообщения ---
-    function sendMessage(room, inputId, replyIndicatorId, replyTextId, replyToVar) {
-        const input = document.getElementById(inputId);
-        const text = input.value.trim();
-        const replyTo = replyToVar[room === 'public' ? 'public' : 'room'];
-        if (!text && !replyTo) return;
-        if (!text && replyTo) {
-            // Отмена ответа
-            replyToVar[room === 'public' ? 'public' : 'room'] = null;
-            document.getElementById(replyIndicatorId).style.display = 'none';
-            return;
-        }
-        if (!socket || !currentUser) return;
-        const payload = { room, nick: currentUser.nick, text };
-        if (replyTo) payload.reply_to_id = replyTo.id;
-        socket.emit('new message', payload);
-        input.value = '';
-        input.style.height = 'auto';
-        replyToVar[room === 'public' ? 'public' : 'room'] = null;
-        document.getElementById(replyIndicatorId).style.display = 'none';
+    function createRoom(name) {
+        if (!name.trim()) return;
+        const id = Date.now().toString();
+        const newRoom = { id, name, messages: [] };
+        privateRooms.push(newRoom);
+        saveRoomsToStorage();
+        renderRoomsList();
+        openRoom(id);
+        setActiveTab('public'); // переключаем на паблик, но потом открываем комнату как отдельное представление
+        // Открыть комнату означает временно заменить страницу паблика на страницу комнаты
+        showRoomChat(newRoom);
     }
-
-    function cancelReply(room) {
-        if (room === 'public') {
-            replyToMessage.public = null;
-            document.getElementById('publicReplyIndicator').style.display = 'none';
-        } else {
-            replyToMessage.room = null;
-            document.getElementById('roomReplyIndicator').style.display = 'none';
+    function openRoom(roomId) {
+        const room = privateRooms.find(r => r.id === roomId);
+        if (room) showRoomChat(room);
+    }
+    function showRoomChat(room) {
+        activeRoom = room;
+        // Создаём или показываем временный элемент чата комнаты
+        let roomChatDiv = document.getElementById('roomChatView');
+        if (!roomChatDiv) {
+            roomChatDiv = document.createElement('div');
+            roomChatDiv.id = 'roomChatView';
+            roomChatDiv.className = 'page';
+            document.getElementById('appPage').insertBefore(roomChatDiv, document.getElementById('roomsPage'));
         }
+        roomChatDiv.innerHTML = `
+            <div class="chat-header">${escapeHtml(room.name)}</div>
+            <div class="chat-messages" id="roomMessages"></div>
+            <div class="input-wrapper">
+                <div class="input-row">
+                    <textarea id="roomInput" placeholder="Сообщение..." rows="1"></textarea>
+                    <button class="send-btn" id="roomSendBtn">➤</button>
+                </div>
+            </div>
+        `;
+        // Скрыть все страницы, показать комнату
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        roomChatDiv.classList.add('active-page');
+        // Рендер сообщений комнаты
+        renderMessages('roomMessages', room.messages);
+        // Обработчик отправки
+        const roomInput = document.getElementById('roomInput');
+        const roomSend = document.getElementById('roomSendBtn');
+        const sendRoomMessage = () => {
+            const text = roomInput.value.trim();
+            if (!text || !currentUser) return;
+            const newMsg = { id: Date.now(), nick: currentUser.nick, text };
+            room.messages.push(newMsg);
+            saveRoomsToStorage();
+            renderMessages('roomMessages', room.messages);
+            roomInput.value = '';
+            roomInput.style.height = 'auto';
+            // Здесь можно добавить Socket.IO для синхронизации, но пока локально
+        };
+        roomSend.onclick = sendRoomMessage;
+        roomInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendRoomMessage(); }
+        });
+        roomInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
     }
 
     // --- Авторизация ---
@@ -793,29 +767,15 @@
                 if (socket) socket.disconnect();
                 socket = io();
                 socket.on('message received', (newMsg) => {
-                    if (newMsg.room === 'public') {
-                        if (!window.publicMessages) window.publicMessages = [];
-                        window.publicMessages.push(newMsg);
-                        renderMessages('publicMessages', window.publicMessages, true);
-                    } else if (newMsg.room === currentRoom) {
-                        if (!window.roomMessages) window.roomMessages = [];
-                        window.roomMessages.push(newMsg);
-                        renderMessages('roomMessages', window.roomMessages, true);
-                    }
+                    publicMessages.push(newMsg);
+                    renderMessages('publicMessages', publicMessages);
                 });
-                socket.on('message deleted', ({ messageId }) => {
-                    if (window.publicMessages) {
-                        window.publicMessages = window.publicMessages.filter(m => m.id !== messageId);
-                        renderMessages('publicMessages', window.publicMessages, true);
-                    }
-                    if (window.roomMessages) {
-                        window.roomMessages = window.roomMessages.filter(m => m.id !== messageId);
-                        renderMessages('roomMessages', window.roomMessages, true);
-                    }
+                socket.on('message deleted', (msgId) => {
+                    publicMessages = publicMessages.filter(m => m.id !== msgId);
+                    renderMessages('publicMessages', publicMessages);
                 });
-                socket.emit('join room', 'public');
                 await loadPublicHistory();
-                await loadRooms();
+                loadRoomsFromStorage();
                 setActiveTab('public');
             } else {
                 document.getElementById('authError').innerText = data.error || 'Неизвестно';
@@ -841,34 +801,30 @@
                 document.getElementById('nickInput').value = data.nick;
                 socket = io();
                 socket.on('message received', (newMsg) => {
-                    if (newMsg.room === 'public') {
-                        if (!window.publicMessages) window.publicMessages = [];
-                        window.publicMessages.push(newMsg);
-                        renderMessages('publicMessages', window.publicMessages, true);
-                    } else if (newMsg.room === currentRoom) {
-                        if (!window.roomMessages) window.roomMessages = [];
-                        window.roomMessages.push(newMsg);
-                        renderMessages('roomMessages', window.roomMessages, true);
-                    }
+                    publicMessages.push(newMsg);
+                    renderMessages('publicMessages', publicMessages);
                 });
-                socket.on('message deleted', ({ messageId }) => {
-                    if (window.publicMessages) {
-                        window.publicMessages = window.publicMessages.filter(m => m.id !== messageId);
-                        renderMessages('publicMessages', window.publicMessages, true);
-                    }
-                    if (window.roomMessages) {
-                        window.roomMessages = window.roomMessages.filter(m => m.id !== messageId);
-                        renderMessages('roomMessages', window.roomMessages, true);
-                    }
+                socket.on('message deleted', (msgId) => {
+                    publicMessages = publicMessages.filter(m => m.id !== msgId);
+                    renderMessages('publicMessages', publicMessages);
                 });
-                socket.emit('join room', 'public');
                 await loadPublicHistory();
-                await loadRooms();
+                loadRoomsFromStorage();
                 setActiveTab('public');
                 return true;
             }
         } catch(e) {}
         return false;
+    }
+
+    // --- Отправка сообщения в публичный чат ---
+    function sendPublicMessage() {
+        const input = document.getElementById('publicInput');
+        const text = input.value.trim();
+        if (!text || !socket || !currentUser) return;
+        socket.emit('new message', { nick: currentUser.nick, text });
+        input.value = '';
+        input.style.height = 'auto';
     }
 
     // --- Настройки ---
@@ -884,14 +840,12 @@
         if (data.success) {
             currentUser.nick = data.newNick;
             alert('Ник изменён');
-            await loadPublicHistory();
-            if (currentRoom) await loadRoomHistory(currentRoom);
         } else alert(data.error);
     }
     async function deleteAccount() {
         const pass = document.getElementById('deletePassword').value;
         if (!pass) { alert('Введите пароль'); return; }
-        if (!confirm('Удалить аккаунт? Все сообщения будут потеряны.')) return;
+        if (!confirm('Удалить аккаунт?')) return;
         const res = await fetch('/delete-account', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -909,41 +863,36 @@
         localStorage.removeItem('simply_token');
         window.location.reload();
     }
-    async function createRoom() {
-        const name = document.getElementById('newRoomName').value.trim();
-        if (!name) return;
-        const res = await fetch('/rooms', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, token: authToken })
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('newRoomName').value = '';
-            await loadRooms();
-            openRoom(name);
-        } else {
-            alert(data.error || 'Ошибка создания');
-        }
-    }
 
     // --- Переключение вкладок ---
     function setActiveTab(tabId) {
-        const pages = ['publicPage', 'roomsPage', 'roomPage', 'settingsPage'];
-        pages.forEach(id => {
-            document.getElementById(id).classList.remove('active-page');
-        });
+        currentPage = tabId;
+        const publicPage = document.getElementById('publicPage');
+        const roomsPage = document.getElementById('roomsPage');
+        const settingsPage = document.getElementById('settingsPage');
+        const roomChatView = document.getElementById('roomChatView');
+        if (roomChatView) roomChatView.classList.remove('active-page');
         if (tabId === 'public') {
-            document.getElementById('publicPage').classList.add('active-page');
+            publicPage.classList.add('active-page');
+            roomsPage.classList.remove('active-page');
+            settingsPage.classList.remove('active-page');
         } else if (tabId === 'rooms') {
-            document.getElementById('roomsPage').classList.add('active-page');
-        } else if (tabId === 'room') {
-            document.getElementById('roomPage').classList.add('active-page');
+            publicPage.classList.remove('active-page');
+            roomsPage.classList.add('active-page');
+            settingsPage.classList.remove('active-page');
+            renderRoomsList();
         } else if (tabId === 'settings') {
-            document.getElementById('settingsPage').classList.add('active-page');
+            publicPage.classList.remove('active-page');
+            roomsPage.classList.remove('active-page');
+            settingsPage.classList.add('active-page');
+            document.getElementById('themeSelect').value = appSettings.theme;
+            document.getElementById('accentSelect').value = appSettings.accent;
+            document.getElementById('systemFontToggle').checked = appSettings.systemFontEnabled;
+            document.getElementById('fontSizeSlider').value = appSettings.fontSizeStep;
+            if (appSettings.systemFontEnabled) document.getElementById('fontSliderContainer').style.display = 'none';
+            else document.getElementById('fontSliderContainer').style.display = 'block';
         }
-        const btns = document.querySelectorAll('.tab-btn');
-        btns.forEach(btn => {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
             if (btn.getAttribute('data-tab') === tabId) btn.classList.add('active');
             else btn.classList.remove('active');
         });
@@ -960,24 +909,19 @@
         else document.getElementById('fontSliderContainer').style.display = 'block';
 
         document.getElementById('authBtn').onclick = performAuth;
+        document.getElementById('publicSendBtn').onclick = sendPublicMessage;
         document.getElementById('logoutBtn').onclick = logout;
         document.getElementById('changeNickBtn').onclick = changeNick;
         document.getElementById('deleteAccountBtn').onclick = deleteAccount;
-        document.getElementById('createRoomBtn').onclick = createRoom;
-
-        // Обработчики отправки
-        document.querySelector('.send-btn[data-room="public"]').onclick = () => sendMessage('public', 'publicInput', 'publicReplyIndicator', 'publicReplyText', replyToMessage);
-        document.querySelector('.send-btn[data-room="room"]').onclick = () => sendMessage(currentRoom, 'roomInput', 'roomReplyIndicator', 'roomReplyText', replyToMessage);
-        document.querySelectorAll('.cancel-reply').forEach(btn => {
-            btn.onclick = () => cancelReply(btn.getAttribute('data-reply'));
-        });
+        document.getElementById('createRoomBtn').onclick = () => {
+            const name = document.getElementById('newRoomName').value.trim();
+            if (name) createRoom(name);
+            document.getElementById('newRoomName').value = '';
+        };
 
         const publicInput = document.getElementById('publicInput');
-        publicInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage('public', 'publicInput', 'publicReplyIndicator', 'publicReplyText', replyToMessage); } });
+        publicInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPublicMessage(); } });
         publicInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
-        const roomInput = document.getElementById('roomInput');
-        roomInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(currentRoom, 'roomInput', 'roomReplyIndicator', 'roomReplyText', replyToMessage); } });
-        roomInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
 
         document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = () => setActiveTab(btn.getAttribute('data-tab')));
         document.getElementById('themeSelect').onchange = (e) => applyTheme(e.target.value);
