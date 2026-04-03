@@ -29,7 +29,6 @@
             --toggle-active: #34c759;
             --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235e5e66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             --accent-color: #007aff;
-            --accent-light: rgba(0, 122, 255, 0.2);
         }
 
         /* ----- Тёмная тема ----- */
@@ -64,14 +63,14 @@
             --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c7c85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         }
 
-        /* ----- Цветовые акценты ----- */
-        body.accent-blue { --accent-color: #007aff; --accent-light: rgba(0, 122, 255, 0.2); }
-        body.accent-purple { --accent-color: #6c5ce7; --accent-light: rgba(108, 92, 231, 0.2); }
-        body.accent-pink { --accent-color: #ff6b81; --accent-light: rgba(255, 107, 129, 0.2); }
-        body.accent-mint { --accent-color: #2ecc71; --accent-light: rgba(46, 204, 113, 0.2); }
-        body.accent-orange { --accent-color: #f39c12; --accent-light: rgba(243, 156, 18, 0.2); }
-        body.accent-yellow { --accent-color: #f1c40f; --accent-light: rgba(241, 196, 15, 0.2); }
-        body.accent-teal { --accent-color: #1abc9c; --accent-light: rgba(26, 188, 156, 0.2); }
+        /* ----- Цветовые акценты (без индиго) ----- */
+        body.accent-blue { --accent-color: #007aff; }
+        body.accent-purple { --accent-color: #6c5ce7; }
+        body.accent-pink { --accent-color: #ff6b81; }
+        body.accent-mint { --accent-color: #2ecc71; }
+        body.accent-orange { --accent-color: #f39c12; }
+        body.accent-yellow { --accent-color: #f1c40f; }
+        body.accent-teal { --accent-color: #1abc9c; }
 
         body {
             background-color: var(--bg-page);
@@ -84,6 +83,7 @@
             width: 100%;
         }
 
+        /* Контейнеры */
         .auth-container, .app-container {
             height: 100%;
             display: flex;
@@ -150,13 +150,13 @@
             font-size: 0.9rem;
         }
 
-        /* Плавающие вкладки (без фоновой панели) */
-        .tabs-container {
+        /* Навигация — без фоновой панели, только вкладки и пузырь */
+        .nav-bar {
             position: relative;
             display: flex;
             justify-content: center;
             gap: 0.5rem;
-            margin: calc(0.8rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem 1rem;
+            margin: calc(0.6rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem 1rem;
             z-index: 10;
         }
         .tab-btn {
@@ -168,12 +168,10 @@
             border-radius: 2rem;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: color 0.2s ease;
             position: relative;
             z-index: 2;
             text-align: center;
-            backdrop-filter: blur(10px);
-            background-color: rgba(0,0,0,0.05);
         }
         .tab-btn.active {
             color: white;
@@ -241,14 +239,13 @@
             color: var(--text-primary);
         }
 
-        /* Плавающая строка ввода и кнопка (без фоновой панели) */
+        /* Поле ввода — без фоновой панели, только строка и кнопка */
         .input-wrapper {
             display: flex;
             gap: 10px;
             align-items: flex-end;
             padding: 0.7rem 1rem;
             margin: 0.75rem 1rem calc(1.8rem + env(safe-area-inset-bottom, 0px));
-            background: transparent;
         }
         .input-wrapper textarea {
             flex: 1;
@@ -265,7 +262,6 @@
             line-height: 1.4;
             max-height: 120px;
             transition: height 0.1s ease;
-            backdrop-filter: blur(10px);
         }
         .input-wrapper textarea:focus {
             border-color: var(--accent-color);
@@ -285,7 +281,6 @@
             transition: 0.2s;
             flex-shrink: 0;
             margin-bottom: 2px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         /* Настройки */
@@ -415,7 +410,7 @@
 </div>
 
 <div id="appPage" class="app-container" style="display: none;">
-    <div class="tabs-container">
+    <div class="nav-bar">
         <button class="tab-btn" data-tab="chat">Чат</button>
         <button class="tab-btn" data-tab="settings">Настройки</button>
         <div class="floating-indicator"></div>
@@ -490,7 +485,8 @@
     function updateStatusBarColor() {
         const meta = document.getElementById('themeColorMeta');
         if (!meta) return;
-        const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-page').trim();
+        const bodyStyles = getComputedStyle(document.body);
+        const bgColor = bodyStyles.getPropertyValue('--bg-page').trim();
         meta.setAttribute('content', bgColor);
     }
 
@@ -506,7 +502,7 @@
         else if (theme === 'night') body.classList.add('theme-night');
         appSettings.theme = theme;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        updateStatusBarColor();
+        updateStatusBarColor();  // меняем сразу
         
         // Если тема адаптивная — слушаем изменения системы
         if (theme === 'adaptive') {
@@ -540,7 +536,7 @@
         else if (accent === 'teal') document.body.classList.add('accent-teal');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        // Обновляем цвет плашки
+        // Обновляем цвет пузыря
         const indicator = document.querySelector('.floating-indicator');
         if (indicator) indicator.style.backgroundColor = 'var(--accent-color)';
     }
@@ -569,7 +565,7 @@
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
 
-    // --- Анимация плашки (размер меняется под ширину кнопки) ---
+    // --- Анимация плашки (динамическая ширина) ---
     function updateFloatingIndicator(activeTabId) {
         const activeBtn = document.querySelector(`.tab-btn[data-tab="${activeTabId}"]`);
         const indicator = document.querySelector('.floating-indicator');
