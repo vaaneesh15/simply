@@ -296,7 +296,7 @@
             margin-bottom: 2px;
         }
 
-        /* Настройки (только тема, оттенок, размер текста) */
+        /* Настройки */
         .settings-container {
             padding: 1.5rem;
             display: flex;
@@ -313,6 +313,26 @@
         .setting-label {
             font-weight: 500;
             font-size: 1rem;
+        }
+        .nick-readonly {
+            background: var(--input-bg);
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-light);
+            font-size: 1rem;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        .logout-btn {
+            background: none;
+            border: 1px solid #ff3b30;
+            color: #ff3b30;
+            padding: 0.7rem;
+            border-radius: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
         }
         .theme-select, .accent-select {
             background-color: var(--card-bg);
@@ -377,7 +397,7 @@
             opacity: 0.5;
         }
 
-        /* Безопасные зоны — панель навигации теперь НЕ заходит под вырез */
+        /* Безопасные зоны */
         @supports (padding-top: env(safe-area-inset-top)) {
             .auth-container, .app-container {
                 padding-top: env(safe-area-inset-top);
@@ -416,6 +436,10 @@
     <div id="settingsPage" class="page">
         <div class="settings-container">
             <div class="setting-row">
+                <span class="setting-label">Ваш ник</span>
+                <div id="displayNick" class="nick-readonly"></div>
+            </div>
+            <div class="setting-row">
                 <span class="setting-label">Тема</span>
                 <select id="themeSelect">
                     <option value="adaptive">Адаптивная</option>
@@ -451,6 +475,7 @@
                     </div>
                 </div>
             </div>
+            <button id="logoutBtn" class="logout-btn">Выйти</button>
         </div>
     </div>
 </div>
@@ -576,6 +601,7 @@
                 localStorage.setItem('simply_token', authToken);
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appPage').style.display = 'flex';
+                document.getElementById('displayNick').innerText = currentUser.nick;
                 if (socket) socket.disconnect();
                 socket = io();
                 socket.on('message received', (newMsg) => {
@@ -592,7 +618,7 @@
         }
     }
 
-    // Проверка сохранённого токена (бесшовный вход)
+    // Проверка сохранённого токена
     async function verifyToken() {
         const token = localStorage.getItem('simply_token');
         if (!token) return false;
@@ -608,6 +634,7 @@
                 authToken = token;
                 document.getElementById('authPage').style.display = 'none';
                 document.getElementById('appPage').style.display = 'flex';
+                document.getElementById('displayNick').innerText = currentUser.nick;
                 socket = io();
                 socket.on('message received', (newMsg) => {
                     messages.push(newMsg);
@@ -619,6 +646,26 @@
             }
         } catch(e) {}
         return false;
+    }
+
+    // --- Выход ---
+    async function logout() {
+        if (authToken) {
+            await fetch('/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken })
+            });
+        }
+        localStorage.removeItem('simply_token');
+        if (socket) socket.disconnect();
+        currentUser = null;
+        authToken = null;
+        document.getElementById('appPage').style.display = 'none';
+        document.getElementById('authPage').style.display = 'flex';
+        document.getElementById('loginNick').value = '';
+        document.getElementById('loginKey').value = '';
+        document.getElementById('authError').innerText = '';
     }
 
     // --- Отправка сообщения ---
@@ -669,6 +716,7 @@
 
         document.getElementById('authBtn').onclick = performAuth;
         document.getElementById('sendBtn').onclick = sendMessage;
+        document.getElementById('logoutBtn').onclick = logout;
         const msgInput = document.getElementById('messageInput');
         msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
         msgInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
