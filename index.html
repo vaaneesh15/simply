@@ -87,7 +87,7 @@
             width: 100%;
         }
 
-        /* Авторизация */
+        /* Контейнеры с отступом для безопасной зоны */
         .auth-container, .app-container {
             height: 100%;
             display: flex;
@@ -95,6 +95,8 @@
             background-color: var(--bg-page);
             overflow: hidden;
         }
+
+        /* Авторизация */
         .auth-container {
             justify-content: center;
             align-items: center;
@@ -375,10 +377,14 @@
             opacity: 0.5;
         }
 
-        /* Безопасные зоны */
+        /* Безопасные зоны — панель навигации теперь НЕ заходит под вырез */
         @supports (padding-top: env(safe-area-inset-top)) {
-            .nav-bar { margin-top: max(0.75rem, env(safe-area-inset-top)); }
-            .input-bar { margin-bottom: max(1rem, env(safe-area-inset-bottom)); }
+            .auth-container, .app-container {
+                padding-top: env(safe-area-inset-top);
+            }
+            .input-bar {
+                margin-bottom: max(1rem, env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>
@@ -485,7 +491,6 @@
         else if (accent === 'teal') document.body.classList.add('accent-teal');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        // Обновляем плашку (цвет фона)
         const indicator = document.querySelector('.floating-indicator');
         if (indicator) indicator.style.backgroundColor = 'var(--accent-color)';
     }
@@ -620,10 +625,7 @@
     function sendMessage() {
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
-        if (!text || !socket || !currentUser) {
-            console.warn('Не удалось отправить: нет текста, сокета или пользователя');
-            return;
-        }
+        if (!text || !socket || !currentUser) return;
         socket.emit('new message', { nick: currentUser.nick, text });
         input.value = '';
         input.style.height = 'auto';
@@ -686,9 +688,6 @@
         if (!logged) {
             document.getElementById('authPage').style.display = 'flex';
             document.getElementById('appPage').style.display = 'none';
-        } else {
-            // Дополнительно убедимся, что активная вкладка и плашка обновлены
-            setActiveTab('chat');
         }
     };
 </script>
