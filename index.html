@@ -20,7 +20,6 @@
             --text-primary: #000000;
             --text-secondary: #5e5e66;
             --border-light: rgba(60, 60, 67, 0.08);
-            --nav-bg: rgba(255, 255, 255, 0.85);
             --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
             --message-bg: #e9e9ef;
             --input-bg: rgba(255, 255, 255, 0.9);
@@ -40,7 +39,6 @@
             --text-primary: #ffffff;
             --text-secondary: #98989e;
             --border-light: rgba(84, 84, 88, 0.3);
-            --nav-bg: rgba(28, 28, 30, 0.9);
             --message-bg: #2c2c2e;
             --input-bg: rgba(44, 44, 46, 0.9);
             --placeholder: #636366;
@@ -57,7 +55,6 @@
             --text-primary: #ecedef;
             --text-secondary: #7c7c85;
             --border-light: rgba(99, 99, 102, 0.3);
-            --nav-bg: rgba(17, 17, 18, 0.95);
             --message-bg: #1d1d1f;
             --input-bg: rgba(29, 29, 31, 0.9);
             --placeholder: #5a5a62;
@@ -67,7 +64,7 @@
             --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c7c85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         }
 
-        /* ----- Цветовые акценты (без индиго) ----- */
+        /* ----- Цветовые акценты ----- */
         body.accent-blue { --accent-color: #007aff; --accent-light: rgba(0, 122, 255, 0.2); }
         body.accent-purple { --accent-color: #6c5ce7; --accent-light: rgba(108, 92, 231, 0.2); }
         body.accent-pink { --accent-color: #ff6b81; --accent-light: rgba(255, 107, 129, 0.2); }
@@ -153,43 +150,40 @@
             font-size: 0.9rem;
         }
 
-        /* Панель навигации — чуть выше, но с учётом безопасной зоны */
-        .nav-bar {
+        /* Плавающие вкладки (без фоновой панели) */
+        .tabs-container {
             position: relative;
-            background: var(--nav-bg);
-            backdrop-filter: blur(20px);
             display: flex;
-            padding: 0.3rem;
+            justify-content: center;
             gap: 0.5rem;
-            border-radius: 2rem;
-            margin: calc(0.6rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem 1rem;
+            margin: calc(0.8rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem 1rem;
             z-index: 10;
-            box-shadow: var(--shadow-sm);
         }
         .tab-btn {
-            flex: 1;
             background: none;
             border: none;
             font-size: 1rem;
             font-weight: 500;
-            padding: 0.65rem 0;
-            border-radius: 1.8rem;
+            padding: 0.65rem 1.2rem;
+            border-radius: 2rem;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: color 0.2s ease;
+            transition: all 0.2s ease;
             position: relative;
             z-index: 2;
             text-align: center;
+            backdrop-filter: blur(10px);
+            background-color: rgba(0,0,0,0.05);
         }
         .tab-btn.active {
             color: white;
         }
         .floating-indicator {
             position: absolute;
-            top: 0.3rem;
-            bottom: 0.3rem;
+            top: 0;
+            bottom: 0;
             background-color: var(--accent-color);
-            border-radius: 1.8rem;
+            border-radius: 2rem;
             transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1), width 0.2s ease;
             width: 0;
             left: 0;
@@ -247,19 +241,16 @@
             color: var(--text-primary);
         }
 
-        /* Панель ввода — увеличенный нижний отступ, чтобы не касаться низа */
-        .input-bar {
-            background: var(--nav-bg);
-            backdrop-filter: blur(20px);
-            padding: 0.7rem 1rem;
-            margin: 0.75rem 1rem calc(1.8rem + env(safe-area-inset-bottom, 0px));
-            border-radius: 2rem;
+        /* Плавающая строка ввода и кнопка (без фоновой панели) */
+        .input-wrapper {
             display: flex;
             gap: 10px;
             align-items: flex-end;
-            box-shadow: var(--shadow-sm);
+            padding: 0.7rem 1rem;
+            margin: 0.75rem 1rem calc(1.8rem + env(safe-area-inset-bottom, 0px));
+            background: transparent;
         }
-        .input-bar textarea {
+        .input-wrapper textarea {
             flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--border-light);
@@ -274,8 +265,9 @@
             line-height: 1.4;
             max-height: 120px;
             transition: height 0.1s ease;
+            backdrop-filter: blur(10px);
         }
-        .input-bar textarea:focus {
+        .input-wrapper textarea:focus {
             border-color: var(--accent-color);
         }
         .send-btn {
@@ -293,6 +285,7 @@
             transition: 0.2s;
             flex-shrink: 0;
             margin-bottom: 2px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         /* Настройки */
@@ -422,14 +415,14 @@
 </div>
 
 <div id="appPage" class="app-container" style="display: none;">
-    <div class="nav-bar">
+    <div class="tabs-container">
         <button class="tab-btn" data-tab="chat">Чат</button>
         <button class="tab-btn" data-tab="settings">Настройки</button>
         <div class="floating-indicator"></div>
     </div>
     <div id="chatPage" class="page active-page">
         <div class="chat-messages" id="messagesContainer"></div>
-        <div class="input-bar">
+        <div class="input-wrapper">
             <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
             <button class="send-btn" id="sendBtn">➤</button>
         </div>
@@ -493,12 +486,10 @@
         theme: 'adaptive', accent: 'blue', systemFontEnabled: false, fontSizeStep: 3
     };
 
-    // --- Обновление цвета статус-бара (theme-color) ---
+    // --- Обновление цвета статус-бара (theme-color) мгновенно ---
     function updateStatusBarColor() {
         const meta = document.getElementById('themeColorMeta');
         if (!meta) return;
-        const computedBg = getComputedStyle(document.body).getPropertyValue('--bg-page').trim();
-        // Преобразуем CSS-переменную в реальный цвет
         const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-page').trim();
         meta.setAttribute('content', bgColor);
     }
@@ -519,7 +510,9 @@
         
         // Если тема адаптивная — слушаем изменения системы
         if (theme === 'adaptive') {
-            if (systemThemeListener) systemThemeListener.removeEventListener?.('change', systemThemeListener);
+            if (systemThemeListener) {
+                window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', systemThemeListener);
+            }
             systemThemeListener = (e) => {
                 if (appSettings.theme === 'adaptive') {
                     document.body.classList.remove('theme-light', 'theme-dark', 'theme-night');
@@ -535,6 +528,7 @@
             }
         }
     }
+    
     function applyAccent(accent) {
         document.body.classList.remove('accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal');
         if (accent === 'blue') document.body.classList.add('accent-blue');
@@ -546,9 +540,11 @@
         else if (accent === 'teal') document.body.classList.add('accent-teal');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+        // Обновляем цвет плашки
         const indicator = document.querySelector('.floating-indicator');
         if (indicator) indicator.style.backgroundColor = 'var(--accent-color)';
     }
+    
     function applyFontSize(systemEnabled, step) {
         const root = document.documentElement;
         if (systemEnabled) root.style.fontSize = '';
@@ -557,6 +553,7 @@
             root.style.fontSize = `${sizes[step] || 1.05}rem`;
         }
     }
+    
     function toggleFontSliderVisibility() {
         const isSystem = document.getElementById('systemFontToggle').checked;
         const container = document.getElementById('fontSliderContainer');
@@ -572,7 +569,7 @@
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
 
-    // --- Анимация плашки ---
+    // --- Анимация плашки (размер меняется под ширину кнопки) ---
     function updateFloatingIndicator(activeTabId) {
         const activeBtn = document.querySelector(`.tab-btn[data-tab="${activeTabId}"]`);
         const indicator = document.querySelector('.floating-indicator');
