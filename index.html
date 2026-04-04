@@ -32,18 +32,20 @@
             --input-bg: #1c1c1e;
         }
 
+        /* Цвета в заданном порядке */
         body.accent-blue { --accent-color: #0a84ff; }
+        body.accent-indigo { --accent-color: #5856d6; }
         body.accent-purple { --accent-color: #a47ae2; }
         body.accent-pink { --accent-color: #ff4d7a; }
-        body.accent-mint { --accent-color: #6fcf97; }
-        body.accent-orange { --accent-color: #ff7000; }
-        body.accent-yellow { --accent-color: #ffaa00; }
-        body.accent-teal { --accent-color: #00e5d9; }
         body.accent-red { --accent-color: #ff6b6b; }
-        body.accent-indigo { --accent-color: #5856d6; }
+        body.accent-orange { --accent-color: #ff7000; }
         body.accent-beige { --accent-color: #d4a373; }
+        body.accent-yellow { --accent-color: #ffaa00; }
+        body.accent-mint { --accent-color: #6fcf97; }
+        body.accent-teal { --accent-color: #00e5d9; }
         body.accent-gray { --accent-color: #8e8e93; }
 
+        /* Экран авторизации */
         .login-screen {
             position: fixed;
             top: 0;
@@ -58,7 +60,6 @@
             z-index: 2000;
             overflow: hidden;
         }
-
         .login-card {
             background: var(--input-bg);
             border-radius: 2rem;
@@ -68,13 +69,7 @@
             border: 1px solid var(--border-light);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
-
-        .login-card h2 {
-            margin-bottom: 1.5rem;
-            text-align: center;
-            font-weight: 590;
-        }
-
+        .login-card h2 { margin-bottom: 1.5rem; text-align: center; }
         .login-card input {
             width: 100%;
             padding: 0.8rem;
@@ -86,11 +81,7 @@
             font-size: 1rem;
             outline: none;
         }
-
-        .login-card input:focus {
-            border-color: var(--accent-color);
-        }
-
+        .login-card input:focus { border-color: var(--accent-color); }
         .login-card button {
             width: 100%;
             padding: 0.8rem;
@@ -101,21 +92,15 @@
             font-weight: 600;
             cursor: pointer;
         }
+        .login-card .error { color: #ff6b6b; font-size: 0.8rem; margin-top: 0.5rem; text-align: center; }
 
-        .login-card .error {
-            color: #ff6b6b;
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-
+        /* Основное приложение */
         .app-container {
             height: 100%;
             display: flex;
             flex-direction: column;
             background-color: var(--bg-page);
         }
-
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -124,29 +109,19 @@
             flex-direction: column;
             gap: 12px;
         }
-
         .message-item {
             display: flex;
             flex-direction: column;
             width: 100%;
         }
-
         .message-nick {
             font-size: 0.75rem;
             font-weight: 600;
             margin-bottom: 4px;
         }
-        .nick-main {
-            color: var(--text-secondary);
-        }
-        .own-message .nick-main {
-            color: var(--accent-color);
-        }
-        .nick-tag {
-            color: #6c6c70;
-            font-weight: 400;
-            font-size: 0.7rem;
-        }
+        .nick-main { color: var(--text-secondary); }
+        .own-message .nick-main { color: var(--accent-color); }
+        .nick-tag { color: #6c6c70; font-weight: 400; font-size: 0.7rem; }
         .message-text {
             font-size: 1rem;
             line-height: 1.4;
@@ -160,20 +135,17 @@
             background-color: rgba(84, 84, 88, 0.4);
             width: 100%;
         }
-
         .input-wrapper {
             background: var(--input-bg);
             border-top: 1px solid rgba(84, 84, 88, 0.6);
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
-
         .input-row {
             display: flex;
             gap: 12px;
             align-items: center;
             padding: 0.9rem 1rem;
         }
-
         .settings-btn {
             background: none;
             border: none;
@@ -194,7 +166,6 @@
             stroke-width: 1.5;
             fill: none;
         }
-
         .input-row textarea {
             flex: 1;
             background: transparent;
@@ -209,7 +180,6 @@
             line-height: 1.4;
             max-height: 120px;
         }
-
         .send-btn {
             background: var(--accent-color);
             border: none;
@@ -225,6 +195,7 @@
             flex-shrink: 0;
         }
 
+        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -238,7 +209,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .modal-content {
             background: #1c1c1e;
             border-radius: 2rem;
@@ -248,18 +218,15 @@
             border: 0.5px solid rgba(84, 84, 88, 0.4);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
-
         .modal-content h3 {
             margin-bottom: 1rem;
             font-size: 1.3rem;
             font-weight: 590;
             color: white;
         }
-
         .modal-setting {
             margin-bottom: 1.2rem;
         }
-
         .modal-setting label {
             display: block;
             margin-bottom: 0.4rem;
@@ -267,7 +234,6 @@
             font-size: 0.9rem;
             color: #8e8e93;
         }
-
         .modal-setting input, .modal-setting select {
             width: 100%;
             padding: 0.6rem 1rem;
@@ -277,18 +243,41 @@
             font-size: 1rem;
             color: white;
         }
-
-        .modal-close {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            width: 100%;
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+        .modal-buttons button {
+            flex: 1;
             padding: 0.7rem;
             border-radius: 1rem;
-            font-size: 1rem;
             font-weight: 590;
             cursor: pointer;
-            margin-top: 0.5rem;
+            border: none;
+        }
+        .modal-buttons .apply-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+        .modal-buttons .cancel-btn {
+            background: #2c2c2e;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        /* Стили для отображения тега в настройках */
+        .nick-with-tag {
+            display: inline-block;
+            background: #2c2c2e;
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            font-size: 1rem;
+            color: white;
+        }
+        .nick-with-tag .nick-tag {
+            color: #8e8e93;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -320,38 +309,71 @@
     </div>
 </div>
 
+<!-- Модальное окно настроек (только выбор оттенка) -->
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <h3>Настройки</h3>
         <div class="modal-setting">
-            <label>Новый ник</label>
-            <input type="text" id="newNickInput" placeholder="Новый ник">
-            <label style="margin-top: 8px;">PIN для подтверждения</label>
-            <input type="password" id="confirmPinForNick" placeholder="PIN" maxlength="4" inputmode="numeric" pattern="\d*">
-        </div>
-        <div class="modal-setting">
-            <label>Новый PIN (4 цифры)</label>
-            <input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4" inputmode="numeric" pattern="\d*">
-            <label>Старый PIN</label>
-            <input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4" inputmode="numeric" pattern="\d*">
+            <label>Ваш ник</label>
+            <div id="currentNickDisplay" class="nick-with-tag"></div>
         </div>
         <div class="modal-setting">
             <label>Оттенок</label>
             <select id="accentSelect">
                 <option value="blue">Синий</option>
+                <option value="indigo">Индиго</option>
                 <option value="purple">Фиолетовый</option>
                 <option value="pink">Розовый</option>
-                <option value="mint">Мятный</option>
-                <option value="orange">Оранжевый</option>
-                <option value="yellow">Жёлтый</option>
-                <option value="teal">Бирюзовый</option>
                 <option value="red">Красный</option>
-                <option value="indigo">Индиго</option>
+                <option value="orange">Оранжевый</option>
                 <option value="beige">Бежевый</option>
+                <option value="yellow">Жёлтый</option>
+                <option value="mint">Мятный</option>
+                <option value="teal">Бирюзовый</option>
                 <option value="gray">Светло-серый</option>
             </select>
         </div>
-        <button class="modal-close" id="closeModalBtn">Закрыть</button>
+        <div class="modal-buttons">
+            <button id="changeNickBtn" class="apply-btn">Изменить ник</button>
+            <button id="changePinBtn" class="apply-btn">Сменить PIN</button>
+        </div>
+        <div class="modal-buttons">
+            <button id="closeModalBtn" class="cancel-btn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно смены ника -->
+<div id="nickModal" class="modal">
+    <div class="modal-content">
+        <h3>Изменить ник</h3>
+        <div class="modal-setting">
+            <label>Ваш ник</label>
+            <input type="text" id="newNickInput" placeholder="Новый ник">
+        </div>
+        <div class="modal-buttons">
+            <button id="applyNickBtn" class="apply-btn">Применить</button>
+            <button id="cancelNickBtn" class="cancel-btn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно смены PIN -->
+<div id="pinModal" class="modal">
+    <div class="modal-content">
+        <h3>Сменить PIN</h3>
+        <div class="modal-setting">
+            <label>Старый PIN</label>
+            <input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4" inputmode="numeric" pattern="\d*">
+        </div>
+        <div class="modal-setting">
+            <label>Новый PIN</label>
+            <input type="password" id="newPinInput" placeholder="Новый PIN (4 цифры)" maxlength="4" inputmode="numeric" pattern="\d*">
+        </div>
+        <div class="modal-buttons">
+            <button id="applyPinBtn" class="apply-btn">Применить</button>
+            <button id="cancelPinBtn" class="cancel-btn">Закрыть</button>
+        </div>
     </div>
 </div>
 
@@ -364,27 +386,24 @@
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { accent: 'blue' };
 
     function applyAccent(accent) {
-        const classes = ['accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal', 'accent-red', 'accent-indigo', 'accent-beige', 'accent-gray'];
+        const classes = ['accent-blue', 'accent-indigo', 'accent-purple', 'accent-pink', 'accent-red', 'accent-orange', 'accent-beige', 'accent-yellow', 'accent-mint', 'accent-teal', 'accent-gray'];
         document.body.classList.remove(...classes);
         if (accent === 'blue') document.body.classList.add('accent-blue');
+        else if (accent === 'indigo') document.body.classList.add('accent-indigo');
         else if (accent === 'purple') document.body.classList.add('accent-purple');
         else if (accent === 'pink') document.body.classList.add('accent-pink');
-        else if (accent === 'mint') document.body.classList.add('accent-mint');
-        else if (accent === 'orange') document.body.classList.add('accent-orange');
-        else if (accent === 'yellow') document.body.classList.add('accent-yellow');
-        else if (accent === 'teal') document.body.classList.add('accent-teal');
         else if (accent === 'red') document.body.classList.add('accent-red');
-        else if (accent === 'indigo') document.body.classList.add('accent-indigo');
+        else if (accent === 'orange') document.body.classList.add('accent-orange');
         else if (accent === 'beige') document.body.classList.add('accent-beige');
+        else if (accent === 'yellow') document.body.classList.add('accent-yellow');
+        else if (accent === 'mint') document.body.classList.add('accent-mint');
+        else if (accent === 'teal') document.body.classList.add('accent-teal');
         else if (accent === 'gray') document.body.classList.add('accent-gray');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
 
-    function escapeHtml(str) {
-        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);
-    }
-
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
     function splitFullNick(full) {
         const lastHash = full.lastIndexOf('#');
         if (lastHash === -1) return { nick: full, tag: '' };
@@ -454,8 +473,10 @@
                     });
                     if (currentUser.full_nick === oldFullNick) currentUser.full_nick = newFullNick;
                     renderMessages();
+                    updateSettingsNickDisplay();
                 });
                 await loadHistory();
+                updateSettingsNickDisplay();
                 return true;
             } else {
                 document.getElementById('loginError').innerText = data.error || 'Ошибка входа';
@@ -498,40 +519,35 @@
                     });
                     if (currentUser.full_nick === oldFullNick) currentUser.full_nick = newFullNick;
                     renderMessages();
+                    updateSettingsNickDisplay();
                 });
                 await loadHistory();
+                updateSettingsNickDisplay();
                 return true;
             }
         } catch(e) {}
         return false;
     }
 
-    async function changeNick() {
-        const newNick = document.getElementById('newNickInput').value.trim();
-        const pin = document.getElementById('confirmPinForNick').value;
-        if (!newNick || !pin) { alert('Заполните новый ник и PIN'); return; }
+    async function changeNickRequest(newNick) {
         const res = await fetch('/change-nick', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: authToken, newNick, pin })
+            body: JSON.stringify({ token: authToken, newNick })
         });
         const data = await res.json();
         if (data.success) {
+            currentUser.full_nick = data.newFullNick;
             alert('Ник изменён');
-            document.getElementById('newNickInput').value = '';
-            document.getElementById('confirmPinForNick').value = '';
+            updateSettingsNickDisplay();
+            return true;
         } else {
             alert(data.error || 'Ошибка');
+            return false;
         }
     }
 
-    async function changePin() {
-        const oldPin = document.getElementById('oldPinInput').value;
-        const newPin = document.getElementById('newPinInput').value;
-        if (!oldPin || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-            alert('PIN должен быть 4 цифры');
-            return;
-        }
+    async function changePinRequest(oldPin, newPin) {
         const res = await fetch('/change-pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -540,10 +556,18 @@
         const data = await res.json();
         if (data.success) {
             alert('PIN изменён');
-            document.getElementById('oldPinInput').value = '';
-            document.getElementById('newPinInput').value = '';
+            return true;
         } else {
             alert(data.error || 'Ошибка');
+            return false;
+        }
+    }
+
+    function updateSettingsNickDisplay() {
+        const { nick, tag } = splitFullNick(currentUser.full_nick);
+        const displayDiv = document.getElementById('currentNickDisplay');
+        if (displayDiv) {
+            displayDiv.innerHTML = `<span>${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>`;
         }
     }
 
@@ -601,21 +625,61 @@
             }
         });
 
-        const modal = document.getElementById('settingsModal');
+        // Модалка настроек
+        const settingsModal = document.getElementById('settingsModal');
+        const nickModal = document.getElementById('nickModal');
+        const pinModal = document.getElementById('pinModal');
+
         document.getElementById('settingsBtn').onclick = () => {
-            modal.style.display = 'flex';
+            updateSettingsNickDisplay();
+            settingsModal.style.display = 'flex';
         };
-        document.getElementById('closeModalBtn').onclick = async () => {
-            await changeNick();
-            await changePin();
-            modal.style.display = 'none';
+        document.getElementById('closeModalBtn').onclick = () => {
+            settingsModal.style.display = 'none';
         };
-        window.onclick = (e) => {
-            if (e.target === modal) {
-                changeNick();
-                changePin();
-                modal.style.display = 'none';
+
+        // Смена ника
+        document.getElementById('changeNickBtn').onclick = () => {
+            settingsModal.style.display = 'none';
+            document.getElementById('newNickInput').value = '';
+            nickModal.style.display = 'flex';
+        };
+        document.getElementById('applyNickBtn').onclick = async () => {
+            const newNick = document.getElementById('newNickInput').value.trim();
+            if (!newNick) { alert('Введите новый ник'); return; }
+            await changeNickRequest(newNick);
+            nickModal.style.display = 'none';
+        };
+        document.getElementById('cancelNickBtn').onclick = () => {
+            nickModal.style.display = 'none';
+        };
+
+        // Смена PIN
+        document.getElementById('changePinBtn').onclick = () => {
+            settingsModal.style.display = 'none';
+            document.getElementById('oldPinInput').value = '';
+            document.getElementById('newPinInput').value = '';
+            pinModal.style.display = 'flex';
+        };
+        document.getElementById('applyPinBtn').onclick = async () => {
+            const oldPin = document.getElementById('oldPinInput').value;
+            const newPin = document.getElementById('newPinInput').value;
+            if (!oldPin || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
+                alert('Введите старый и новый PIN (4 цифры)');
+                return;
             }
+            await changePinRequest(oldPin, newPin);
+            pinModal.style.display = 'none';
+        };
+        document.getElementById('cancelPinBtn').onclick = () => {
+            pinModal.style.display = 'none';
+        };
+
+        // Закрытие модалок по клику вне
+        window.onclick = (e) => {
+            if (e.target === settingsModal) settingsModal.style.display = 'none';
+            if (e.target === nickModal) nickModal.style.display = 'none';
+            if (e.target === pinModal) pinModal.style.display = 'none';
         };
     };
 </script>
