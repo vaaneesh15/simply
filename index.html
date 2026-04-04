@@ -12,7 +12,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Только тёмная тема */
         :root {
             --bg-page: #000000;
             --text-primary: #ffffff;
@@ -22,14 +21,14 @@
             --input-bg: #1c1c1e;
         }
 
-        /* Исправленные акцентные цвета */
+        /* Акцентные цвета */
         body.accent-blue { --accent-color: #0a84ff; }
         body.accent-purple { --accent-color: #a47ae2; }
-        body.accent-pink { --accent-color: #ff5e7e; }
+        body.accent-pink { --accent-color: #ff4d7a; }        /* насыщенный розовый */
         body.accent-mint { --accent-color: #6fcf97; }
-        body.accent-orange { --accent-color: #ff8800; }
-        body.accent-yellow { --accent-color: #ffcc00; }
-        body.accent-teal { --accent-color: #48c9b0; }
+        body.accent-orange { --accent-color: #ff7000; }      /* яркий оранжевый */
+        body.accent-yellow { --accent-color: #ffaa00; }      /* жёлтый как оранжевый */
+        body.accent-teal { --accent-color: #00e5d9; }        /* настоящий бирюзовый */
         body.accent-red { --accent-color: #ff6b6b; }
         body.accent-indigo { --accent-color: #5856d6; }
         body.accent-beige { --accent-color: #d4a373; }
@@ -274,7 +273,6 @@
     let authToken = localStorage.getItem('simply_token');
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { accent: 'blue' };
 
-    // Применение акцента (мгновенно)
     function applyAccent(accent) {
         const classes = ['accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal', 'accent-red', 'accent-indigo', 'accent-beige', 'accent-gray'];
         document.body.classList.remove(...classes);
@@ -301,7 +299,7 @@
         const container = document.getElementById('messagesContainer');
         if (!container) return;
         container.innerHTML = '';
-        messages.forEach((msg) => {
+        messages.forEach(msg => {
             const isOwn = currentUser && msg.nick === currentUser.nick;
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message-item';
@@ -326,7 +324,7 @@
     }
 
     async function performAuth() {
-        const nick = currentUser.nick;
+        const nick = localStorage.getItem('simply_nick') || "Пользователь";
         try {
             const res = await fetch('/auth', {
                 method: 'POST',
@@ -335,27 +333,36 @@
             });
             const data = await res.json();
             if (data.success) {
+                currentUser.nick = data.nick;
                 authToken = data.token;
                 localStorage.setItem('simply_token', authToken);
                 localStorage.setItem('simply_nick', data.nick);
-                currentUser.nick = data.nick;
                 if (socket) socket.disconnect();
                 socket = io();
                 socket.on('message received', (newMsg) => {
                     messages.push(newMsg);
                     renderMessages();
                 });
+                socket.on('message deleted', (msgId) => {
+                    messages = messages.filter(m => m.id !== msgId);
+                    renderMessages();
+                });
+                socket.on('nick changed', ({ oldNick, newNick }) => {
+                    // Обновляем все сообщения с oldNick на newNick
+                    messages.forEach(msg => {
+                        if (msg.nick === oldNick) msg.nick = newNick;
+                    });
+                    if (currentUser.nick === oldNick) currentUser.nick = newNick;
+                    renderMessages();
+                });
                 await loadHistory();
-            } else {
-                console.error('Auth failed');
             }
         } catch(e) { console.error(e); }
     }
 
     async function verifyToken() {
         const token = localStorage.getItem('simply_token');
-        const nick = localStorage.getItem('simply_nick');
-        if (!token || !nick) return false;
+        if (!token) return false;
         try {
             const res = await fetch('/verify', {
                 method: 'POST',
@@ -364,11 +371,23 @@
             });
             const data = await res.json();
             if (data.success) {
-                currentUser = { nick: data.nick };
+                currentUser.nick = data.nick;
                 authToken = token;
+                if (socket) socket.disconnect();
                 socket = io();
                 socket.on('message received', (newMsg) => {
                     messages.push(newMsg);
+                    renderMessages();
+                });
+                socket.on('message deleted', (msgId) => {
+                    messages = messages.filter(m => m.id !== msgId);
+                    renderMessages();
+                });
+                socket.on('nick changed', ({ oldNick, newNick }) => {
+                    messages.forEach(msg => {
+                        if (msg.nick === oldNick) msg.nick = newNick;
+                    });
+                    if (currentUser.nick === oldNick) currentUser.nick = newNick;
                     renderMessages();
                 });
                 await loadHistory();
@@ -382,7 +401,7 @@
         const input = document.getElementById('messageInput');
         const text = input.value;
         if (!text.trim() || !socket || !currentUser) return;
-        socket.emit('new message', { nick: currentUser.nick, text: text });
+        socket.emit('new message', { nick: currentUser.nick, text });
         input.value = '';
         input.style.height = 'auto';
         input.focus();
@@ -394,50 +413,34 @@
         textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     }
 
-    // Смена ника с обновлением всех старых сообщений
     async function changeNick() {
         const newNick = document.getElementById('nickInput').value.trim();
         if (!newNick || newNick === currentUser.nick) return;
-        try {
-            const res = await fetch('/change-nick', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: authToken, newNick })
-            });
-            const data = await res.json();
-            if (data.success) {
-                currentUser.nick = newNick;
-                localStorage.setItem('simply_nick', newNick);
-                // Обновляем ник во всех сообщениях пользователя
-                messages.forEach(msg => {
-                    if (msg.nick === currentUser.nick || (msg.nick === currentUser.nick && msg.nick !== newNick)) {
-                        // На самом деле сервер уже обновил в БД, нужно перезагрузить историю
-                    }
-                });
-                await loadHistory(); // перезагружаем всю историю, чтобы обновить ники
-            } else {
-                alert('Ошибка при смене ника');
-            }
-        } catch(e) { console.error(e); }
+        const res = await fetch('/change-nick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: authToken, newNick })
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Ник обновится через событие nick changed от сервера
+            document.getElementById('nickInput').value = newNick;
+        } else {
+            alert(data.error || 'Ошибка');
+        }
     }
 
     window.onload = async () => {
         const savedNick = localStorage.getItem('simply_nick');
-        if (savedNick) currentUser.nick = savedNick;
-        document.getElementById('nickInput').value = currentUser.nick;
-
+        if (savedNick) document.getElementById('nickInput').value = savedNick;
         applyAccent(appSettings.accent);
         document.getElementById('accentSelect').value = appSettings.accent;
 
-        // Применяем оттенок мгновенно при выборе
-        document.getElementById('accentSelect').onchange = (e) => {
-            applyAccent(e.target.value);
-        };
+        // Применяем оттенок сразу при выборе
+        document.getElementById('accentSelect').onchange = (e) => applyAccent(e.target.value);
 
         const logged = await verifyToken();
-        if (!logged) {
-            await performAuth();
-        }
+        if (!logged) await performAuth();
 
         document.getElementById('sendBtn').onclick = sendMessage;
         const msgInput = document.getElementById('messageInput');
@@ -457,8 +460,8 @@
         document.getElementById('settingsBtn').onclick = () => {
             modal.style.display = 'flex';
         };
-        document.getElementById('closeModalBtn').onclick = () => {
-            changeNick(); // применяем смену ника при закрытии
+        document.getElementById('closeModalBtn').onclick = async () => {
+            await changeNick();
             modal.style.display = 'none';
         };
         window.onclick = (e) => {
