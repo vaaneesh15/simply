@@ -26,7 +26,7 @@
             --accent-color: #0a84ff;
             --input-bg: #1c1c1e;
         }
-        /* Цвета */
+        /* Цвета оттенков */
         body.accent-blue { --accent-color: #0a84ff; }
         body.accent-indigo { --accent-color: #4f46e5; }
         body.accent-purple { --accent-color: #8b5cf6; }
@@ -38,17 +38,6 @@
         body.accent-mint { --accent-color: #10b981; }
         body.accent-teal { --accent-color: #14b89a; } /* настоящий бирюзовый */
         body.accent-gray { --accent-color: #9ca3af; }
-
-        /* Стрелки в select белые */
-        .accent-select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.2rem;
-            padding-right: 2rem;
-            -webkit-appearance: none;
-            appearance: none;
-        }
 
         .login-screen {
             position: fixed; top:0; left:0; width:100%; height:100%;
@@ -74,12 +63,19 @@
         .app-container { height:100%; display: flex; flex-direction: column; background-color: var(--bg-page); position: relative; }
         .chat-messages { flex:1; overflow-y: auto; padding:1rem; display: flex; flex-direction: column; gap:12px; }
         .message-item { display: flex; flex-direction: column; width:100%; }
-        .message-header { display: flex; align-items: baseline; gap:8px; margin-bottom:4px; }
+        .message-header { display: flex; align-items: baseline; gap:8px; margin-bottom: 2px; } /* уменьшен отступ */
         .message-nick { font-size:0.75rem; font-weight:600; }
         .nick-main { color: var(--text-secondary); }
         .own-message .nick-main { color: var(--accent-color); }
         .nick-tag { color:#6c6c70; font-weight:400; font-size:0.7rem; }
-        .message-text { font-size:1rem; line-height:1.4; color:var(--text-primary); white-space:pre-wrap; word-break:break-word; }
+        .message-text { 
+            font-size:1rem; line-height:1.4; color:var(--text-primary); 
+            white-space:pre-wrap; word-break:break-word; 
+        }
+        .message-text a {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
         .message-footer { display: flex; align-items: center; gap:12px; margin-top:4px; }
         .like-btn {
             background:none; border:none; cursor:pointer; display: inline-flex; align-items:center; gap:4px;
@@ -91,27 +87,19 @@
         .edited-badge { font-size:0.65rem; color:var(--text-secondary); margin-left:8px; font-style:italic; }
         .message-divider { margin-top:8px; height:1px; background-color:rgba(84,84,88,0.4); width:100%; }
 
-        /* Кнопка контекстного меню (три точки) */
-        .message-actions-btn {
-            background:none; border:none; cursor:pointer; color:var(--text-secondary);
-            margin-left: auto; padding:4px; border-radius:1rem; width:2rem; height:2rem;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .message-actions-btn svg { width:1.2rem; height:1.2rem; stroke:currentColor; stroke-width:2; fill:none; }
-
         /* Нижняя панель */
         .input-wrapper { background: var(--input-bg); border-top:1px solid rgba(84,84,88,0.6); padding-bottom:env(safe-area-inset-bottom,0); }
         .input-row { display: flex; gap:12px; align-items: center; padding:0.9rem 1rem; }
-        .settings-btn, .mails-btn, .emoji-btn {
+        .settings-btn, .mails-btn {
             background:none; border:none; cursor:pointer; padding:0; width:2.5rem; height:2.5rem;
             border-radius:2rem; display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
         }
-        .settings-btn svg, .mails-btn svg, .emoji-btn svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.5; fill:none; }
+        .settings-btn svg, .mails-btn svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.5; fill:none; }
         .mails-btn.has-unread { color: var(--accent-color); }
         .input-row textarea {
             flex:1; background:transparent; border:none; padding:0.75rem 0; font-size:1rem;
             color:var(--text-primary); outline:none; resize:none; overflow-y:hidden; font-family:inherit;
-            line-height:1.4; max-height:120px;
+            line-height:1.4; max-height:150px;
         }
         .send-btn {
             background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
@@ -126,7 +114,7 @@
         .edit-cancel { background: #3a3a3c; color: white; }
         .edit-save { background: var(--accent-color); color: white; }
 
-        /* Модальные окна */
+        /* Модальные окна (общие) */
         .modal {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
             background-color:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1000;
@@ -145,62 +133,60 @@
         }
         .modal-setting textarea { resize: vertical; min-height:80px; }
         .modal-buttons { display:flex; gap:10px; margin-top:1rem; }
-        .modal-buttons button { flex:1; padding:0.7rem; border-radius:1rem; font-weight:590; cursor:pointer; border:none; }
-        .modal-buttons button:first-child { background:var(--accent-color); color:white; }
-        .modal-buttons button:last-child { background:#3a3a3c; color:var(--text-primary); }
+        .modal-buttons button {
+            flex:1; padding:0.7rem; border-radius:1rem; font-weight:590; cursor:pointer; border:none;
+            font-size:0.9rem; background: #2c2c2e; color: white;
+        }
+        .modal-buttons button:first-child { background: none; border:1px solid var(--border-light); color:var(--text-secondary); }
+        .modal-buttons button:last-child { background: var(--accent-color); color:white; }
 
         /* Контекстное меню (модальное окно) */
-        .context-menu-modal .modal-content {
-            max-width: 280px;
-        }
-        .context-menu-author {
+        .context-menu-modal .modal-content { max-width: 300px; }
+        .context-message-preview {
             background: #2c2c2e; border-radius: 1rem; padding: 0.5rem; margin-bottom: 1rem;
-            display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap;
+            word-break: break-word; font-size:0.85rem; color: var(--text-secondary);
         }
-        .context-menu-author .nick-main { font-size: 0.85rem; font-weight: 600; }
-        .context-menu-author .nick-tag { font-size: 0.75rem; }
-        .context-menu-message-preview {
-            background: #2c2c2e; border-radius: 1rem; padding: 0.5rem; margin-bottom: 1rem;
-            font-size: 0.85rem; color: var(--text-secondary); word-break: break-word;
-        }
-        .context-menu-buttons {
-            display: flex; flex-direction: column; gap: 8px;
-        }
+        .context-menu-buttons { display: flex; flex-direction: column; gap: 8px; }
         .context-menu-buttons button {
-            background: #3a3a3c; border: none; padding: 0.7rem; border-radius: 1rem;
-            font-size: 0.9rem; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px;
-            justify-content: center;
+            background: #2c2c2e; border: none; padding: 0.7rem; border-radius: 1rem;
+            color: white; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px;
         }
-        .context-menu-buttons button svg { width: 1.2rem; height: 1.2rem; stroke: currentColor; fill: none; stroke-width: 1.5; }
-        .context-menu-buttons button:last-child { background: none; border: 1px solid var(--border-light); }
+        .context-menu-buttons button svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .context-menu-buttons button:active { background: var(--accent-light); }
 
         /* Письма */
         .mails-list { max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:1rem; }
         .mail-item {
-            background:#2c2c2e; border-radius:1rem; padding:0.8rem; cursor:pointer; position: relative;
-            transition: background 0.1s;
+            background:#2c2c2e; border-radius:1rem; padding:0.8rem; position: relative;
         }
-        /* Точка непрочитанного письма */
-        .mail-item.unread::before {
-            content: ''; position: absolute; bottom: 8px; left: 8px; width: 8px; height: 8px;
+        .mail-unread-dot {
+            position: absolute; bottom: 8px; left: 8px; width: 8px; height: 8px;
             background-color: var(--accent-color); border-radius: 50%;
         }
         .mail-header { display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.75rem; color:var(--text-secondary); }
-        .mail-snippet {
-            font-size:0.85rem; white-space: pre-wrap; word-break: break-word;
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-            margin-bottom:0.5rem; color:var(--text-primary);
+        .mail-snippet { 
+            font-size:0.85rem; white-space:pre-wrap; word-break:break-word; margin-bottom:0.5rem; 
+            color:var(--text-primary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
         }
         .mail-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:0.5rem; }
         .mail-actions button { background:none; border:none; color:var(--accent-color); cursor:pointer; font-size:0.8rem; }
 
+        /* Настройки: белая стрелка select */
+        .accent-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 1rem center !important;
+            padding-right: 2.5rem !important;
+            padding-left: 1rem !important;
+            appearance: none;
+        }
         .nick-readonly { border:1px solid var(--border-light); border-radius:1rem; padding:0.6rem 1rem; background:var(--input-bg); color:var(--text-primary); font-size:1rem; }
 
-        /* Просмотр письма */
+        /* В просмотре письма */
         .view-mail-header { margin-bottom: 0.5rem; }
-        .view-mail-date { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px; }
-        .view-mail-author { font-weight: 600; margin-bottom: 4px; }
-        .view-mail-text { white-space: pre-wrap; word-break: break-word; }
+        .view-mail-time { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .view-mail-from { font-size: 0.8rem; font-weight: 600; color: var(--accent-color); margin-bottom: 0.5rem; }
+        .view-mail-text { white-space: pre-wrap; word-break: break-word; margin-top: 0.5rem; }
     </style>
 </head>
 <body>
@@ -227,14 +213,6 @@
                     <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
             </button>
-            <button class="emoji-btn" id="emojiBtn">
-                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                </svg>
-            </button>
             <button class="settings-btn" id="settingsBtn">
                 <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -247,22 +225,34 @@
     </div>
 </div>
 
-<!-- Модальные окна -->
-<div id="settingsModal" class="modal"><div class="modal-content"><h3>Настройки</h3><div class="modal-setting"><label>Ваш ник</label><div id="displayNickWithTag" class="nick-readonly"></div><button id="changeNickBtn" style="margin-top:8px; width:100%; background:var(--accent-color); border:none; padding:0.5rem; border-radius:1rem; color:white;">Изменить ник</button></div><div class="modal-setting"><label>Сменить PIN</label><button id="changePinBtn" style="width:100%; background:var(--accent-color); border:none; padding:0.5rem; border-radius:1rem; color:white;">Сменить PIN</button></div><div class="modal-setting"><label>Оттенок</label><select id="accentSelect" class="accent-select"><option value="blue">Синий</option><option value="indigo">Индиго</option><option value="purple">Фиолетовый</option><option value="pink">Розовый</option><option value="red">Красный</option><option value="orange">Оранжевый</option><option value="beige">Бежевый</option><option value="yellow">Жёлтый</option><option value="mint">Мятный</option><option value="teal">Бирюзовый</option><option value="gray">Светло-серый</option></select></div><button class="modal-close" id="closeModalBtn" style="width:100%; padding:0.7rem; background:#3a3a3c; border:none; border-radius:1rem; color:var(--text-primary); margin-top:0.5rem;">Закрыть</button></div></div>
-<div id="changeNickModal" class="modal"><div class="modal-content"><h3>Смена ника</h3><div class="modal-setting"><label>Новый ник</label><input type="text" id="newNickInput" placeholder="Новый ник"></div><div class="modal-buttons"><button id="applyNickBtn">Применить</button><button id="cancelNickBtn">Закрыть</button></div></div></div>
-<div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-buttons"><button id="applyPinBtn">Применить</button><button id="cancelPinBtn">Закрыть</button></div></div></div>
-<div id="mailsModal" class="modal"><div class="modal-content" style="max-width:400px;"><h3>Письма</h3><div id="mailsList" class="mails-list"></div><div class="modal-buttons"><button id="newMailBtn">Написать</button><button id="closeMailsBtn">Закрыть</button></div></div></div>
-<div id="newMailModal" class="modal"><div class="modal-content"><h3>Новое письмо</h3><div class="modal-setting"><label>Кому (Ник#Тег)</label><input type="text" id="mailTo" placeholder="Пример: Пользователь#123"></div><div class="modal-setting"><label>Текст</label><textarea id="mailText" rows="3"></textarea></div><div class="modal-buttons"><button id="sendMailBtn">Отправить</button><button id="cancelMailBtn">Закрыть</button></div></div></div>
-<div id="viewMailModal" class="modal"><div class="modal-content"><h3>Письмо</h3><div id="viewMailContent"></div><div class="modal-buttons"><button id="replyMailBtn">Ответить</button><button id="closeViewMailBtn">Закрыть</button></div></div></div>
-<div id="replyMailModal" class="modal"><div class="modal-content"><h3>Ответ на письмо</h3><div class="modal-setting"><label>Исходное письмо</label><div id="originalMailPreview" style="background:#2c2c2e; padding:0.5rem; border-radius:1rem; margin-bottom:0.5rem; font-size:0.9rem;"></div></div><div class="modal-setting"><label>Ваш ответ</label><textarea id="replyMailText" rows="3"></textarea></div><div class="modal-buttons"><button id="sendReplyBtn">Отправить</button><button id="cancelReplyBtn">Закрыть</button></div></div></div>
+<!-- Модальные окна (настройки, смена ника, смена PIN, письма, контекстное меню) -->
+<div id="settingsModal" class="modal"><div class="modal-content"><h3>Настройки</h3><div class="modal-setting"><label>Ваш ник</label><div id="displayNickWithTag" class="nick-readonly"></div><button id="changeNickBtn" style="margin-top:8px; width:100%; background:var(--accent-color); border:none; padding:0.5rem; border-radius:1rem; color:white;">Изменить ник</button></div><div class="modal-setting"><label>Сменить PIN</label><button id="changePinBtn" style="width:100%; background:var(--accent-color); border:none; padding:0.5rem; border-radius:1rem; color:white;">Сменить PIN</button></div><div class="modal-setting"><label>Оттенок</label><select id="accentSelect" class="accent-select"><option value="blue">Синий</option><option value="indigo">Индиго</option><option value="purple">Фиолетовый</option><option value="pink">Розовый</option><option value="red">Красный</option><option value="orange">Оранжевый</option><option value="beige">Бежевый</option><option value="yellow">Жёлтый</option><option value="mint">Мятный</option><option value="teal">Бирюзовый</option><option value="gray">Светло-серый</option></select></div><button class="modal-close" id="closeModalBtn" style="width:100%; padding:0.7rem; background:none; border:1px solid var(--border-light); border-radius:1rem; color:var(--text-secondary); margin-top:0.5rem;">Закрыть</button></div></div>
+<div id="changeNickModal" class="modal"><div class="modal-content"><h3>Смена ника</h3><div class="modal-setting"><label>Новый ник</label><input type="text" id="newNickInput" placeholder="Новый ник"></div><div class="modal-buttons"><button id="cancelNickBtn">Закрыть</button><button id="applyNickBtn">Применить</button></div></div></div>
+<div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-buttons"><button id="cancelPinBtn">Закрыть</button><button id="applyPinBtn">Применить</button></div></div></div>
+<div id="mailsModal" class="modal"><div class="modal-content" style="max-width:400px;"><h3>Письма</h3><div id="mailsList" class="mails-list"></div><div class="modal-buttons"><button id="closeMailsBtn">Закрыть</button><button id="newMailBtn">Написать</button></div></div></div>
+<div id="newMailModal" class="modal"><div class="modal-content"><h3>Новое письмо</h3><div class="modal-setting"><label>Кому (Ник#Тег)</label><input type="text" id="mailTo" placeholder="Пример: Пользователь#123"></div><div class="modal-setting"><label>Текст</label><textarea id="mailText" rows="3"></textarea></div><div class="modal-buttons"><button id="cancelMailBtn">Закрыть</button><button id="sendMailBtn">Отправить</button></div></div></div>
+<div id="viewMailModal" class="modal"><div class="modal-content"><h3>Письмо</h3><div id="viewMailContent" style="white-space:pre-wrap; word-break:break-word;"></div><div class="modal-buttons"><button id="closeViewMailBtn">Закрыть</button><button id="replyMailBtn">Ответить</button></div></div></div>
+<div id="replyMailModal" class="modal"><div class="modal-content"><h3>Ответ на письмо</h3><div class="modal-setting"><label>Исходное письмо</label><div id="originalMailPreview" style="background:#2c2c2e; padding:0.5rem; border-radius:1rem; margin-bottom:0.5rem; font-size:0.9rem;"></div></div><div class="modal-setting"><label>Ваш ответ</label><textarea id="replyMailText" rows="3"></textarea></div><div class="modal-buttons"><button id="cancelReplyBtn">Закрыть</button><button id="sendReplyBtn">Отправить</button></div></div></div>
 
 <!-- Контекстное меню (модальное окно) -->
 <div id="contextMenuModal" class="modal context-menu-modal">
     <div class="modal-content">
-        <div id="contextMenuAuthor" class="context-menu-author"></div>
-        <div id="contextMenuPreview" class="context-menu-message-preview"></div>
+        <h3>Действия с сообщением</h3>
+        <div id="contextMessagePreview" class="context-message-preview"></div>
+        <div id="contextMessageNick" style="font-size:0.75rem; margin-bottom:0.5rem; color:var(--text-secondary);"></div>
         <div class="context-menu-buttons" id="contextMenuButtons"></div>
-        <button id="contextMenuClose" style="margin-top: 0.5rem; width:100%; padding:0.7rem; background:#3a3a3c; border:none; border-radius:1rem; color:white;">Закрыть</button>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h3>Подтверждение</h3>
+        <p id="confirmMessage" style="margin-bottom: 1rem;">Вы уверены?</p>
+        <div class="modal-buttons">
+            <button id="confirmCancelBtn">Отмена</button>
+            <button id="confirmOkBtn">Удалить</button>
+        </div>
     </div>
 </div>
 
@@ -278,10 +268,16 @@
     let currentMails = [];
     let currentMailForReply = null;
     let editingMessageId = null;
-    let contextMenuMessage = null; // { id, full_nick, text, isOwn }
+    let pendingDeleteMessageId = null;
+    let contextMessageData = null; // { id, full_nick, text, isOwn }
 
+    // ---------- Вспомогательные ----------
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
     function splitFullNick(full) { const h=full.lastIndexOf('#'); if(h===-1) return {nick:full,tag:''}; return {nick:full.slice(0,h),tag:full.slice(h)}; }
+    function linkify(text) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+    }
 
     function applyAccent(accent) {
         const classes = ['accent-blue','accent-indigo','accent-purple','accent-pink','accent-red','accent-orange','accent-beige','accent-yellow','accent-mint','accent-teal','accent-gray'];
@@ -301,8 +297,7 @@
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
 
-    // Рендер сообщений
-    let isUserScrolling = false;
+    // Рендер сообщений с ссылками и auto-resize для редактирования
     function renderMessages() {
         const container = document.getElementById('messagesContainer');
         if (!container) return;
@@ -320,20 +315,23 @@
             if (editingMessageId === msg.id) {
                 msgDiv.innerHTML = `
                     <div class="message-header"><div class="message-nick"><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
-                    <textarea id="edit-textarea-${msg.id}" style="width:100%; background:#2c2c2e; border:1px solid var(--border-light); border-radius:1rem; padding:0.5rem; margin-bottom:0.5rem; color:white; resize:none;">${escapeHtml(msg.text)}</textarea>
+                    <textarea id="edit-textarea-${msg.id}" class="edit-textarea" style="width:100%; background:#2c2c2e; border:1px solid var(--border-light); border-radius:1rem; padding:0.5rem; margin-bottom:0.5rem; color:white; font-family:inherit; font-size:1rem; line-height:1.4;">${escapeHtml(msg.text)}</textarea>
                     <div style="display:flex; gap:8px; justify-content:flex-end;">
                         <button class="edit-cancel" data-id="${msg.id}">✖</button>
                         <button class="edit-save" data-id="${msg.id}">✓</button>
                     </div>
                     <div class="message-divider"></div>
                 `;
+                // авто-высота
+                const ta = msgDiv.querySelector('textarea');
+                if (ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 150) + 'px'; }
             } else {
                 msgDiv.innerHTML = `
                     <div class="message-header">
                         <div class="message-nick"><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div>
-                        <button class="message-actions-btn" data-id="${msg.id}" data-full-nick="${escapeHtml(msg.full_nick)}" data-text="${escapeHtml(msg.text)}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button>
+                        <button class="message-actions-btn" data-id="${msg.id}" data-full-nick="${escapeHtml(msg.full_nick)}" data-text="${escapeHtml(msg.text)}"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button>
                     </div>
-                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                    <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
                     ${msg.edited ? '<div class="edited-badge">изменено</div>' : ''}
                     <div class="message-footer">
                         ${msg.likes_count > 0 ? `<button class="like-btn ${msg.is_liked ? 'liked' : ''}" data-id="${msg.id}"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="likes-count">${msg.likes_count}</span></button>` : ''}
@@ -345,10 +343,10 @@
         });
         // Обработчики
         document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); await toggleLike(parseInt(btn.dataset.id)); }));
-        document.querySelectorAll('.message-actions-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id=parseInt(btn.dataset.id), full=btn.dataset.fullNick, text=btn.dataset.text, isOwn=full===currentUser.full_nick; openContextMenu(id, full, text, isOwn); }));
+        document.querySelectorAll('.message-actions-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id=parseInt(btn.dataset.id), full=btn.dataset.fullNick, text=btn.dataset.text, isOwn=full===currentUser.full_nick; showContextMenu(id, full, text, isOwn); }));
         document.querySelectorAll('.edit-save').forEach(btn => btn.addEventListener('click', async () => { const id=parseInt(btn.dataset.id), textarea=document.getElementById(`edit-textarea-${id}`), newText=textarea.value.trim(); if(newText && newText!==messages.find(m=>m.id===id)?.text){ await fetch('/edit-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:id,full_nick:currentUser.full_nick,newText})}); } editingMessageId=null; await loadHistory(); }));
         document.querySelectorAll('.edit-cancel').forEach(btn => btn.addEventListener('click', () => { editingMessageId=null; renderMessages(); }));
-        if (wasNearBottom && !isUserScrolling) container.scrollTop = container.scrollHeight;
+        if (wasNearBottom && !window.isUserScrolling) container.scrollTop = container.scrollHeight;
     }
 
     async function toggleLike(messageId) {
@@ -360,52 +358,28 @@
     }
 
     // Контекстное меню (модальное окно)
-    function openContextMenu(messageId, full_nick, text, isOwn) {
-        contextMenuMessage = { id: messageId, full_nick, text, isOwn };
+    function showContextMenu(messageId, full_nick, text, isOwn) {
+        contextMessageData = { id: messageId, full_nick, text, isOwn };
         const { nick, tag } = splitFullNick(full_nick);
-        document.getElementById('contextMenuAuthor').innerHTML = `<span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>`;
-        document.getElementById('contextMenuPreview').innerHTML = escapeHtml(text.substring(0, 150)) + (text.length > 150 ? '…' : '');
-        const buttonsContainer = document.getElementById('contextMenuButtons');
-        buttonsContainer.innerHTML = '';
-        const addButton = (id, svgPath, label) => {
-            const btn = document.createElement('button');
-            btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="${svgPath}"/></svg> ${label}`;
-            btn.id = id;
-            buttonsContainer.appendChild(btn);
-        };
-        addButton('ctx-like', 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z', 'Лайкнуть');
-        addButton('ctx-copy', 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z', 'Скопировать');
-        if (isOwn) {
-            addButton('ctx-edit', 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z', 'Редактировать');
-            addButton('ctx-delete', 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z', 'Удалить');
-        }
-        document.getElementById('contextMenuModal').style.display = 'flex';
-        document.getElementById('ctx-like').onclick = async () => { await toggleLike(messageId); document.getElementById('contextMenuModal').style.display = 'none'; };
-        document.getElementById('ctx-copy').onclick = () => { navigator.clipboard.writeText(text); document.getElementById('contextMenuModal').style.display = 'none'; };
-        if (isOwn) {
-            document.getElementById('ctx-edit').onclick = () => { editingMessageId = messageId; renderMessages(); document.getElementById('contextMenuModal').style.display = 'none'; };
-            document.getElementById('ctx-delete').onclick = () => { document.getElementById('contextMenuModal').style.display = 'none'; showDeleteConfirmModal(messageId); };
-        }
-    }
-
-    // Модальное подтверждение удаления
-    function showDeleteConfirmModal(messageId) {
-        const modal = document.createElement('div'); modal.className = 'modal'; modal.style.display = 'flex';
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width:280px;">
-                <h3>Удалить сообщение?</h3>
-                <div class="modal-buttons" style="margin-top:1rem;">
-                    <button id="confirmDeleteBtn">Удалить</button>
-                    <button id="cancelDeleteBtn">Отмена</button>
-                </div>
-            </div>
+        document.getElementById('contextMessagePreview').innerHTML = linkify(escapeHtml(text.substring(0, 150))) + (text.length>150?'…':'');
+        document.getElementById('contextMessageNick').innerHTML = `<span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>`;
+        const container = document.getElementById('contextMenuButtons');
+        container.innerHTML = `
+            <button id="ctx-like"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Лайкнуть</button>
+            <button id="ctx-copy"><svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Скопировать</button>
+            ${isOwn ? `<button id="ctx-edit"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg> Редактировать</button>
+            <button id="ctx-delete"><svg viewBox="0 0 24 24" stroke-width="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>` : ''}
+            <button id="ctx-close"><svg viewBox="0 0 24 24" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Закрыть</button>
         `;
-        document.body.appendChild(modal);
-        document.getElementById('confirmDeleteBtn').onclick = async () => {
-            await fetch('/delete-message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ full_nick: currentUser.full_nick, messageId }) });
-            modal.remove();
-        };
-        document.getElementById('cancelDeleteBtn').onclick = () => modal.remove();
+        document.getElementById('ctx-like')?.addEventListener('click', async () => {
+            await toggleLike(messageId);
+            document.getElementById('contextMenuModal').style.display = 'none';
+        });
+        document.getElementById('ctx-copy')?.addEventListener('click', () => { navigator.clipboard.writeText(text); document.getElementById('contextMenuModal').style.display = 'none'; });
+        document.getElementById('ctx-edit')?.addEventListener('click', () => { editingMessageId = messageId; renderMessages(); document.getElementById('contextMenuModal').style.display = 'none'; });
+        document.getElementById('ctx-delete')?.addEventListener('click', () => { pendingDeleteMessageId = messageId; document.getElementById('confirmMessage').innerText = 'Удалить сообщение?'; document.getElementById('confirmModal').style.display = 'flex'; document.getElementById('contextMenuModal').style.display = 'none'; });
+        document.getElementById('ctx-close')?.addEventListener('click', () => { document.getElementById('contextMenuModal').style.display = 'none'; });
+        document.getElementById('contextMenuModal').style.display = 'flex';
     }
 
     async function loadHistory() {
@@ -421,16 +395,21 @@
         const container = document.getElementById('mailsList'); if(!container) return;
         if(currentMails.length===0){ container.innerHTML='<div style="text-align:center; padding:1rem;">Нет писем</div>'; return; }
         container.innerHTML = '';
-        currentMails.forEach(mail=>{ const {nick,tag}=splitFullNick(mail.from_full_nick); const mailDiv=document.createElement('div'); mailDiv.className=`mail-item ${!mail.is_read?'unread':''}`;
-            mailDiv.innerHTML=`<div class="mail-header"><span>${escapeHtml(nick)}${escapeHtml(tag)}</span><span>${new Date(mail.created_at).toLocaleString().slice(0,-3)}</span></div><div class="mail-snippet">${escapeHtml(mail.text)}</div><div class="mail-actions"><button data-id="${mail.id}" class="read-mail">Прочитать</button><button data-id="${mail.id}" class="reply-mail">Ответить</button><button data-id="${mail.id}" class="delete-mail">Удалить</button></div>`;
+        currentMails.forEach(mail=>{ const {nick,tag}=splitFullNick(mail.from_full_nick); const mailDiv=document.createElement('div'); mailDiv.className='mail-item';
+            if(!mail.is_read) { const dot=document.createElement('div'); dot.className='mail-unread-dot'; mailDiv.appendChild(dot); }
+            mailDiv.innerHTML+=`
+                <div class="mail-header"><span>${escapeHtml(nick)}${escapeHtml(tag)}</span><span>${new Date(mail.created_at).toLocaleString().slice(0,-3)}</span></div>
+                <div class="mail-snippet">${linkify(escapeHtml(mail.text))}</div>
+                <div class="mail-actions"><button data-id="${mail.id}" class="read-mail">Прочитать</button><button data-id="${mail.id}" class="reply-mail">Ответить</button><button data-id="${mail.id}" class="delete-mail">Удалить</button></div>
+            `;
             container.appendChild(mailDiv);
         });
         document.querySelectorAll('.read-mail').forEach(btn=>btn.addEventListener('click',()=>openMail(parseInt(btn.dataset.id))));
         document.querySelectorAll('.reply-mail').forEach(btn=>btn.addEventListener('click',()=>openReplyMail(parseInt(btn.dataset.id))));
         document.querySelectorAll('.delete-mail').forEach(btn=>btn.addEventListener('click',async()=>{ const id=parseInt(btn.dataset.id); await fetch('/delete-mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mailId:id,full_nick:currentUser.full_nick})}); await loadMails(); }));
     }
-    async function openMail(mailId){ const mail=currentMails.find(m=>m.id===mailId); if(!mail) return; if(!mail.is_read){ await fetch('/read-mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mailId,full_nick:currentUser.full_nick})}); mail.is_read=true; await loadMails(); } const {nick,tag}=splitFullNick(mail.from_full_nick); const date = new Date(mail.created_at).toLocaleString().slice(0,-3); document.getElementById('viewMailContent').innerHTML=`<div class="view-mail-header"><div class="view-mail-date">${escapeHtml(date)}</div><div class="view-mail-author">${escapeHtml(nick)}${escapeHtml(tag)}</div></div><div class="view-mail-text">${escapeHtml(mail.text)}</div>`; document.getElementById('viewMailModal').style.display='flex'; currentMailForReply=mail; }
-    function openReplyMail(mailId){ const mail=currentMails.find(m=>m.id===mailId); if(!mail) return; const {nick,tag}=splitFullNick(mail.from_full_nick); document.getElementById('originalMailPreview').innerHTML=`<strong>${escapeHtml(nick)}${escapeHtml(tag)}</strong><br>${escapeHtml(mail.text)}`; document.getElementById('replyMailText').value=''; document.getElementById('replyMailModal').style.display='flex'; currentMailForReply=mail; }
+    async function openMail(mailId){ const mail=currentMails.find(m=>m.id===mailId); if(!mail) return; if(!mail.is_read){ await fetch('/read-mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mailId,full_nick:currentUser.full_nick})}); mail.is_read=true; await loadMails(); } const {nick,tag}=splitFullNick(mail.from_full_nick); document.getElementById('viewMailContent').innerHTML=`<div class="view-mail-header"><div class="view-mail-time">${new Date(mail.created_at).toLocaleString().slice(0,-3)}</div><div class="view-mail-from">${escapeHtml(nick)}${escapeHtml(tag)}</div></div><div class="view-mail-text">${linkify(escapeHtml(mail.text))}</div>`; document.getElementById('viewMailModal').style.display='flex'; currentMailForReply=mail; }
+    function openReplyMail(mailId){ const mail=currentMails.find(m=>m.id===mailId); if(!mail) return; const {nick,tag}=splitFullNick(mail.from_full_nick); document.getElementById('originalMailPreview').innerHTML=`<strong>${escapeHtml(nick)}${escapeHtml(tag)}</strong><br>${linkify(escapeHtml(mail.text))}`; document.getElementById('replyMailText').value=''; document.getElementById('replyMailModal').style.display='flex'; currentMailForReply=mail; }
     async function sendNewMail(to,text){ const res=await fetch('/send-mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from_full_nick:currentUser.full_nick,to_full_nick:to,text})}); const data=await res.json(); if(data.success){ alert('Письмо отправлено'); document.getElementById('newMailModal').style.display='none'; } else alert(data.error||'Ошибка'); }
     async function sendReply(replyText){ if(!currentMailForReply) return; const res=await fetch('/reply-mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from_full_nick:currentUser.full_nick,to_full_nick:currentMailForReply.from_full_nick,replyText})}); const data=await res.json(); if(data.success){ alert('Ответ отправлен'); document.getElementById('replyMailModal').style.display='none'; await loadMails(); } else alert(data.error||'Ошибка'); }
 
@@ -481,7 +460,7 @@
     }
     function autoResizeTextarea(){
         const textarea=document.getElementById('messageInput');
-        textarea.style.height='auto'; textarea.style.height=Math.min(textarea.scrollHeight,120)+'px';
+        textarea.style.height='auto'; textarea.style.height=Math.min(textarea.scrollHeight,150)+'px';
     }
 
     window.onload=async()=>{
@@ -492,11 +471,11 @@
 
         document.getElementById('loginBtn').onclick=()=>{ const nick=document.getElementById('loginNick').value.trim(), pin=document.getElementById('loginPin').value; if(!nick||!pin||pin.length!==4||!/^\d+$/.test(pin)){ document.getElementById('loginError').innerText='Введите ник и 4-значный PIN'; return; } authWithPin(nick,pin); };
         document.getElementById('sendBtn').onclick=sendMessage;
-        document.getElementById('emojiBtn').onclick=()=>{ const input=document.getElementById('messageInput'); input.focus(); };
         const msgInput=document.getElementById('messageInput'); msgInput.addEventListener('input',autoResizeTextarea);
         msgInput.addEventListener('keypress',(e)=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); const start=msgInput.selectionStart, end=msgInput.selectionEnd; msgInput.value=msgInput.value.substring(0,start)+'\n'+msgInput.value.substring(end); msgInput.selectionStart=msgInput.selectionEnd=start+1; autoResizeTextarea(); } });
-        document.getElementById('messagesContainer').addEventListener('scroll',()=>{ isUserScrolling=true; clearTimeout(window.scrollTimeout); window.scrollTimeout=setTimeout(()=>{ isUserScrolling=false; },200); });
+        document.getElementById('messagesContainer').addEventListener('scroll',()=>{ window.isUserScrolling=true; clearTimeout(window.scrollTimeout); window.scrollTimeout=setTimeout(()=>{ window.isUserScrolling=false; },200); });
 
+        // Модалки
         const settingsModal=document.getElementById('settingsModal'); document.getElementById('settingsBtn').onclick=()=>settingsModal.style.display='flex'; document.getElementById('closeModalBtn').onclick=()=>settingsModal.style.display='none';
         document.getElementById('changeNickBtn').onclick=()=>document.getElementById('changeNickModal').style.display='flex'; document.getElementById('changePinBtn').onclick=()=>document.getElementById('changePinModal').style.display='flex';
         document.getElementById('applyNickBtn').onclick=async()=>{ const nn=document.getElementById('newNickInput').value.trim(); if(nn) await changeNick(nn); document.getElementById('changeNickModal').style.display='none'; document.getElementById('newNickInput').value=''; };
@@ -509,10 +488,11 @@
         document.getElementById('cancelMailBtn').onclick=()=>document.getElementById('newMailModal').style.display='none';
         document.getElementById('sendMailBtn').onclick=async()=>{ const to=document.getElementById('mailTo').value.trim(), text=document.getElementById('mailText').value.trim(); if(!to||!text){ alert('Заполните поля'); return; } await sendNewMail(to,text); document.getElementById('mailTo').value=''; document.getElementById('mailText').value=''; document.getElementById('newMailModal').style.display='none'; await loadMails(); };
         document.getElementById('closeViewMailBtn').onclick=()=>document.getElementById('viewMailModal').style.display='none';
-        document.getElementById('replyMailBtn').onclick=()=>{ document.getElementById('viewMailModal').style.display='none'; if(currentMailForReply){ const {nick,tag}=splitFullNick(currentMailForReply.from_full_nick); document.getElementById('originalMailPreview').innerHTML=`<strong>${escapeHtml(nick)}${escapeHtml(tag)}</strong><br>${escapeHtml(currentMailForReply.text)}`; document.getElementById('replyMailText').value=''; document.getElementById('replyMailModal').style.display='flex'; } };
+        document.getElementById('replyMailBtn').onclick=()=>{ document.getElementById('viewMailModal').style.display='none'; if(currentMailForReply){ const {nick,tag}=splitFullNick(currentMailForReply.from_full_nick); document.getElementById('originalMailPreview').innerHTML=`<strong>${escapeHtml(nick)}${escapeHtml(tag)}</strong><br>${linkify(escapeHtml(currentMailForReply.text))}`; document.getElementById('replyMailText').value=''; document.getElementById('replyMailModal').style.display='flex'; } };
         document.getElementById('cancelReplyBtn').onclick=()=>document.getElementById('replyMailModal').style.display='none';
         document.getElementById('sendReplyBtn').onclick=async()=>{ const reply=document.getElementById('replyMailText').value.trim(); if(!reply){ alert('Введите текст ответа'); return; } await sendReply(reply); document.getElementById('replyMailModal').style.display='none'; await loadMails(); };
-        document.getElementById('contextMenuClose').onclick=()=>document.getElementById('contextMenuModal').style.display='none';
+        document.getElementById('confirmOkBtn').onclick=async()=>{ if(pendingDeleteMessageId){ await fetch('/delete-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_nick:currentUser.full_nick,messageId:pendingDeleteMessageId})}); pendingDeleteMessageId=null; } document.getElementById('confirmModal').style.display='none'; };
+        document.getElementById('confirmCancelBtn').onclick=()=>{ pendingDeleteMessageId=null; document.getElementById('confirmModal').style.display='none'; };
     };
 </script>
 </body>
