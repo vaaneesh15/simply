@@ -20,95 +20,37 @@ const pool = new Pool({
 });
 
 async function initDB() {
+  // Проверяем, существует ли таблица users, и если да, то пересоздаём с правильной схемой (осторожно, удалит данные!)
+  // Но чтобы не потерять существующие сообщения, лучше добавить недостающие столбцы.
+  // Сначала создаём таблицу, если её нет
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      nick VARCHAR(50) NOT NULL,
+      tag VARCHAR(4) NOT NULL,
+      full_nick VARCHAR(55) UNIQUE NOT NULL,
+      pin_hash TEXT NOT NULL,
+      token TEXT UNIQUE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  // Если есть столбец password_hash, удаляем его (если он существует)
   try {
-    // Создаём таблицу users, если её нет
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        nick VARCHAR(50) NOT NULL,
-        tag VARCHAR(4) NOT NULL,
-        full_nick VARCHAR(55) UNIQUE NOT NULL,
-        pin_hash TEXT NOT NULL,
-        token TEXT UNIQUE,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-    // Создаём таблицу messages, если её нет
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS messages (
-        id SERIAL PRIMARY KEY,
-        full_nick VARCHAR(55) NOT NULL,
-        text TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-    // Проверяем наличие колонки tag в таблице users (если таблица уже существовала, но без tag)
-    const checkTag = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name='users' AND column_name='tag'
-    `);
-    if (checkTag.rows.length === 0) {
-      console.log('Добавляем колонку tag...');
-      await pool.query('ALTER TABLE users ADD COLUMN tag VARCHAR(4) NOT NULL DEFAULT \'#000\'');
-    }
-    // Проверяем колонку full_nick
-    const checkFullNick = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name='users' AND column_name='full_nick'
-    `);
-    if (checkFullNick.rows.length === 0) {
-      console.log('Добавляем колонку full_nick...');
-      await pool.query('ALTER TABLE users ADD COLUMN full_nick VARCHAR(55) UNIQUE');
-      // Заполним существующие записи (если есть) каким-то значением, чтобы не было null
-      await pool.query(`UPDATE users SET full_nick = nick || '#000' WHERE full_nick IS NULL`);
-      await pool.query('ALTER TABLE users ALTER COLUMN full_nick SET NOT NULL');
-    }
-    // Проверяем колонку pin_hash
-    const checkPin = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name='users' AND column_name='pin_hash'
-    `);
-    if (checkPin.rows.length === 0) {
-      console.log('Добавляем колонку pin_hash...');
-      await pool.query('ALTER TABLE users ADD COLUMN pin_hash TEXT NOT NULL DEFAULT \'\'');
-    }
-    // Проверяем колонку token
-    const checkToken = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name='users' AND column_name='token'
-    `);
-    if (checkToken.rows.length === 0) {
-      console.log('Добавляем колонку token...');
-      await pool.query('ALTER TABLE users ADD COLUMN token TEXT UNIQUE');
-    }
-    // Если таблица messages не имеет колонки full_nick (была старая структура с nick)
-    const checkMsgFullNick = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name='messages' AND column_name='full_nick'
-    `);
-    if (checkMsgFullNick.rows.length === 0) {
-      console.log('Добавляем колонку full_nick в messages...');
-      await pool.query('ALTER TABLE messages ADD COLUMN full_nick VARCHAR(55)');
-      // Переносим данные из nick (если есть) в full_nick
-      await pool.query(`UPDATE messages SET full_nick = nick || '#000' WHERE full_nick IS NULL`);
-      await pool.query('ALTER TABLE messages ALTER COLUMN full_nick SET NOT NULL');
-      // Удаляем старую колонку nick
-      await pool.query('ALTER TABLE messages DROP COLUMN IF EXISTS nick');
-    }
-    console.log('✅ База данных готова');
-  } catch (err) {
-    console.error('❌ Ошибка инициализации БД:', err);
-    throw err;
-  }
+    await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS password_hash;`);
+  } catch(e) { console.log("Column password_hash not found or already removed"); }
+  
+  // Создаём таблицу messages, если её нет
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      full_nick VARCHAR(55) NOT NULL,
+      text TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  console.log('✅ База данных готова');
 }
-
-// Вызываем initDB при старте, но не блокируем запуск сервера
-initDB().catch(err => console.error('FATAL:', err));
+initDB();
 
 function generateTag() {
   return '#' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -120,12 +62,12 @@ async function isFullNickUnique(fullNick) {
 }
 
 app.post('/auth', async (req, res) => {
-  const { nick, pin } = req.body;
+  let { nick, pin } = req.body;
   if (!nick || nick.trim() === '' || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
     return res.status(400).json({ success: false, error: 'Неверный ник или PIN (4 цифры)' });
   }
-  const cleanNick = nick.trim();
-  const existing = await pool.query('SELECT id, full_nick, pin_hash FROM users WHERE nick = $1', [cleanNick]);
+  nick = nick.trim();
+  const existing = await pool.query('SELECT id, full_nick, pin_hash FROM users WHERE nick = $1', [nick]);
   if (existing.rows.length > 0) {
     const valid = await bcrypt.compare(pin, existing.rows[0].pin_hash);
     if (!valid) return res.json({ success: false, error: 'Неверный PIN' });
@@ -139,7 +81,7 @@ app.post('/auth', async (req, res) => {
     let attempts = 0;
     while (!unique && attempts < 20) {
       tag = generateTag();
-      full_nick = `${cleanNick}${tag}`;
+      full_nick = `${nick}${tag}`;
       unique = await isFullNickUnique(full_nick);
       attempts++;
     }
@@ -148,7 +90,7 @@ app.post('/auth', async (req, res) => {
     const token = uuidv4();
     await pool.query(
       'INSERT INTO users (nick, tag, full_nick, pin_hash, token) VALUES ($1, $2, $3, $4, $5)',
-      [cleanNick, tag, full_nick, pinHash, token]
+      [nick, tag, full_nick, pinHash, token]
     );
     return res.json({ success: true, full_nick, token });
   }
