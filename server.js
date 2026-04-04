@@ -32,19 +32,6 @@ app.get('/messages', (req, res) => {
   res.json(messages.slice(-200));
 });
 
-app.post('/delete-message', (req, res) => {
-  const { nick, messageId } = req.body;
-  if (!nick || !messageId) return res.status(400).json({ success: false });
-  const msgIndex = messages.findIndex(m => m.id === messageId);
-  if (msgIndex !== -1 && messages[msgIndex].nick === nick) {
-    messages.splice(msgIndex, 1);
-    io.emit('message deleted', messageId);
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
-  }
-});
-
 io.on('connection', (socket) => {
   console.log('Клиент подключился');
   socket.on('new message', (data) => {
