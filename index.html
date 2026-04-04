@@ -22,7 +22,7 @@
             --input-bg: #1c1c1e;
         }
 
-        /* Цветовые акценты: прежние + красный, индиго, лавандовый */
+        /* Цветовые акценты */
         body.accent-blue { --accent-color: #0a84ff; }
         body.accent-purple { --accent-color: #bf5af2; }
         body.accent-pink { --accent-color: #ff375f; }
@@ -32,7 +32,9 @@
         body.accent-teal { --accent-color: #64d2ff; }
         body.accent-red { --accent-color: #ff3b30; }
         body.accent-indigo { --accent-color: #5856d6; }
-        body.accent-lavender { --accent-color: #af52de; }
+        body.accent-coral { --accent-color: #ff6b6b; }
+        body.accent-beige { --accent-color: #d4a373; }
+        body.accent-gray { --accent-color: #8e8e93; }
 
         body {
             background-color: var(--bg-page);
@@ -81,7 +83,6 @@
             word-break: break-word;
         }
 
-        /* Разделитель сообщений — толще и виднее */
         .message-divider {
             margin-top: 8px;
             height: 1px;
@@ -89,7 +90,6 @@
             width: 100%;
         }
 
-        /* Панель ввода: полоска сверху 1px, хорошо заметная */
         .input-wrapper {
             background: var(--input-bg);
             border-top: 1px solid rgba(84, 84, 88, 0.6);
@@ -259,7 +259,9 @@
                 <option value="teal">Бирюзовый</option>
                 <option value="red">Красный</option>
                 <option value="indigo">Индиго</option>
-                <option value="lavender">Лавандовый</option>
+                <option value="coral">Коралловый</option>
+                <option value="beige">Бежевый</option>
+                <option value="gray">Светло-серый</option>
             </select>
         </div>
         <button class="modal-close" id="closeModalBtn">Закрыть</button>
@@ -274,7 +276,8 @@
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { accent: 'blue' };
 
     function applyAccent(accent) {
-        document.body.classList.remove('accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal', 'accent-red', 'accent-indigo', 'accent-lavender');
+        const classes = ['accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal', 'accent-red', 'accent-indigo', 'accent-coral', 'accent-beige', 'accent-gray'];
+        document.body.classList.remove(...classes);
         if (accent === 'blue') document.body.classList.add('accent-blue');
         else if (accent === 'purple') document.body.classList.add('accent-purple');
         else if (accent === 'pink') document.body.classList.add('accent-pink');
@@ -284,7 +287,9 @@
         else if (accent === 'teal') document.body.classList.add('accent-teal');
         else if (accent === 'red') document.body.classList.add('accent-red');
         else if (accent === 'indigo') document.body.classList.add('accent-indigo');
-        else if (accent === 'lavender') document.body.classList.add('accent-lavender');
+        else if (accent === 'coral') document.body.classList.add('accent-coral');
+        else if (accent === 'beige') document.body.classList.add('accent-beige');
+        else if (accent === 'gray') document.body.classList.add('accent-gray');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
