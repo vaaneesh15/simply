@@ -11,35 +11,27 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Хранилище сообщений в памяти (очищается при перезапуске)
+// Хранилище сообщений в памяти
 let messages = [];
 
-// Авторизация — только ник, без пароля
+// Авторизация — только ник
 app.post('/auth', (req, res) => {
   const { nick } = req.body;
   if (!nick || nick.trim() === '') {
     return res.status(400).json({ success: false, error: 'Ник не может быть пустым' });
   }
-  // Генерируем случайный токен для сессии
   const token = Math.random().toString(36).substring(2, 15);
   res.json({ success: true, nick: nick.trim(), token });
 });
 
-// Проверка токена (бесшовный вход)
 app.post('/verify', (req, res) => {
-  const { token } = req.body;
-  // В упрощённой версии просто проверяем, что токен есть в localStorage
-  // Токен не храним на сервере, но можно просто верить клиенту
-  // Для безопасности лучше хранить, но для простоты пропустим
   res.json({ success: true });
 });
 
-// Получение истории сообщений
 app.get('/messages', (req, res) => {
   res.json(messages.slice(-200));
 });
 
-// Удаление сообщения (только своего)
 app.post('/delete-message', (req, res) => {
   const { nick, messageId } = req.body;
   if (!nick || !messageId) return res.status(400).json({ success: false });
@@ -53,7 +45,6 @@ app.post('/delete-message', (req, res) => {
   }
 });
 
-// Socket.IO
 io.on('connection', (socket) => {
   console.log('Клиент подключился');
   socket.on('new message', (data) => {
