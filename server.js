@@ -14,13 +14,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Подключение к PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// Инициализация таблиц
 async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -43,22 +41,18 @@ async function initDB() {
 }
 initDB();
 
-// Авторизация (только ник, без пароля – упрощённо, но сохраняем совместимость)
 app.post('/auth', async (req, res) => {
   const { nick } = req.body;
   if (!nick || nick.trim() === '') {
     return res.status(400).json({ success: false, error: 'Ник не может быть пустым' });
   }
-  // Ищем пользователя
   let user = await pool.query('SELECT id, nick FROM users WHERE nick = $1', [nick.trim()]);
   if (user.rows.length === 0) {
-    // Создаём нового пользователя с пустым паролем (упрощённо)
     const hash = await bcrypt.hash('', 10);
     const token = uuidv4();
     await pool.query('INSERT INTO users (nick, password_hash, token) VALUES ($1, $2, $3)', [nick.trim(), hash, token]);
     res.json({ success: true, nick: nick.trim(), token });
   } else {
-    // Обновляем токен
     const token = uuidv4();
     await pool.query('UPDATE users SET token = $1 WHERE id = $2', [token, user.rows[0].id]);
     res.json({ success: true, nick: user.rows[0].nick, token });
@@ -90,15 +84,21 @@ app.post('/delete-message', async (req, res) => {
   }
 });
 
-// Смена ника
+// Смена ника с обновлением всех сообщений пользователя
 app.post('/change-nick', async (req, res) => {
   const { token, newNick } = req.body;
   if (!token || !newNick) return res.status(400).json({ success: false });
   const user = await pool.query('SELECT nick FROM users WHERE token = $1', [token]);
   if (user.rows.length === 0) return res.json({ success: false });
   const oldNick = user.rows[0].nick;
+  if (oldNick === newNick) return res.json({ success: true, newNick });
+  // Проверка, что новый ник не занят
+  const existing = await pool.query('SELECT id FROM users WHERE nick = $1', [newNick]);
+  if (existing.rows.length > 0) return res.json({ success: false, error: 'Ник уже занят' });
   await pool.query('UPDATE users SET nick = $1 WHERE token = $2', [newNick, token]);
   await pool.query('UPDATE messages SET nick = $1 WHERE nick = $2', [newNick, oldNick]);
+  // Оповещаем всех клиентов об изменении ника
+  io.emit('nick changed', { oldNick, newNick });
   res.json({ success: true, newNick });
 });
 
