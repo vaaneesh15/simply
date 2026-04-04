@@ -22,7 +22,7 @@
             --input-bg: #1c1c1e;
         }
 
-        /* Цветовые акценты */
+        /* Цветовые акценты: прежние + красный, индиго, лавандовый */
         body.accent-blue { --accent-color: #0a84ff; }
         body.accent-purple { --accent-color: #bf5af2; }
         body.accent-pink { --accent-color: #ff375f; }
@@ -30,6 +30,9 @@
         body.accent-orange { --accent-color: #ff9f0a; }
         body.accent-yellow { --accent-color: #ffd60a; }
         body.accent-teal { --accent-color: #64d2ff; }
+        body.accent-red { --accent-color: #ff3b30; }
+        body.accent-indigo { --accent-color: #5856d6; }
+        body.accent-lavender { --accent-color: #af52de; }
 
         body {
             background-color: var(--bg-page);
@@ -54,7 +57,7 @@
             padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
 
         .message-item {
@@ -78,17 +81,18 @@
             word-break: break-word;
         }
 
+        /* Разделитель сообщений — толще и виднее */
         .message-divider {
             margin-top: 8px;
-            height: 0.5px;
-            background-color: var(--border-light);
+            height: 1px;
+            background-color: rgba(84, 84, 88, 0.4);
             width: 100%;
         }
 
-        /* Панель ввода как в ВК — на всю ширину, с разделительной линией, увеличенная */
+        /* Панель ввода: полоска сверху 1px, хорошо заметная */
         .input-wrapper {
             background: var(--input-bg);
-            border-top: 0.5px solid var(--border-light);
+            border-top: 1px solid rgba(84, 84, 88, 0.6);
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
 
@@ -253,6 +257,9 @@
                 <option value="orange">Оранжевый</option>
                 <option value="yellow">Жёлтый</option>
                 <option value="teal">Бирюзовый</option>
+                <option value="red">Красный</option>
+                <option value="indigo">Индиго</option>
+                <option value="lavender">Лавандовый</option>
             </select>
         </div>
         <button class="modal-close" id="closeModalBtn">Закрыть</button>
@@ -267,7 +274,7 @@
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { accent: 'blue' };
 
     function applyAccent(accent) {
-        document.body.classList.remove('accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal');
+        document.body.classList.remove('accent-blue', 'accent-purple', 'accent-pink', 'accent-mint', 'accent-orange', 'accent-yellow', 'accent-teal', 'accent-red', 'accent-indigo', 'accent-lavender');
         if (accent === 'blue') document.body.classList.add('accent-blue');
         else if (accent === 'purple') document.body.classList.add('accent-purple');
         else if (accent === 'pink') document.body.classList.add('accent-pink');
@@ -275,6 +282,9 @@
         else if (accent === 'orange') document.body.classList.add('accent-orange');
         else if (accent === 'yellow') document.body.classList.add('accent-yellow');
         else if (accent === 'teal') document.body.classList.add('accent-teal');
+        else if (accent === 'red') document.body.classList.add('accent-red');
+        else if (accent === 'indigo') document.body.classList.add('accent-indigo');
+        else if (accent === 'lavender') document.body.classList.add('accent-lavender');
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
     }
@@ -287,11 +297,10 @@
         const container = document.getElementById('messagesContainer');
         if (!container) return;
         container.innerHTML = '';
-        messages.forEach((msg, index) => {
+        messages.forEach((msg) => {
             const isOwn = currentUser && msg.nick === currentUser.nick;
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message-item';
-            // Стиль для своих сообщений: цвет текста акцентный (опционально)
             const nickColor = isOwn ? 'var(--accent-color)' : 'var(--text-secondary)';
             msgDiv.innerHTML = `
                 <div class="message-nick" style="color: ${nickColor};">${escapeHtml(msg.nick)}</div>
