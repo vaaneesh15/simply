@@ -12,11 +12,16 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        html, body { height: 100%; overflow: hidden; }
+        html, body {
+            height: 100%;
+            overflow: hidden; /* полностью запрещаем прокрутку страницы */
+        }
         body {
             background-color: var(--bg-page);
             color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            position: fixed;
+            width: 100%;
         }
         :root {
             --bg-page: #121212;
@@ -59,7 +64,7 @@
         }
         .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
 
-        .app-container { height:100%; display: flex; flex-direction: column; background-color: var(--bg-page); position: relative; }
+        .app-container { height:100%; display: flex; flex-direction: column; background-color: var(--bg-page); position: relative; overflow: hidden; }
         .chat-messages { flex:1; overflow-y: auto; padding:1rem; display: flex; flex-direction: column; gap:12px; }
         .message-item { display: flex; flex-direction: column; width:100%; position: relative; }
         .message-header { display: flex; align-items: baseline; gap:8px; margin-bottom: 2px; }
@@ -103,16 +108,23 @@
         .mails-btn.has-unread { color: var(--accent-color); }
         .input-row textarea {
             flex:1; background:transparent; border:none; padding:0.75rem 0; font-size:1rem;
-            color:var(--text-primary); outline:none; resize:none; overflow-y:hidden; font-family:inherit;
-            line-height:1.4; max-height:150px;
-            scroll-margin-bottom: 80px; /* чтобы клавиатура не поднимала слишком высоко */
+            color:var(--text-primary); outline:none; resize: none; 
+            font-family:inherit; line-height:1.4; max-height:150px; overflow-y: auto; /* добавляем скролл при превышении */
+            scroll-margin-bottom: 80px;
         }
         .send-btn {
             background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
             color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
 
-        /* Редактирование: авто-высота, белый крест */
+        /* Редактирование: фиксированная высота 5 строк + скролл */
+        .edit-textarea {
+            width:100%; background:#2c2c2e; border:1px solid var(--border-light); border-radius:1rem; padding:0.5rem;
+            margin-bottom:0.5rem; color:white; font-family:inherit; font-size:1rem; line-height:1.4;
+            height: calc(1.4rem * 5 + 1rem); /* ~ 5 строк + padding */
+            overflow-y: auto;
+            resize: none;
+        }
         .edit-cancel, .edit-save {
             width: 2rem; height: 2rem; border-radius: 2rem; display: inline-flex; align-items: center;
             justify-content: center; font-size: 1rem; cursor: pointer; border: none;
@@ -310,23 +322,13 @@
             if (editingMessageId === msg.id) {
                 msgDiv.innerHTML = `
                     <div class="message-header"><div class="message-nick"><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
-                    <textarea id="edit-textarea-${msg.id}" class="edit-textarea" style="width:100%; background:#2c2c2e; border:1px solid var(--border-light); border-radius:1rem; padding:0.5rem; margin-bottom:0.5rem; color:white; font-family:inherit; font-size:1rem; line-height:1.4;">${escapeHtml(msg.text)}</textarea>
+                    <textarea id="edit-textarea-${msg.id}" class="edit-textarea" style="height: calc(1.4rem * 5 + 1rem); overflow-y: auto;">${escapeHtml(msg.text)}</textarea>
                     <div style="display:flex; gap:8px; justify-content:flex-end;">
                         <button class="edit-cancel" data-id="${msg.id}"><svg viewBox="0 0 24 24" stroke="white" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                         <button class="edit-save" data-id="${msg.id}">✓</button>
                     </div>
                     <div class="message-divider"></div>
                 `;
-                const ta = msgDiv.querySelector('textarea');
-                if (ta) {
-                    ta.style.height = 'auto';
-                    const targetHeight = Math.min(ta.scrollHeight, 150);
-                    ta.style.height = targetHeight + 'px';
-                    ta.addEventListener('input', function() {
-                        this.style.height = 'auto';
-                        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-                    });
-                }
             } else {
                 msgDiv.innerHTML = `
                     <div class="message-header">
@@ -472,11 +474,12 @@
     }
 
     function sendMessage(){
-        const input=document.getElementById('messageInput'); const text=input.value;
+        const input=document.getElementById('messageInput');
+        const text=input.value;
         if(!text.trim() || !socket || !currentUser.full_nick) return;
         socket.emit('new message',{full_nick:currentUser.full_nick,text});
-        input.value=''; input.style.height='auto'; 
-        // Плавная прокрутка с отступом, чтобы клавиатура не поднимала слишком высоко
+        input.value='';
+        input.style.height='auto';
         setTimeout(() => {
             input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 50);
@@ -484,12 +487,13 @@
     }
     function autoResizeTextarea(){
         const textarea=document.getElementById('messageInput');
-        textarea.style.height='auto'; textarea.style.height=Math.min(textarea.scrollHeight,150)+'px';
+        textarea.style.height='auto';
+        textarea.style.height=Math.min(textarea.scrollHeight,150)+'px';
     }
 
-    // Отключаем прокрутку body при фокусе
+    // Полностью запрещаем прокрутку страницы
     document.body.addEventListener('touchmove', (e) => {
-        if (!e.target.closest('.chat-messages') && !e.target.closest('.input-row textarea')) {
+        if (!e.target.closest('.chat-messages') && !e.target.closest('.input-row textarea') && !e.target.closest('.edit-textarea')) {
             e.preventDefault();
         }
     }, { passive: false });
@@ -504,7 +508,6 @@
         document.getElementById('sendBtn').onclick=sendMessage;
         const msgInput=document.getElementById('messageInput'); msgInput.addEventListener('input',autoResizeTextarea);
         msgInput.addEventListener('keypress',(e)=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); const start=msgInput.selectionStart, end=msgInput.selectionEnd; msgInput.value=msgInput.value.substring(0,start)+'\n'+msgInput.value.substring(end); msgInput.selectionStart=msgInput.selectionEnd=start+1; autoResizeTextarea(); } });
-        // При фокусе на поле ввода — плавная прокрутка с отступом
         msgInput.addEventListener('focus', () => {
             setTimeout(() => {
                 msgInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
