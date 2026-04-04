@@ -36,6 +36,7 @@ async function initDB() {
       id SERIAL PRIMARY KEY,
       full_nick VARCHAR(55) NOT NULL,
       text TEXT NOT NULL,
+      edited BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
@@ -71,7 +72,7 @@ async function isFullNickUnique(fullNick) {
   return res.rows.length === 0;
 }
 
-// АВТОРИЗАЦИЯ (с PIN)
+// АВТОРИЗАЦИЯ
 app.post('/auth', async (req, res) => {
   const { nick, pin } = req.body;
   if (!nick || nick.trim() === '' || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
@@ -115,7 +116,7 @@ app.post('/verify', async (req, res) => {
   else res.json({ success: false });
 });
 
-// СМЕНА НИКА (без PIN)
+// СМЕНА НИКА
 app.post('/change-nick', async (req, res) => {
   const { token, newNick } = req.body;
   if (!token || !newNick || newNick.trim() === '') {
@@ -126,7 +127,6 @@ app.post('/change-nick', async (req, res) => {
   const oldFullNick = user.rows[0].full_nick;
   const oldNick = user.rows[0].nick;
   if (newNick === oldNick) return res.json({ success: true, newFullNick: oldFullNick });
-  // Сохраняем старый тег
   const tag = oldFullNick.substring(oldNick.length);
   const newFullNick = `${newNick}${tag}`;
   const existing = await pool.query('SELECT id FROM users WHERE full_nick = $1', [newFullNick]);
@@ -159,8 +159,9 @@ app.post('/change-pin', async (req, res) => {
 
 // СООБЩЕНИЯ
 app.get('/messages', async (req, res) => {
+  const { full_nick } = req.query;
   const result = await pool.query(`
-    SELECT m.id, m.full_nick, m.text, m.created_at,
+    SELECT m.id, m.full_nick, m.text, m.edited, m.created_at,
            COALESCE(l.likes_count, 0) as likes_count,
            EXISTS(SELECT 1 FROM likes WHERE message_id = m.id AND full_nick = $1) as is_liked
     FROM messages m
@@ -170,7 +171,7 @@ app.get('/messages', async (req, res) => {
       GROUP BY message_id
     ) l ON m.id = l.message_id
     ORDER BY m.created_at ASC LIMIT 200
-  `, [req.query.full_nick || '']);
+  `, [full_nick || '']);
   res.json(result.rows);
 });
 
@@ -180,6 +181,23 @@ app.post('/delete-message', async (req, res) => {
   const result = await pool.query('DELETE FROM messages WHERE id = $1 AND full_nick = $2 RETURNING id', [messageId, full_nick]);
   if (result.rowCount > 0) {
     io.emit('message deleted', messageId);
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
+
+app.post('/edit-message', async (req, res) => {
+  const { full_nick, messageId, newText } = req.body;
+  if (!full_nick || !messageId || !newText || newText.trim() === '') {
+    return res.status(400).json({ success: false });
+  }
+  const result = await pool.query(
+    'UPDATE messages SET text = $1, edited = TRUE WHERE id = $2 AND full_nick = $3 RETURNING id',
+    [newText.trim(), messageId, full_nick]
+  );
+  if (result.rowCount > 0) {
+    io.emit('message edited', { messageId, newText: newText.trim() });
     res.json({ success: true });
   } else {
     res.json({ success: false });
@@ -197,7 +215,6 @@ app.post('/like', async (req, res) => {
     res.json({ success: true, likes_count: parseInt(countRes.rows[0].count) });
   } catch (err) {
     if (err.code === '23505') {
-      // Уже лайкнуто — удаляем лайк
       await pool.query('DELETE FROM likes WHERE message_id = $1 AND full_nick = $2', [messageId, full_nick]);
       const countRes = await pool.query('SELECT COUNT(*) as count FROM likes WHERE message_id = $1', [messageId]);
       io.emit('like updated', { messageId, full_nick, likes_count: parseInt(countRes.rows[0].count), is_liked: false });
@@ -226,7 +243,6 @@ app.post('/send-mail', async (req, res) => {
   if (!from_full_nick || !to_full_nick || !text || text.trim() === '') {
     return res.status(400).json({ success: false, error: 'Не все поля заполнены' });
   }
-  // Проверяем, существует ли получатель
   const userExists = await pool.query('SELECT full_nick FROM users WHERE full_nick = $1', [to_full_nick]);
   if (userExists.rows.length === 0) {
     return res.json({ success: false, error: 'Пользователь не найден' });
@@ -235,7 +251,6 @@ app.post('/send-mail', async (req, res) => {
     'INSERT INTO mails (from_full_nick, to_full_nick, text, is_read) VALUES ($1, $2, $3, $4) RETURNING id',
     [from_full_nick, to_full_nick, text.trim(), false]
   );
-  // Оповещаем получателя о новом письме
   io.emit('new mail', { to_full_nick });
   res.json({ success: true, mailId: result.rows[0].id });
 });
@@ -280,6 +295,7 @@ io.on('connection', (socket) => {
       id: result.rows[0].id,
       full_nick,
       text: text.trim(),
+      edited: false,
       created_at: result.rows[0].created_at,
       likes_count: 0,
       is_liked: false
