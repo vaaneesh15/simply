@@ -43,7 +43,6 @@
         body.accent-teal { --accent-color: #14b89a; }
         body.accent-gray { --accent-color: #9ca3af; }
 
-        /* Экран авторизации */
         .login-screen {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: var(--bg-page); display: flex; align-items: flex-start; justify-content: center;
@@ -67,7 +66,6 @@
 
         .app-container { height:100%; display: flex; flex-direction: column; background-color: var(--bg-page); position: relative; overflow: hidden; }
 
-        /* Верхняя панель вкладок */
         .top-tab-bar {
             background: var(--input-bg);
             border-bottom: 1px solid var(--border-light);
@@ -105,7 +103,6 @@
             display: flex;
         }
 
-        /* Общий чат и приватные чаты */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -195,6 +192,10 @@
             align-items: center;
             gap: 4px;
             cursor: pointer;
+            border: 0.5px solid rgba(255,255,255,0.1);
+        }
+        .reaction-badge .reaction-count {
+            color: var(--accent-color);
         }
         .edited-badge {
             font-size:0.65rem;
@@ -217,7 +218,6 @@
             font-size: 0.9rem;
         }
 
-        /* Список приватных комнат */
         .rooms-list {
             padding: 1rem;
             display: flex;
@@ -266,7 +266,6 @@
             stroke-width: 2;
         }
 
-        /* Шапка приватного чата */
         .room-header {
             background: var(--input-bg);
             border-bottom: 1px solid var(--border-light);
@@ -301,7 +300,6 @@
             font-size: 0.9rem;
         }
 
-        /* Модальные окна */
         .modal {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
             background-color:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1000;
@@ -370,18 +368,34 @@
             cursor: pointer;
             font-size: 1rem;
         }
+        .add-member-btn {
+            background: var(--accent-color);
+            border: none;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
 
         .settings-container { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.8rem; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
         .setting-label { font-weight: 500; font-size: 1rem; color: var(--text-primary); }
         .nick-readonly { border:1px solid var(--border-light); border-radius:1rem; padding:0.6rem 1rem; background:var(--input-bg); color:var(--text-primary); font-size:1rem; }
         .accent-select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 1rem center !important;
-            padding-right: 2.5rem !important;
-            padding-left: 1rem !important;
+            background-color: #2c2c2e;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 0.6rem 2rem 0.6rem 1rem;
+            color: white;
+            font-size: 0.9rem;
             appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2rem;
+            cursor: pointer;
         }
 
         .input-wrapper {
@@ -482,7 +496,8 @@
 <div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-buttons"><button id="cancelPinBtn">Закрыть</button><button id="applyPinBtn">Применить</button></div></div></div>
 <div id="contextMenuModal" class="modal context-menu-modal"><div class="modal-content"><div id="contextMessageNick" class="context-message-nick"></div><div id="contextMessagePreview" class="context-message-preview"></div><div class="context-menu-buttons" id="contextMenuButtons"></div></div></div>
 <div id="confirmModal" class="modal"><div class="modal-content"><h3>Подтверждение</h3><p id="confirmMessage" style="margin-bottom:1rem;">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">Удалить</button></div></div></div>
-<div id="membersModal" class="modal members-modal"><div class="modal-content"><h3>Участники комнаты</h3><div id="membersList" class="members-list"></div><div class="modal-setting"><label>Добавить участника</label><div class="modal-buttons" style="margin-top:0;"><input type="text" id="newMemberNick" placeholder="Ник#Тег" style="flex:1;"><button id="addMemberBtn" class="send-btn" style="width:auto; padding:0 1rem;">+</button></div></div><button id="closeMembersBtn" class="join-room-btn" style="margin-top:0.5rem;">Закрыть</button></div></div>
+<div id="membersModal" class="modal members-modal"><div class="modal-content"><h3>Участники комнаты</h3><div id="membersList" class="members-list"></div><div class="modal-setting" style="display: flex; gap: 8px; align-items: center;"><button id="openAddMemberBtn" class="add-member-btn">+</button></div><button id="closeMembersBtn" class="join-room-btn" style="margin-top:0.5rem;">Закрыть</button></div></div>
+<div id="addMemberModal" class="modal"><div class="modal-content"><h3>Добавить участника</h3><div class="modal-setting"><label>Ник#Тег</label><input type="text" id="addMemberNick" placeholder="Например: Пользователь#123"></div><div class="modal-buttons"><button id="cancelAddMemberBtn">Отмена</button><button id="confirmAddMemberBtn">Добавить</button></div></div></div>
 <div id="reactionPickerModal" class="modal"><div class="modal-content"><h3>Выберите реакцию</h3><div class="reactions-picker" id="reactionsPicker"></div><button id="closeReactionPickerBtn" class="modal-close" style="background:#2c2c2e; border:none; padding:0.5rem; border-radius:1rem;">Закрыть</button></div></div>
 <div id="createRoomModal" class="modal"><div class="modal-content"><h3>Создать приватный чат</h3><div class="modal-setting"><label>Название комнаты</label><input type="text" id="newRoomName" placeholder="Название"></div><div class="modal-setting"><label>Участники (ник#тег через запятую)</label><input type="text" id="newRoomMembers" placeholder="Пример: Ваниш#131, Пользователь#123"></div><div class="modal-buttons"><button id="cancelCreateRoomBtn">Закрыть</button><button id="confirmCreateRoomBtn">Создать</button></div></div></div>
 
@@ -553,7 +568,7 @@
             if (msg.reactions && msg.reactions.length) {
                 reactionsHtml = '<div class="reactions-container">';
                 msg.reactions.forEach(r => {
-                    reactionsHtml += `<button class="reaction-badge" data-reaction="${r.reaction}" data-message="${msg.id}">${r.reaction} ${r.count}</button>`;
+                    reactionsHtml += `<button class="reaction-badge" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
                 });
                 reactionsHtml += '</div>';
             }
@@ -701,7 +716,7 @@
             <div class="room-header">
                 <button class="back-btn" id="backToRoomsBtn">←</button>
                 <div class="room-title">${escapeHtml(currentRoom.name)}</div>
-                <button class="room-members-count" id="showMembersBtn">${getOnlineMembersCount(currentRoom.id)}</button>
+                <button class="room-members-count" id="showMembersBtn">👥</button>
             </div>
             <div class="chat-messages" id="roomMessagesContainer"></div>
             <div class="input-wrapper">
@@ -725,11 +740,6 @@
         renderRoomMessages(currentRoom.id);
     }
 
-    function getOnlineMembersCount(roomId) {
-        // получаем участников комнаты из roomMembers? пока просто заглушка
-        return '👥';
-    }
-
     function renderRoomMessages(roomId) {
         const container = document.getElementById('roomMessagesContainer');
         if (!container) return;
@@ -748,7 +758,7 @@
             if (msg.reactions && msg.reactions.length) {
                 reactionsHtml = '<div class="reactions-container">';
                 msg.reactions.forEach(r => {
-                    reactionsHtml += `<button class="reaction-badge" data-reaction="${r.reaction}" data-message="${msg.id}">${r.reaction} ${r.count}</button>`;
+                    reactionsHtml += `<button class="reaction-badge" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
                 });
                 reactionsHtml += '</div>';
             }
@@ -844,15 +854,6 @@
         document.getElementById('membersModal').style.display = 'flex';
     }
 
-    async function addRoomMember(roomId, memberNick) {
-        await fetch('/add-room-member', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, full_nick: memberNick, admin_nick: currentUser.full_nick })
-        });
-        showRoomMembers(roomId);
-    }
-
     function sendRoomMessage() {
         if (!currentRoom) return;
         const input = document.getElementById('roomMessageInput');
@@ -905,7 +906,7 @@
                 if (socket) socket.disconnect();
                 socket = io();
                 socket.emit('user online', currentUser.full_nick);
-                socket.on('online count', (count) => { document.getElementById('onlineCount').innerText = count; onlineUsersSet.clear(); });
+                socket.on('online count', (count) => { onlineUsersSet.clear(); });
                 socket.on('message received', (newMsg) => { publicMessages.push(newMsg); renderPublicMessages(); });
                 socket.on('message deleted', (msgId) => { publicMessages = publicMessages.filter(m=>m.id!==msgId); renderPublicMessages(); });
                 socket.on('message edited', ({messageId,newText}) => { const msg = publicMessages.find(m=>m.id===messageId); if(msg){ msg.text=newText; msg.edited=true; renderPublicMessages(); } });
@@ -938,7 +939,7 @@
                 document.getElementById('appContainer').style.display = 'flex';
                 socket = io();
                 socket.emit('user online', currentUser.full_nick);
-                socket.on('online count', (count) => { document.getElementById('onlineCount').innerText = count; });
+                socket.on('online count', (count) => { onlineUsersSet.clear(); });
                 socket.on('message received', (newMsg) => { publicMessages.push(newMsg); renderPublicMessages(); });
                 socket.on('message deleted', (msgId) => { publicMessages = publicMessages.filter(m=>m.id!==msgId); renderPublicMessages(); });
                 socket.on('message edited', ({messageId,newText}) => { const msg = publicMessages.find(m=>m.id===messageId); if(msg){ msg.text=newText; msg.edited=true; renderPublicMessages(); } });
@@ -1058,18 +1059,27 @@
                 if (document.querySelector('.top-tab[data-tab="private"]').classList.contains('active')) loadRooms();
             } else alert('Ошибка');
         };
-        document.getElementById('addMemberBtn').onclick = async () => {
-            const nick = document.getElementById('newMemberNick').value.trim();
+        document.getElementById('openAddMemberBtn').onclick = () => {
+            document.getElementById('addMemberModal').style.display = 'flex';
+        };
+        document.getElementById('confirmAddMemberBtn').onclick = async () => {
+            const nick = document.getElementById('addMemberNick').value.trim();
             if (nick && currentRoom) {
                 await addRoomMember(currentRoom.id, nick);
-                document.getElementById('newMemberNick').value = '';
-            }
+                document.getElementById('addMemberModal').style.display = 'none';
+                document.getElementById('addMemberNick').value = '';
+                showRoomMembers(currentRoom.id);
+            } else alert('Введите ник#тег');
+        };
+        document.getElementById('cancelAddMemberBtn').onclick = () => {
+            document.getElementById('addMemberModal').style.display = 'none';
+            document.getElementById('addMemberNick').value = '';
         };
         document.getElementById('closeMembersBtn').onclick = () => document.getElementById('membersModal').style.display = 'none';
         document.getElementById('closeReactionPickerBtn').onclick = () => document.getElementById('reactionPickerModal').style.display = 'none';
         document.getElementById('confirmOkBtn').onclick = async () => {
             if (pendingDeleteMessageId) {
-                const isRoom = false; // нужно передавать, но упростим
+                const isRoom = false;
                 const roomId = null;
                 const url = '/delete-message';
                 await fetch(url, {
@@ -1088,6 +1098,13 @@
             clearTimeout(window.scrollTimeout);
             window.scrollTimeout = setTimeout(() => { window.isUserScrolling = false; }, 200);
         });
+        async function addRoomMember(roomId, memberNick) {
+            await fetch('/add-room-member', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, full_nick: memberNick, admin_nick: currentUser.full_nick })
+            });
+        }
     };
 </script>
 </body>
