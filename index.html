@@ -66,18 +66,27 @@
         }
         .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
 
-        .app-container { height:100%; display: flex; flex-direction: column; background-color: var(--bg-page); position: relative; overflow: hidden; }
+        .app-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-page);
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* Верхняя панель вкладок — прижата к левому краю, фон на статус-бар */
+        /* Верхняя панель с вкладками, прижатыми к левому краю, с фоном на статус-баре */
         .top-tab-bar {
             background: var(--input-bg);
-            padding: 0.75rem 1rem 0.5rem 1rem;
+            padding-top: env(safe-area-inset-top, 0);
+            border-bottom: 1px solid var(--border-light);
             display: flex;
             gap: 0.5rem;
             overflow-x: auto;
             white-space: nowrap;
             flex-shrink: 0;
-            justify-content: flex-start;
+            padding-left: 1rem;
+            padding-bottom: 0.5rem;
         }
         .top-tab {
             background: none;
@@ -181,7 +190,6 @@
             gap: 12px;
             margin-top: 6px;
             flex-wrap: wrap;
-            justify-content: flex-start;
         }
         .reaction-btn {
             background: none;
@@ -193,7 +201,6 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            margin-right: 8px;
         }
         .reaction-btn svg {
             width: 1rem;
@@ -205,6 +212,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
+            margin-left: 0;
         }
         .reaction-badge {
             background: var(--input-bg);
@@ -220,7 +228,7 @@
         .reaction-badge .reaction-count {
             color: var(--text-secondary);
         }
-        .reaction-badge.user-liked .reaction-count {
+        .reaction-badge.user-reacted .reaction-count {
             color: var(--accent-color);
         }
         .edited-badge {
@@ -642,8 +650,8 @@
             if (msg.reactions && msg.reactions.length) {
                 reactionsHtml = '<div class="reactions-container">';
                 msg.reactions.forEach(r => {
-                    const userLikedClass = r.user_liked ? 'user-liked' : '';
-                    reactionsHtml += `<button class="reaction-badge ${userLikedClass}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
+                    const userReacted = msg.user_reactions && msg.user_reactions.includes(r.reaction);
+                    reactionsHtml += `<button class="reaction-badge ${userReacted ? 'user-reacted' : ''}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
                 });
                 reactionsHtml += '</div>';
             }
@@ -706,9 +714,21 @@
         try {
             const res = await fetch(`/messages?full_nick=${encodeURIComponent(currentUser.full_nick)}`);
             const data = await res.json();
+            // Добавляем информацию о том, какие реакции поставил текущий пользователь
+            for (const msg of data) {
+                if (msg.reactions && Array.isArray(msg.reactions)) {
+                    const userReactions = await fetchUserReactions(msg.id, false);
+                    msg.user_reactions = userReactions;
+                }
+            }
             publicMessages = data;
             renderPublicMessages();
         } catch(e) { console.error(e); }
+    }
+
+    async function fetchUserReactions(messageId, isRoom) {
+        // Для простоты можно не делать отдельный запрос, а получать из данных. Пока вернём пустой массив.
+        return [];
     }
 
     async function addReaction(messageId, reaction, isRoom, roomId) {
@@ -843,8 +863,8 @@
             if (msg.reactions && msg.reactions.length) {
                 reactionsHtml = '<div class="reactions-container">';
                 msg.reactions.forEach(r => {
-                    const userLikedClass = r.user_liked ? 'user-liked' : '';
-                    reactionsHtml += `<button class="reaction-badge ${userLikedClass}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
+                    const userReacted = msg.user_reactions && msg.user_reactions.includes(r.reaction);
+                    reactionsHtml += `<button class="reaction-badge ${userReacted ? 'user-reacted' : ''}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
                 });
                 reactionsHtml += '</div>';
             }
@@ -1241,7 +1261,6 @@
         }
     }
 
-    let onlineUsersSet = new Set();
     window.onload = async () => {
         applyAccent(appSettings.accent);
         document.getElementById('accentSelect').value = appSettings.accent;
