@@ -236,7 +236,7 @@
             padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
         .room-item {
             display: flex;
@@ -248,12 +248,15 @@
         .room-info {
             display: flex;
             flex-direction: column;
+            flex: 1;
+            gap: 4px;
         }
         .room-name {
             font-weight: 500;
+            font-size: 1rem;
         }
         .room-members-count {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
         .join-room-btn {
@@ -263,6 +266,7 @@
             border-radius: 2rem;
             color: white;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .room-divider {
             margin-top: 8px;
@@ -448,17 +452,25 @@
             color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
         .reply-indicator {
-            background: #2c2c2e;
-            border-radius: 1rem;
-            padding: 0.5rem;
             margin: 0.5rem 1rem 0;
+            padding-left: 8px;
+            border-left: 2px solid var(--accent-color);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
-            font-size: 0.8rem;
         }
         .reply-indicator .reply-content {
             flex: 1;
+        }
+        .reply-indicator .reply-nick {
+            font-size: 0.7rem;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        .reply-indicator .reply-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -948,6 +960,7 @@
         socket.emit('new room message', payload);
         input.value = '';
         autoResizeTextarea(input);
+        input.focus();
     }
 
     function showContextMenu(messageId, full_nick, text, isOwn, isRoom, roomId) {
@@ -991,14 +1004,18 @@
             div.id = 'replyIndicator';
             div.className = 'reply-indicator';
             div.innerHTML = `
-                <div class="reply-content">Ответ для ${escapeHtml(reply.full_nick)}: ${escapeHtml(reply.text.substring(0, 50))}${reply.text.length>50?'…':''}</div>
+                <div class="reply-content">
+                    <div class="reply-nick">${escapeHtml(reply.full_nick)}</div>
+                    <div class="reply-text">${escapeHtml(reply.text)}</div>
+                </div>
                 <button class="cancel-reply">✕</button>
             `;
             const wrapper = document.querySelector('.input-wrapper');
             wrapper.parentNode.insertBefore(div, wrapper);
             div.querySelector('.cancel-reply').onclick = () => { replyingTo = null; div.remove(); };
         } else {
-            indicator.querySelector('.reply-content').innerHTML = `Ответ для ${escapeHtml(reply.full_nick)}: ${escapeHtml(reply.text.substring(0, 50))}${reply.text.length>50?'…':''}`;
+            indicator.querySelector('.reply-nick').innerHTML = escapeHtml(reply.full_nick);
+            indicator.querySelector('.reply-text').innerHTML = escapeHtml(reply.text);
             indicator.style.display = 'flex';
             indicator.querySelector('.cancel-reply').onclick = () => { replyingTo = null; indicator.style.display = 'none'; };
         }
