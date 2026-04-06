@@ -412,14 +412,14 @@ app.get('/room-messages', async (req, res) => {
 });
 
 app.post('/delete-room-message', async (req, res) => {
-  const { messageId, full_nick } = req.body;
-  if (!messageId || !full_nick) return res.status(400).json({ success: false });
+  const { messageId, full_nick, roomId } = req.body;
+  if (!messageId || !full_nick || !roomId) return res.status(400).json({ success: false });
   const msg = await pool.query('SELECT full_nick FROM room_messages WHERE id = $1', [messageId]);
   if (msg.rows.length === 0) return res.json({ success: false });
   if (msg.rows[0].full_nick !== full_nick) return res.json({ success: false });
   const result = await pool.query('DELETE FROM room_messages WHERE id = $1 RETURNING id', [messageId]);
   if (result.rowCount > 0) {
-    io.to(`room_${roomId}`).emit('room_message_deleted', { roomId: messageId });
+    io.to(`room_${roomId}`).emit('room_message_deleted', { roomId, messageId });
     res.json({ success: true });
   } else {
     res.json({ success: false });
