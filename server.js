@@ -327,7 +327,7 @@ app.get('/room-members', async (req, res) => {
   const member = await pool.query('SELECT id FROM room_members WHERE room_id = $1 AND full_nick = $2', [roomId, full_nick]);
   if (member.rows.length === 0) return res.status(403).json([]);
   const members = await pool.query(`
-    SELECT u.full_nick
+    SELECT u.full_nick, u.is_admin
     FROM room_members rm
     JOIN users u ON rm.full_nick = u.full_nick
     WHERE rm.room_id = $1
