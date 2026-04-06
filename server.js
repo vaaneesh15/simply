@@ -38,12 +38,11 @@ async function initDB() {
       id SERIAL PRIMARY KEY,
       full_nick VARCHAR(55) NOT NULL,
       text TEXT NOT NULL,
+      reply_to_id INTEGER DEFAULT NULL,
       edited BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
-  // Добавляем колонку reply_to_id для ответов
-  await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER DEFAULT NULL;`);
   
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_reactions (
@@ -78,12 +77,11 @@ async function initDB() {
       room_id INTEGER NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
       full_nick VARCHAR(55) NOT NULL,
       text TEXT NOT NULL,
+      reply_to_id INTEGER DEFAULT NULL,
       edited BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
-  await pool.query(`ALTER TABLE room_messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER DEFAULT NULL;`);
-  
   await pool.query(`
     CREATE TABLE IF NOT EXISTS room_reactions (
       id SERIAL PRIMARY KEY,
@@ -282,16 +280,11 @@ app.post('/add-reaction', async (req, res) => {
 });
 
 app.post('/delete-message', async (req, res) => {
-  const { full_nick, messageId, isAdmin } = req.body;
+  const { full_nick, messageId } = req.body;
   if (!full_nick || !messageId) return res.status(400).json({ success: false });
-  let canDelete = false;
-  if (isAdmin) {
-    canDelete = true;
-  } else {
-    const msg = await pool.query('SELECT full_nick FROM messages WHERE id = $1', [messageId]);
-    if (msg.rows.length > 0 && msg.rows[0].full_nick === full_nick) canDelete = true;
-  }
-  if (!canDelete) return res.json({ success: false });
+  const msg = await pool.query('SELECT full_nick FROM messages WHERE id = $1', [messageId]);
+  if (msg.rows.length === 0) return res.json({ success: false });
+  if (msg.rows[0].full_nick !== full_nick) return res.json({ success: false });
   const result = await pool.query('DELETE FROM messages WHERE id = $1 RETURNING id', [messageId]);
   if (result.rowCount > 0) {
     io.emit('message deleted', messageId);
@@ -323,7 +316,8 @@ app.get('/rooms', async (req, res) => {
   const { full_nick } = req.query;
   if (!full_nick) return res.status(400).json([]);
   const result = await pool.query(`
-    SELECT r.id, r.name, r.created_by
+    SELECT r.id, r.name, r.created_by,
+           (SELECT COUNT(*) FROM room_members WHERE room_id = r.id) as members_count
     FROM rooms r
     WHERE r.created_by = $1 OR EXISTS(SELECT 1 FROM room_members WHERE room_id = r.id AND full_nick = $1)
   `, [full_nick]);
@@ -336,7 +330,7 @@ app.get('/room-members', async (req, res) => {
   const member = await pool.query('SELECT id FROM room_members WHERE room_id = $1 AND full_nick = $2', [roomId, full_nick]);
   if (member.rows.length === 0) return res.status(403).json([]);
   const members = await pool.query(`
-    SELECT u.full_nick, u.is_admin
+    SELECT u.full_nick
     FROM room_members rm
     JOIN users u ON rm.full_nick = u.full_nick
     WHERE rm.room_id = $1
@@ -421,19 +415,14 @@ app.get('/room-messages', async (req, res) => {
 });
 
 app.post('/delete-room-message', async (req, res) => {
-  const { messageId, full_nick, isAdmin, roomId } = req.body;
+  const { messageId, full_nick } = req.body;
   if (!messageId || !full_nick) return res.status(400).json({ success: false });
-  let canDelete = false;
-  if (isAdmin) {
-    canDelete = true;
-  } else {
-    const msg = await pool.query('SELECT full_nick FROM room_messages WHERE id = $1', [messageId]);
-    if (msg.rows.length > 0 && msg.rows[0].full_nick === full_nick) canDelete = true;
-  }
-  if (!canDelete) return res.json({ success: false });
+  const msg = await pool.query('SELECT full_nick FROM room_messages WHERE id = $1', [messageId]);
+  if (msg.rows.length === 0) return res.json({ success: false });
+  if (msg.rows[0].full_nick !== full_nick) return res.json({ success: false });
   const result = await pool.query('DELETE FROM room_messages WHERE id = $1 RETURNING id', [messageId]);
   if (result.rowCount > 0) {
-    io.to(`room_${roomId}`).emit('room_message_deleted', { roomId, messageId });
+    io.to(`room_${roomId}`).emit('room_message_deleted', { roomId: messageId });
     res.json({ success: true });
   } else {
     res.json({ success: false });
