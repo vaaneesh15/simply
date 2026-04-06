@@ -960,7 +960,7 @@
         socket.emit('new room message', payload);
         input.value = '';
         autoResizeTextarea(input);
-        input.focus();
+        input.focus(); // не закрываем клавиатуру
     }
 
     function showContextMenu(messageId, full_nick, text, isOwn, isRoom, roomId) {
@@ -1168,7 +1168,7 @@
         socket.emit('new message', payload);
         input.value = '';
         autoResizeTextarea(input);
-        input.focus();
+        input.focus(); // не закрываем клавиатуру
     }
 
     function autoResizeTextarea(textarea) {
