@@ -38,11 +38,13 @@ async function initDB() {
       id SERIAL PRIMARY KEY,
       full_nick VARCHAR(55) NOT NULL,
       text TEXT NOT NULL,
-      reply_to_id INTEGER DEFAULT NULL,
       edited BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  // Добавляем колонку reply_to_id для ответов
+  await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER DEFAULT NULL;`);
+  
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_reactions (
       id SERIAL PRIMARY KEY,
@@ -76,11 +78,12 @@ async function initDB() {
       room_id INTEGER NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
       full_nick VARCHAR(55) NOT NULL,
       text TEXT NOT NULL,
-      reply_to_id INTEGER DEFAULT NULL,
       edited BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  await pool.query(`ALTER TABLE room_messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER DEFAULT NULL;`);
+  
   await pool.query(`
     CREATE TABLE IF NOT EXISTS room_reactions (
       id SERIAL PRIMARY KEY,
