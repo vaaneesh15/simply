@@ -10,7 +10,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <!-- OneSignal SDK с запросом разрешения -->
+    <!-- OneSignal SDK (только для регистрации Service Worker, отправка уведомлений через браузерный Notification API) -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -18,6 +18,7 @@
         await OneSignal.init({
           appId: "22366383-4ee8-4a91-b727-1c11e6bdc218",
         });
+        // Запрашиваем разрешение, если ещё не дано
         const permission = await OneSignal.Notifications.permission;
         if (permission === 'default') {
           await OneSignal.Slidedown.promptPush();
@@ -45,6 +46,7 @@
             width: 100%;
             transition: background-color 0.2s, color 0.2s;
         }
+        /* Тёмная тема: обычная */
         body.theme-dark-regular {
             --bg-page: #121212;
             --text-primary: #ffffff;
@@ -52,6 +54,7 @@
             --border-light: rgba(84,84,88,0.4);
             --input-bg: #1c1c1e;
         }
+        /* Тёмная тема: чёрная */
         body.theme-dark-black {
             --bg-page: #000000;
             --text-primary: #ffffff;
@@ -59,6 +62,7 @@
             --border-light: rgba(84,84,88,0.4);
             --input-bg: #0c0c0e;
         }
+        /* Акценты */
         body.accent-blue { --accent-color: #0a84ff; --accent-rgb: 10, 132, 255; }
         body.accent-purple { --accent-color: #9b4dff; --accent-rgb: 155, 77, 255; }
         body.accent-pink { --accent-color: #ff2d55; --accent-rgb: 255, 45, 85; }
@@ -783,16 +787,6 @@
         updateStatusBarColor();
     }
 
-    // Установка external_user_id для OneSignal
-    async function setOneSignalUserId(userId) {
-        if (window.OneSignalDeferred) {
-            window.OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.login(userId);
-                console.log('OneSignal external_user_id установлен:', userId);
-            });
-        }
-    }
-
     async function loadAllChatsMessages() {
         for (const chat of CHATS) {
             try {
@@ -1236,20 +1230,22 @@
                 authToken = data.token;
                 localStorage.setItem('simply_token', authToken);
                 localStorage.setItem('simply_nick', nick);
-                
-                // Устанавливаем external_user_id для OneSignal
-                await setOneSignalUserId(currentUser.full_nick);
-                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'flex';
                 if (socket) socket.disconnect();
                 socket = io();
                 socket.emit('user online', currentUser.full_nick);
+                
+                // Запрос разрешения на уведомления
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+                
+                // Обработчики сокетов
                 socket.on('chat message received', ({chatId, message}) => {
                     if (!chatMessages[chatId]) chatMessages[chatId] = [];
                     chatMessages[chatId].push(message);
                     if (currentChatId === chatId) renderChatMessages(chatId);
-                    // Уведомления теперь отправляет сервер, клиент не делает ничего
                 });
                 socket.on('chat message deleted', ({chatId, messageId}) => {
                     if (chatMessages[chatId]) {
@@ -1271,8 +1267,23 @@
                 socket.on('chat stop typing', ({chatId}) => {
                     if (currentChatId === chatId) updateChatTypingIndicator(null);
                 });
+                
+                // Обработчик уведомлений (клиентская отправка)
+                socket.on('show notification', (data) => {
+                    if (appSettings.notifications && Notification.permission === 'granted') {
+                        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+                            navigator.serviceWorker.ready.then(registration => {
+                                registration.showNotification(data.title, { body: data.body, icon: '/favicon.ico' });
+                            });
+                        } else {
+                            new Notification(data.title, { body: data.body });
+                        }
+                    }
+                });
+                
                 await loadAllChatsMessages();
                 renderChatsList();
+                
                 const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
                 document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
                 document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
@@ -1280,6 +1291,7 @@
                 document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
                 document.getElementById('darkThemeSelect').value = appSettings.darkThemeVariant;
                 document.getElementById('accentSelect').value = appSettings.accent;
+                
                 document.getElementById('showDateToggle').onchange = (e) => {
                     appSettings.showDate = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
@@ -1293,18 +1305,24 @@
                 document.getElementById('notificationsToggle').onchange = (e) => {
                     appSettings.notifications = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    // Серверные уведомления не зависят от этой настройки, только клиентские отключены
                 };
                 document.getElementById('darkThemeSelect').onchange = (e) => {
                     appSettings.darkThemeVariant = e.target.value;
                     applyTheme();
                 };
                 document.getElementById('accentSelect').onchange = e => applyAccent(e.target.value);
+                
                 applyAccent(appSettings.accent);
                 applyTheme();
                 return true;
-            } else { document.getElementById('loginError').innerText = data.error || 'Ошибка входа'; return false; }
-        } catch(e) { document.getElementById('loginError').innerText = 'Ошибка соединения'; return false; }
+            } else {
+                document.getElementById('loginError').innerText = data.error || 'Ошибка входа';
+                return false;
+            }
+        } catch(e) {
+            document.getElementById('loginError').innerText = 'Ошибка соединения';
+            return false;
+        }
     }
 
     async function verifyToken() {
@@ -1316,13 +1334,15 @@
             if (data.success) {
                 currentUser.full_nick = data.full_nick;
                 authToken = token;
-                
-                await setOneSignalUserId(currentUser.full_nick);
-                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'flex';
                 socket = io();
                 socket.emit('user online', currentUser.full_nick);
+                
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+                
                 socket.on('chat message received', ({chatId, message}) => {
                     if (!chatMessages[chatId]) chatMessages[chatId] = [];
                     chatMessages[chatId].push(message);
@@ -1348,8 +1368,21 @@
                 socket.on('chat stop typing', ({chatId}) => {
                     if (currentChatId === chatId) updateChatTypingIndicator(null);
                 });
+                socket.on('show notification', (data) => {
+                    if (appSettings.notifications && Notification.permission === 'granted') {
+                        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+                            navigator.serviceWorker.ready.then(registration => {
+                                registration.showNotification(data.title, { body: data.body, icon: '/favicon.ico' });
+                            });
+                        } else {
+                            new Notification(data.title, { body: data.body });
+                        }
+                    }
+                });
+                
                 await loadAllChatsMessages();
                 renderChatsList();
+                
                 const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
                 document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
                 document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
@@ -1357,6 +1390,7 @@
                 document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
                 document.getElementById('darkThemeSelect').value = appSettings.darkThemeVariant;
                 document.getElementById('accentSelect').value = appSettings.accent;
+                
                 document.getElementById('showDateToggle').onchange = (e) => {
                     appSettings.showDate = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
@@ -1376,6 +1410,7 @@
                     applyTheme();
                 };
                 document.getElementById('accentSelect').onchange = e => applyAccent(e.target.value);
+                
                 applyAccent(appSettings.accent);
                 applyTheme();
                 return true;
@@ -1401,7 +1436,6 @@
         if (data.success) {
             currentUser.full_nick = data.newFullNick;
             localStorage.setItem('simply_nick', newNick);
-            await setOneSignalUserId(currentUser.full_nick);
             const { nick, tag } = splitFullNick(currentUser.full_nick);
             document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(nick)}<span style="color:var(--text-secondary);">${escapeHtml(tag)}</span>`;
             alert('Ник изменён');
