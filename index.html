@@ -296,7 +296,11 @@
             font-weight: 500;
             font-size: 1rem;
         }
-        .join-room-btn {
+        .room-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .join-room-btn, .leave-room-btn {
             background: var(--accent-color);
             border: none;
             padding: 0.4rem 1rem;
@@ -304,6 +308,10 @@
             color: white;
             cursor: pointer;
             flex-shrink: 0;
+        }
+        .leave-room-btn {
+            background: #2c2c2e;
+            color: #ff6b6b;
         }
         .create-room-fab {
             position: fixed;
@@ -348,11 +356,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        .room-title {
-            flex: 1;
-            font-weight: 600;
-            font-size: 1.1rem;
         }
 
         .modal {
@@ -440,7 +443,14 @@
         .settings-container { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.8rem; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
         .setting-label { font-weight: 500; font-size: 1rem; color: var(--text-primary); }
-        .nick-readonly { border:1px solid var(--border-light); border-radius:0.5rem; padding:0.6rem 1rem; background:var(--input-bg); color:var(--text-primary); font-size:1rem; }
+        .nick-readonly {
+            background: #2c2c2e;
+            border: none;
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
         .setting-row button {
             background: #2c2c2e;
             border: none;
@@ -524,34 +534,44 @@
             background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
             color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
-        .reply-indicator {
-            margin: 0.5rem 1rem 0.8rem;
-            padding: 0.5rem 1rem;
+        /* Индикаторы ответа и редактирования */
+        .reply-indicator, .edit-indicator {
+            margin: 0.5rem 1rem 0;
             background: var(--input-bg);
-            border-left: 3px solid var(--accent-color);
+            border-left: 2px solid var(--accent-color);
+            border-radius: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            width: 100%;
-            border-radius: 0.5rem;
+            padding: 0.5rem 0.8rem;
+            position: relative;
         }
-        .reply-indicator .reply-content {
+        .reply-indicator::before, .edit-indicator::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--border-light);
+        }
+        .reply-indicator .reply-content, .edit-indicator .edit-content {
             flex: 1;
         }
-        .reply-indicator .reply-nick {
+        .reply-indicator .reply-nick, .edit-indicator .edit-label {
             font-size: 0.7rem;
             color: var(--accent-color);
             font-weight: 600;
         }
-        .reply-indicator .reply-text {
+        .reply-indicator .reply-text, .edit-indicator .edit-text {
             font-size: 0.8rem;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .cancel-reply {
+        .cancel-reply, .cancel-edit {
             background: #2c2c2e;
             border: none;
             border-radius: 1rem;
@@ -655,6 +675,7 @@
 <div id="confirmModal" class="modal"><div class="modal-content"><h3>Подтверждение</h3><p id="confirmMessage" style="margin-bottom:1rem;">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">Удалить</button></div></div></div>
 <div id="reactionPickerModal" class="modal"><div class="modal-content"><h3>Выберите реакцию</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div>
 <div id="joinRoomModal" class="modal"><div class="modal-content"><h3>Подключиться к комнате</h3><div class="modal-setting"><label>Название комнаты</label><input type="text" id="roomNameInput" placeholder="Название"></div><div class="modal-setting"><label>Пароль</label><input type="password" id="roomPasswordInput" placeholder="Пароль"></div><div class="modal-buttons"><button id="cancelJoinRoomBtn">Отмена</button><button id="confirmJoinRoomBtn">Подключиться</button></div></div></div>
+<div id="leaveRoomConfirmModal" class="modal"><div class="modal-content"><h3>Подтверждение</h3><p>Вы уверены, что хотите отключиться от комнаты?</p><div class="modal-buttons"><button id="cancelLeaveBtn">Нет</button><button id="confirmLeaveBtn">Да</button></div></div></div>
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
@@ -671,6 +692,7 @@
     let isReactionForRoom = false;
     let contextMessageData = null;
     let replyingTo = null;
+    let pendingLeaveRoomId = null;
 
     let rooms = [];
     let currentRoom = null;
@@ -884,7 +906,10 @@
                 <div class="room-info">
                     <div class="room-name">${escapeHtml(room.name)}</div>
                 </div>
-                <button class="join-room-btn" data-id="${room.id}" data-name="${escapeHtml(room.name)}">Открыть</button>
+                <div class="room-buttons">
+                    <button class="join-room-btn" data-id="${room.id}" data-name="${escapeHtml(room.name)}">Открыть</button>
+                    <button class="leave-room-btn" data-id="${room.id}">🗑️</button>
+                </div>
             `;
             container.appendChild(roomDiv);
         });
@@ -895,6 +920,32 @@
                 openPrivateRoom(roomId, roomName);
             });
         });
+        document.querySelectorAll('.leave-room-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const roomId = parseInt(btn.dataset.id);
+                pendingLeaveRoomId = roomId;
+                document.getElementById('leaveRoomConfirmModal').style.display = 'flex';
+            });
+        });
+    }
+
+    async function leaveRoom(roomId) {
+        const res = await fetch('/leave-room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, full_nick: currentUser.full_nick })
+        });
+        const data = await res.json();
+        if (data.success) {
+            if (currentRoom && currentRoom.id === roomId) {
+                if (currentRoom) socket.emit('leave room', currentRoom.id);
+                currentRoom = null;
+                switchTab('private');
+            }
+            await loadRooms();
+        } else {
+            alert('Ошибка при отключении');
+        }
     }
 
     async function joinOrCreateRoom(roomName, password) {
@@ -1045,6 +1096,7 @@
             editingMessage = null;
             input.value = '';
             autoResizeTextarea(input);
+            hideEditIndicator();
             return;
         }
         if (!text && replyingTo) {
@@ -1075,6 +1127,7 @@
             editingMessage = null;
             input.value = '';
             autoResizeTextarea(input);
+            hideEditIndicator();
             return;
         }
         if (!text && replyingTo) {
@@ -1143,6 +1196,7 @@
         if (isOwn) {
             document.getElementById('ctx-edit').onclick = () => {
                 editingMessage = { id: messageId, isRoom, roomId, text };
+                showEditIndicator(editingMessage);
                 const input = document.getElementById(isRoom ? 'roomMessageInput' : 'publicMessageInput');
                 input.value = text;
                 input.focus();
@@ -1186,6 +1240,34 @@
 
     function hideReplyIndicator() {
         const indicator = document.getElementById('replyIndicator');
+        if (indicator) indicator.style.display = 'none';
+    }
+
+    function showEditIndicator(edit) {
+        let indicator = document.getElementById('editIndicator');
+        if (!indicator) {
+            const div = document.createElement('div');
+            div.id = 'editIndicator';
+            div.className = 'edit-indicator';
+            div.innerHTML = `
+                <div class="edit-content">
+                    <div class="edit-label">Редактирование</div>
+                    <div class="edit-text">${escapeHtml(edit.text)}</div>
+                </div>
+                <button class="cancel-edit">✕</button>
+            `;
+            const wrapper = document.querySelector('.input-wrapper');
+            wrapper.parentNode.insertBefore(div, wrapper);
+            div.querySelector('.cancel-edit').onclick = () => { editingMessage = null; div.remove(); };
+        } else {
+            indicator.querySelector('.edit-text').innerHTML = escapeHtml(edit.text);
+            indicator.style.display = 'flex';
+            indicator.querySelector('.cancel-edit').onclick = () => { editingMessage = null; indicator.style.display = 'none'; };
+        }
+    }
+
+    function hideEditIndicator() {
+        const indicator = document.getElementById('editIndicator');
         if (indicator) indicator.style.display = 'none';
     }
 
@@ -1437,6 +1519,18 @@
             document.getElementById('confirmModal').style.display = 'none';
         };
         document.getElementById('confirmCancelBtn').onclick = () => { pendingDeleteMessageId = null; document.getElementById('confirmModal').style.display = 'none'; };
+        // Подтверждение выхода из комнаты
+        document.getElementById('confirmLeaveBtn').onclick = async () => {
+            if (pendingLeaveRoomId) {
+                await leaveRoom(pendingLeaveRoomId);
+                pendingLeaveRoomId = null;
+            }
+            document.getElementById('leaveRoomConfirmModal').style.display = 'none';
+        };
+        document.getElementById('cancelLeaveBtn').onclick = () => {
+            pendingLeaveRoomId = null;
+            document.getElementById('leaveRoomConfirmModal').style.display = 'none';
+        };
         window.isUserScrolling = false;
         document.getElementById('publicMessagesContainer')?.addEventListener('scroll', () => {
             window.isUserScrolling = true;
