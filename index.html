@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="theme-color" content="#0a84ff" id="themeColorMeta">
+    <meta name="theme-color" content="#1c1c1e" id="themeColorMeta">
     <title>ChatX</title>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
@@ -52,15 +52,11 @@
         }
         /* Акценты */
         body.accent-blue { --accent-color: #0a84ff; --accent-rgb: 10, 132, 255; }
-        body.accent-ios-blue { --accent-color: #007aff; --accent-rgb: 0, 122, 255; }
-        body.accent-purple { --accent-color: #af52de; --accent-rgb: 175, 82, 222; }
+        body.accent-purple { --accent-color: #9b4dff; --accent-rgb: 155, 77, 255; }
         body.accent-pink { --accent-color: #ff2d55; --accent-rgb: 255, 45, 85; }
         body.accent-red { --accent-color: #ff3b30; --accent-rgb: 255, 59, 48; }
         body.accent-orange { --accent-color: #ff9500; --accent-rgb: 255, 149, 0; }
-        body.accent-beige { --accent-color: #d4a373; --accent-rgb: 212, 163, 115; }
-        body.accent-yellow { --accent-color: #ffcc00; --accent-rgb: 255, 204, 0; }
-        body.accent-mint { --accent-color: #34c759; --accent-rgb: 52, 199, 89; }
-        body.accent-lime { --accent-color: #d0e62c; --accent-rgb: 208, 230, 44; }
+        body.accent-mint { --accent-color: #00c7be; --accent-rgb: 0, 199, 190; }
 
         button, .clickable {
             cursor: pointer;
@@ -152,14 +148,6 @@
             width: 100%;
             position: relative;
             background: transparent;
-            transition: background-color 0.3s;
-        }
-        .message-text.highlight {
-            background-color: rgba(var(--accent-rgb), 0.3);
-            border-radius: 0.5rem;
-            padding: 0 0.2rem;
-            display: inline-block;
-            width: fit-content;
         }
         .message-header {
             display: flex;
@@ -206,6 +194,10 @@
         .message-text { 
             font-size:1rem; line-height:1.4; color:var(--text-primary); 
             white-space:pre-wrap; word-break:break-word; 
+            transition: color 0.2s;
+        }
+        .message-text.highlight {
+            color: var(--accent-color);
         }
         .message-text a {
             color: var(--accent-color);
@@ -333,6 +325,7 @@
             color: white;
             cursor: pointer;
             flex-shrink: 0;
+            font-size: 0.9rem;
         }
 
         .chat-header {
@@ -398,7 +391,7 @@
             font-size: 0.9rem;
             appearance: none;
             cursor: pointer;
-            min-width: 120px;
+            min-width: 144px;
             text-align: center;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -469,7 +462,6 @@
             background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
             color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
-        /* Индикаторы ответа и редактирования */
         .reply-indicator, .edit-indicator {
             margin: 0.5rem 1rem 0;
             background: var(--input-bg);
@@ -648,15 +640,11 @@
                 <span class="setting-label">Оттенок</span>
                 <select id="accentSelect">
                     <option value="blue">Синий</option>
-                    <option value="ios-blue">Синий (iOS)</option>
                     <option value="purple">Фиолетовый</option>
                     <option value="pink">Розовый</option>
                     <option value="red">Красный</option>
                     <option value="orange">Оранжевый</option>
-                    <option value="beige">Бежевый</option>
-                    <option value="yellow">Жёлтый</option>
-                    <option value="mint">Зелёный</option>
-                    <option value="lime">Лаймовый</option>
+                    <option value="mint">Мятный</option>
                 </select>
             </div>
             <div class="setting-row">
@@ -753,51 +741,51 @@
         }
     }
 
+    function updateStatusBarColor() {
+        const meta = document.getElementById('themeColorMeta');
+        if (meta) {
+            const color = getComputedStyle(document.body).getPropertyValue('--input-bg').trim();
+            meta.setAttribute('content', color);
+        }
+    }
+
     function applyTheme() {
         document.body.classList.remove('theme-dark-regular', 'theme-dark-black');
         document.body.classList.add(`theme-dark-${appSettings.darkThemeVariant}`);
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        const color = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
-        if (color) {
-            const meta = document.getElementById('themeColorMeta');
-            if (meta) meta.setAttribute('content', color);
-        }
+        updateStatusBarColor();
     }
 
     function applyAccent(accent) {
-        const classes = ['accent-blue','accent-ios-blue','accent-purple','accent-pink','accent-red','accent-orange','accent-beige','accent-yellow','accent-mint','accent-lime'];
+        const classes = ['accent-blue','accent-purple','accent-pink','accent-red','accent-orange','accent-mint'];
         document.body.classList.remove(...classes);
         let accentClass = '';
         switch(accent) {
             case 'blue': accentClass = 'accent-blue'; break;
-            case 'ios-blue': accentClass = 'accent-ios-blue'; break;
             case 'purple': accentClass = 'accent-purple'; break;
             case 'pink': accentClass = 'accent-pink'; break;
             case 'red': accentClass = 'accent-red'; break;
             case 'orange': accentClass = 'accent-orange'; break;
-            case 'beige': accentClass = 'accent-beige'; break;
-            case 'yellow': accentClass = 'accent-yellow'; break;
             case 'mint': accentClass = 'accent-mint'; break;
-            case 'lime': accentClass = 'accent-lime'; break;
             default: accentClass = 'accent-blue';
         }
         document.body.classList.add(accentClass);
         appSettings.accent = accent;
         localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        const color = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
-        if (color) {
-            const rgb = color.match(/\d+/g);
-            if (rgb) document.body.style.setProperty('--accent-rgb', rgb.join(','));
-            const meta = document.getElementById('themeColorMeta');
-            if (meta) meta.setAttribute('content', color);
-        }
+        updateStatusBarColor();
     }
 
-    // Применяем тему и акцент к экрану логина и основному приложению
-    function applyThemeToLogin() {
-        const loginScreen = document.getElementById('loginScreen');
-        if (loginScreen) {
-            // Уже использует CSS-переменные, которые меняются через классы body
+    // Фоновая загрузка всех чатов
+    async function loadAllChatsMessages() {
+        for (const chat of CHATS) {
+            try {
+                const res = await fetch(`/chat-messages?chatId=${chat.id}&full_nick=${encodeURIComponent(currentUser.full_nick)}`);
+                const data = await res.json();
+                chatMessages[chat.id] = data;
+            } catch(e) { console.error(e); }
+        }
+        if (currentChatId && chatMessages[currentChatId]) {
+            renderChatMessages(currentChatId);
         }
     }
 
@@ -834,11 +822,13 @@
         document.getElementById('chatTitle').innerText = chat.name;
         document.getElementById('chatView').style.display = 'flex';
         document.getElementById('appContainer').style.display = 'none';
-        if (!chatMessages[chatId]) chatMessages[chatId] = [];
-        loadChatMessages(chatId);
+        if (!chatMessages[chatId] || chatMessages[chatId].length === 0) {
+            loadChatMessages(chatId);
+        } else {
+            renderChatMessages(chatId);
+        }
         socket.emit('join chat', chatId);
         socket.emit('join typing chat', chatId);
-        renderChatMessages(chatId);
     }
 
     function closeChat() {
@@ -1269,6 +1259,8 @@
                 socket.on('chat stop typing', ({chatId}) => {
                     if (currentChatId === chatId) updateChatTypingIndicator(null);
                 });
+                // Фоновая загрузка всех чатов
+                await loadAllChatsMessages();
                 renderChatsList();
                 const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
                 document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
@@ -1351,6 +1343,7 @@
                 socket.on('chat stop typing', ({chatId}) => {
                     if (currentChatId === chatId) updateChatTypingIndicator(null);
                 });
+                await loadAllChatsMessages();
                 renderChatsList();
                 const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
                 document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
@@ -1421,7 +1414,6 @@
     }
 
     window.onload = async () => {
-        // Применяем тему и акцент для экрана логина
         applyAccent(appSettings.accent);
         applyTheme();
         const logged = await verifyToken();
