@@ -147,22 +147,20 @@ app.post('/change-pin', async (req, res) => {
 
 app.get('/messages', async (req, res) => {
   const { full_nick } = req.query;
+  // Упрощённый запрос без LATERAL для совместимости
   const result = await pool.query(`
     SELECT m.id, m.full_nick, m.text, m.reply_to_id, m.edited, m.created_at,
            u.is_admin,
-           COALESCE(r.reactions, '[]'::json) as reactions,
-           rep.full_nick as reply_nick, rep.text as reply_text
+           rep.full_nick as reply_nick, rep.text as reply_text,
+           (SELECT json_agg(json_build_object('reaction', reaction, 'count', cnt))
+            FROM (
+              SELECT reaction, COUNT(*) as cnt
+              FROM message_reactions
+              WHERE message_id = m.id
+              GROUP BY reaction
+            ) sub) as reactions
     FROM messages m
     LEFT JOIN users u ON m.full_nick = u.full_nick
-    LEFT JOIN LATERAL (
-      SELECT json_agg(json_build_object('reaction', reaction, 'count', cnt)) as reactions
-      FROM (
-        SELECT reaction, COUNT(*) as cnt
-        FROM message_reactions
-        WHERE message_id = m.id
-        GROUP BY reaction
-      ) sub
-    ) r ON true
     LEFT JOIN messages rep ON m.reply_to_id = rep.id
     ORDER BY m.created_at ASC
   `);
