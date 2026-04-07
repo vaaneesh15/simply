@@ -55,7 +55,7 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS rooms (
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
-      created_by VARCHAR(55) NOT NULL,
+      password_hash TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
@@ -165,10 +165,9 @@ app.post('/change-nick', async (req, res) => {
   await pool.query('UPDATE users SET nick = $1, full_nick = $2 WHERE token = $3', [newNick, newFullNick, token]);
   await pool.query('UPDATE messages SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
   await pool.query('UPDATE message_reactions SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
-  await pool.query('UPDATE rooms SET created_by = $1 WHERE created_by = $2', [newFullNick, oldFullNick]);
-  await pool.query('UPDATE room_members SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
   await pool.query('UPDATE room_messages SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
   await pool.query('UPDATE room_reactions SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
+  await pool.query('UPDATE room_members SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
   io.emit('nick changed', { oldFullNick, newFullNick });
   res.json({ success: true, newFullNick });
 });
@@ -286,89 +285,51 @@ app.post('/edit-message', async (req, res) => {
   }
 });
 
-// ========== ПРИВАТНЫЕ КОМНАТЫ ==========
+// ========== КОМНАТЫ (ПУБЛИЧНЫЕ С ПАРОЛЕМ) ==========
+app.post('/join-room', async (req, res) => {
+  const { name, password, full_nick } = req.body;
+  if (!name || !password || !full_nick) {
+    return res.status(400).json({ success: false, error: 'Не указано название, пароль или пользователь' });
+  }
+  // Проверяем, существует ли комната
+  const roomExists = await pool.query('SELECT id, password_hash FROM rooms WHERE name = $1', [name]);
+  if (roomExists.rows.length > 0) {
+    // Проверка пароля
+    const valid = await bcrypt.compare(password, roomExists.rows[0].password_hash);
+    if (!valid) {
+      return res.json({ success: false, error: 'Неверный пароль' });
+    }
+    const roomId = roomExists.rows[0].id;
+    // Добавляем пользователя в участники (если ещё не добавлен)
+    await pool.query('INSERT INTO room_members (room_id, full_nick) VALUES ($1, $2) ON CONFLICT DO NOTHING', [roomId, full_nick]);
+    return res.json({ success: true, roomId });
+  } else {
+    // Создаём новую комнату
+    const passwordHash = await bcrypt.hash(password, 10);
+    const newRoom = await pool.query('INSERT INTO rooms (name, password_hash) VALUES ($1, $2) RETURNING id', [name, passwordHash]);
+    const roomId = newRoom.rows[0].id;
+    await pool.query('INSERT INTO room_members (room_id, full_nick) VALUES ($1, $2)', [roomId, full_nick]);
+    io.emit('room_created', { roomId, name });
+    return res.json({ success: true, roomId });
+  }
+});
+
 app.get('/rooms', async (req, res) => {
   const { full_nick } = req.query;
   if (!full_nick) return res.status(400).json([]);
   const result = await pool.query(`
-    SELECT r.id, r.name, r.created_by,
-           (SELECT COUNT(*) FROM room_members WHERE room_id = r.id) as members_count
+    SELECT r.id, r.name
     FROM rooms r
-    WHERE r.created_by = $1 OR EXISTS(SELECT 1 FROM room_members WHERE room_id = r.id AND full_nick = $1)
+    JOIN room_members rm ON r.id = rm.room_id
+    WHERE rm.full_nick = $1
   `, [full_nick]);
   res.json(result.rows);
-});
-
-app.get('/room-members', async (req, res) => {
-  const { roomId, full_nick } = req.query;
-  if (!roomId || !full_nick) return res.status(400).json([]);
-  const member = await pool.query('SELECT id FROM room_members WHERE room_id = $1 AND full_nick = $2', [roomId, full_nick]);
-  if (member.rows.length === 0) return res.status(403).json([]);
-  const members = await pool.query(`
-    SELECT u.full_nick
-    FROM room_members rm
-    JOIN users u ON rm.full_nick = u.full_nick
-    WHERE rm.room_id = $1
-  `, [roomId]);
-  res.json(members.rows);
-});
-
-app.post('/create-room', async (req, res) => {
-  const { name, created_by, members } = req.body;
-  if (!name || !created_by) return res.status(400).json({ success: false, error: 'Не указано название' });
-  const roomRes = await pool.query('INSERT INTO rooms (name, created_by) VALUES ($1, $2) RETURNING id', [name, created_by]);
-  const roomId = roomRes.rows[0].id;
-  await pool.query('INSERT INTO room_members (room_id, full_nick) VALUES ($1, $2)', [roomId, created_by]);
-  if (members && members.length) {
-    for (const member of members) {
-      const userExists = await pool.query('SELECT full_nick FROM users WHERE full_nick = $1', [member]);
-      if (userExists.rows.length > 0) {
-        await pool.query('INSERT INTO room_members (room_id, full_nick) VALUES ($1, $2) ON CONFLICT DO NOTHING', [roomId, member]);
-      }
-    }
-  }
-  io.emit('room_created', { roomId, name, created_by });
-  res.json({ success: true, roomId });
-});
-
-app.post('/add-room-member', async (req, res) => {
-  const { roomId, full_nick, admin_nick } = req.body;
-  if (!roomId || !full_nick || !admin_nick) return res.status(400).json({ success: false });
-  const room = await pool.query('SELECT created_by FROM rooms WHERE id = $1', [roomId]);
-  if (room.rows.length === 0) return res.json({ success: false, error: 'Комната не найдена' });
-  if (room.rows[0].created_by !== admin_nick) {
-    return res.json({ success: false, error: 'Нет прав' });
-  }
-  const userExists = await pool.query('SELECT full_nick FROM users WHERE full_nick = $1', [full_nick]);
-  if (userExists.rows.length === 0) return res.json({ success: false, error: 'Пользователь не найден' });
-  await pool.query('INSERT INTO room_members (room_id, full_nick) VALUES ($1, $2) ON CONFLICT DO NOTHING', [roomId, full_nick]);
-  io.emit('room_member_added', { roomId, full_nick });
-  res.json({ success: true });
-});
-
-app.post('/remove-room-member', async (req, res) => {
-  const { roomId, full_nick, admin_nick } = req.body;
-  if (!roomId || !full_nick || !admin_nick) return res.status(400).json({ success: false });
-  const room = await pool.query('SELECT created_by FROM rooms WHERE id = $1', [roomId]);
-  if (room.rows.length === 0) return res.json({ success: false });
-  if (room.rows[0].created_by !== admin_nick) {
-    return res.json({ success: false });
-  }
-  await pool.query('DELETE FROM room_members WHERE room_id = $1 AND full_nick = $2', [roomId, full_nick]);
-  // Проверить, остались ли участники
-  const remaining = await pool.query('SELECT COUNT(*) FROM room_members WHERE room_id = $1', [roomId]);
-  if (parseInt(remaining.rows[0].count) === 0) {
-    await pool.query('DELETE FROM rooms WHERE id = $1', [roomId]);
-    io.emit('room_deleted', roomId);
-  } else {
-    io.emit('room_member_removed', { roomId, full_nick });
-  }
-  res.json({ success: true });
 });
 
 app.get('/room-messages', async (req, res) => {
   const { roomId, full_nick } = req.query;
   if (!roomId || !full_nick) return res.status(400).json([]);
+  // Проверяем, имеет ли пользователь доступ к комнате
   const member = await pool.query('SELECT id FROM room_members WHERE room_id = $1 AND full_nick = $2', [roomId, full_nick]);
   if (member.rows.length === 0) return res.status(403).json([]);
   const result = await pool.query(`
@@ -443,13 +404,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('typing', ({ roomId, full_nick }) => {
-    const room = roomId === 'public' ? 'public' : `typing_room_${roomId}`;
     socket.to(roomId === 'public' ? 'public' : `room_${roomId}`).emit('user typing', { roomId, full_nick });
   });
 
   socket.on('stop typing', ({ roomId, full_nick }) => {
-    const room = roomId === 'public' ? 'public' : `room_${roomId}`;
-    socket.to(room).emit('user stop typing', { roomId, full_nick });
+    socket.to(roomId === 'public' ? 'public' : `room_${roomId}`).emit('user stop typing', { roomId, full_nick });
   });
 
   socket.on('user online', (full_nick) => {
