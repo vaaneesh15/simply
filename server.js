@@ -145,7 +145,6 @@ app.post('/change-pin', async (req, res) => {
   res.json({ success: true });
 });
 
-// Получение сообщений чата
 app.get('/chat-messages', async (req, res) => {
   const { chatId, full_nick } = req.query;
   if (!chatId || !full_nick) return res.status(400).json([]);
@@ -171,7 +170,6 @@ app.get('/chat-messages', async (req, res) => {
   res.json(result.rows);
 });
 
-// Добавление реакции в чате
 app.post('/add-chat-reaction', async (req, res) => {
   const { messageId, full_nick, reaction, chatId } = req.body;
   if (!messageId || !full_nick || !reaction) return res.status(400).json({ success: false });
@@ -206,7 +204,6 @@ app.post('/add-chat-reaction', async (req, res) => {
   }
 });
 
-// Удаление сообщения в чате
 app.post('/delete-chat-message', async (req, res) => {
   const { full_nick, messageId, chatId } = req.body;
   if (!full_nick || !messageId || !chatId) return res.status(400).json({ success: false });
@@ -222,7 +219,6 @@ app.post('/delete-chat-message', async (req, res) => {
   }
 });
 
-// Редактирование сообщения в чате
 app.post('/edit-chat-message', async (req, res) => {
   const { messageId, full_nick, newText, chatId } = req.body;
   if (!messageId || !full_nick || !newText || newText.trim() === '') {
@@ -240,7 +236,6 @@ app.post('/edit-chat-message', async (req, res) => {
   }
 });
 
-// ========== SOCKET.IO ==========
 const onlineUsers = new Set();
 io.on('connection', (socket) => {
   let currentFullNick = null;
@@ -258,7 +253,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Присоединение к чату
   socket.on('join chat', (chatId) => {
     socket.join(`chat_${chatId}`);
   });
@@ -266,7 +260,6 @@ io.on('connection', (socket) => {
     socket.leave(`chat_${chatId}`);
   });
 
-  // Печать в чате
   socket.on('join typing chat', (chatId) => {
     socket.join(`typing_chat_${chatId}`);
   });
@@ -276,11 +269,10 @@ io.on('connection', (socket) => {
   socket.on('chat typing', ({ chatId, full_nick }) => {
     socket.to(`chat_${chatId}`).emit('chat typing', { chatId, full_nick });
   });
-  socket.on('chat stop typing', ({ chatId, full_nick }) => {
+  socket.on('chat stop typing', ({ chatId }) => {
     socket.to(`chat_${chatId}`).emit('chat stop typing', { chatId });
   });
 
-  // Новое сообщение в чате
   socket.on('new chat message', async (data) => {
     const { chatId, full_nick, text, reply_to_id } = data;
     if (!chatId || !full_nick || !text || text.trim() === '') return;
