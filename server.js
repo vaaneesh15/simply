@@ -58,6 +58,15 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  // Удаляем колонку created_by, если она существует
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='rooms' AND column_name='created_by') THEN
+        ALTER TABLE rooms DROP COLUMN created_by;
+      END IF;
+    END $$;
+  `);
   // Добавляем колонку password_hash, если её нет
   await pool.query(`
     DO $$
