@@ -34,7 +34,6 @@
             width: 100%;
             transition: background-color 0.2s, color 0.2s;
         }
-        /* Тёмная тема: обычная */
         body.theme-dark-regular {
             --bg-page: #121212;
             --text-primary: #ffffff;
@@ -42,7 +41,6 @@
             --border-light: rgba(84,84,88,0.4);
             --input-bg: #1c1c1e;
         }
-        /* Тёмная тема: чёрная */
         body.theme-dark-black {
             --bg-page: #000000;
             --text-primary: #ffffff;
@@ -50,7 +48,7 @@
             --border-light: rgba(84,84,88,0.4);
             --input-bg: #0c0c0e;
         }
-        /* Акценты */
+        /* Акценты без подписей в скобках — просто названия цветов */
         body.accent-blue { --accent-color: #0a84ff; --accent-rgb: 10, 132, 255; }
         body.accent-ios-blue { --accent-color: #007aff; --accent-rgb: 0, 122, 255; }
         body.accent-purple { --accent-color: #af52de; --accent-rgb: 175, 82, 222; }
@@ -73,24 +71,58 @@
 
         .login-screen {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: var(--bg-page); display: flex; align-items: flex-start; justify-content: center;
-            padding-top: 25vh; z-index:2000; overflow: hidden;
+            background: var(--bg-page);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 25vh;
+            z-index:2000;
+            overflow: hidden;
         }
         .login-card {
-            background: var(--input-bg); border-radius: 2rem; padding: 2rem; width:90%; max-width:320px;
-            border:1px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3);
+            background: var(--input-bg);
+            border-radius: 2rem;
+            padding: 2rem;
+            width:90%;
+            max-width:320px;
+            border:1px solid var(--border-light);
+            box-shadow:0 8px 20px rgba(0,0,0,0.3);
         }
-        .login-card h2 { margin-bottom:1.5rem; text-align:center; font-weight:590; }
+        .login-card h2 {
+            margin-bottom:1.5rem;
+            text-align:center;
+            font-weight:590;
+            color: var(--text-primary);
+        }
         .login-card input {
-            width:100%; padding:0.8rem; margin-bottom:1rem; background: var(--bg-page);
-            border:1px solid var(--border-light); border-radius:1rem; color:var(--text-primary); font-size:1rem; outline:none;
+            width:100%;
+            padding:0.8rem;
+            margin-bottom:1rem;
+            background: var(--bg-page);
+            border:1px solid var(--border-light);
+            border-radius:1rem;
+            color:var(--text-primary);
+            font-size:1rem;
+            outline:none;
         }
-        .login-card input:focus { border-color:var(--accent-color); }
+        .login-card input:focus {
+            border-color:var(--accent-color);
+        }
         .login-card button {
-            width:100%; padding:0.8rem; background:var(--accent-color); border:none;
-            border-radius:1rem; color:white; font-weight:600;
+            width:100%;
+            padding:0.8rem;
+            background:var(--accent-color);
+            border:none;
+            border-radius:1rem;
+            color:white;
+            font-weight:600;
         }
-        .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
+        .login-card .error {
+            color:#ff6b6b;
+            font-size:0.8rem;
+            margin-top:0.5rem;
+            text-align:center;
+        }
 
         .app-container {
             height: 100%;
@@ -105,7 +137,7 @@
             background: var(--input-bg);
             padding-top: env(safe-area-inset-top, 0);
             border-bottom: 1px solid var(--border-light);
-            border-top: 1px solid var(--border-light);
+            /* убираем верхнюю полоску */
             display: flex;
             justify-content: center;
             gap: 0.25rem;
@@ -153,10 +185,13 @@
             width: 100%;
             position: relative;
             background: transparent;
-            transition: background-color 0.3s;
         }
-        .message-item.highlight {
+        /* выделение текста сообщения при клике на ответ */
+        .message-text.highlight-text {
             background-color: rgba(var(--accent-rgb), 0.4);
+            transition: background-color 0.3s;
+            border-radius: 0.5rem;
+            padding: 0.2rem 0;
         }
         .message-header {
             display: flex;
@@ -400,7 +435,7 @@
             font-size: 0.9rem;
             appearance: none;
             cursor: pointer;
-            min-width: 120px;
+            min-width: 140px;
             text-align: center;
         }
         .setting-row button {
@@ -473,17 +508,16 @@
             background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
             color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
-        /* Индикаторы ответа и редактирования — без скругления левой полоски, уменьшенной по вертикали */
         .reply-indicator, .edit-indicator {
             margin: 0.5rem 1rem 0;
             background: var(--input-bg);
             border-left: 2px solid var(--accent-color);
-            border-radius: 0;  /* убираем скругление */
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 0.4rem 0.8rem;  /* уменьшили вертикальный отступ */
+            padding: 0.4rem 0.8rem;
             position: relative;
         }
         .reply-indicator::before, .edit-indicator::before {
@@ -652,15 +686,15 @@
                 <span class="setting-label">Оттенок</span>
                 <select id="accentSelect" class="accent-select">
                     <option value="blue">Стандартный</option>
-                    <option value="ios-blue">Синий (iOS)</option>
-                    <option value="purple">Фиолетовый (iPhone 11)</option>
-                    <option value="pink">Розовый (iPhone 15)</option>
-                    <option value="red">Красный (iPhone 12)</option>
+                    <option value="ios-blue">Синий</option>
+                    <option value="purple">Фиолетовый</option>
+                    <option value="pink">Розовый</option>
+                    <option value="red">Красный</option>
                     <option value="orange">Оранжевый</option>
                     <option value="beige">Бежевый</option>
-                    <option value="yellow">Жёлтый (iPhone 15)</option>
-                    <option value="mint">Зелёный (батарея)</option>
-                    <option value="lime">Лаймовый (iPhone 15)</option>
+                    <option value="yellow">Жёлтый</option>
+                    <option value="mint">Зелёный</option>
+                    <option value="lime">Лаймовый</option>
                 </select>
             </div>
             <div class="setting-row">
@@ -1180,11 +1214,11 @@
     }
 
     function scrollToChatMessage(messageId) {
-        const element = document.querySelector(`#chatMessagesContainer .message-item[data-id="${messageId}"]`);
+        const element = document.querySelector(`#chatMessagesContainer .message-item[data-id="${messageId}"] .message-text`);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.classList.add('highlight');
-            setTimeout(() => element.classList.remove('highlight'), 1000);
+            element.classList.add('highlight-text');
+            setTimeout(() => element.classList.remove('highlight-text'), 1000);
         }
     }
 
