@@ -1,1443 +1,305 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="theme-color" content="#0a84ff" id="themeColorMeta">
-    <title>ChatX</title>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "22366383-4ee8-4a91-b727-1c11e6bdc218",
-        });
-      });
-    </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-        body {
-            background-color: var(--bg-page);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            position: fixed;
-            width: 100%;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        /* Тёмная тема: обычная */
-        body.theme-dark-regular {
-            --bg-page: #121212;
-            --text-primary: #ffffff;
-            --text-secondary: #8e8e93;
-            --border-light: rgba(84,84,88,0.4);
-            --input-bg: #1c1c1e;
-        }
-        /* Тёмная тема: чёрная */
-        body.theme-dark-black {
-            --bg-page: #000000;
-            --text-primary: #ffffff;
-            --text-secondary: #8e8e93;
-            --border-light: rgba(84,84,88,0.4);
-            --input-bg: #0c0c0e;
-        }
-        /* Акценты */
-        body.accent-blue { --accent-color: #0a84ff; --accent-rgb: 10, 132, 255; }
-        body.accent-ios-blue { --accent-color: #007aff; --accent-rgb: 0, 122, 255; }
-        body.accent-purple { --accent-color: #af52de; --accent-rgb: 175, 82, 222; }
-        body.accent-pink { --accent-color: #ff2d55; --accent-rgb: 255, 45, 85; }
-        body.accent-red { --accent-color: #ff3b30; --accent-rgb: 255, 59, 48; }
-        body.accent-orange { --accent-color: #ff9500; --accent-rgb: 255, 149, 0; }
-        body.accent-beige { --accent-color: #d4a373; --accent-rgb: 212, 163, 115; }
-        body.accent-yellow { --accent-color: #ffcc00; --accent-rgb: 255, 204, 0; }
-        body.accent-mint { --accent-color: #34c759; --accent-rgb: 52, 199, 89; }
-        body.accent-lime { --accent-color: #d0e62c; --accent-rgb: 208, 230, 44; }
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const { Pool } = require('pg');
+const cors = require('cors');
+const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
 
-        button, .clickable {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-        button:active, .clickable:active {
-            opacity: 0.6;
-            transition: opacity 0.05s;
-        }
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
-        .login-screen {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: var(--bg-page); display: flex; align-items: flex-start; justify-content: center;
-            padding-top: 25vh; z-index:2000; overflow: hidden;
-        }
-        .login-card {
-            background: var(--input-bg); border-radius: 2rem; padding: 2rem; width:90%; max-width:320px;
-            border:1px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3);
-        }
-        .login-card h2 { margin-bottom:1.5rem; text-align:center; font-weight:590; }
-        .login-card input {
-            width:100%; padding:0.8rem; margin-bottom:1rem; background: var(--bg-page);
-            border:1px solid var(--border-light); border-radius:1rem; color:var(--text-primary); font-size:1rem; outline:none;
-        }
-        .login-card input:focus { border-color:var(--accent-color); }
-        .login-card button {
-            width:100%; padding:0.8rem; background:var(--accent-color); border:none;
-            border-radius:1rem; color:white; font-weight:600;
-        }
-        .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
 
-        .app-container {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-page);
-            position: relative;
-            overflow: hidden;
-        }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-        .top-tab-bar {
-            background: var(--input-bg);
-            padding-top: env(safe-area-inset-top, 0);
-            border-bottom: 1px solid var(--border-light);
-            border-top: 1px solid var(--border-light);
-            display: flex;
-            justify-content: center;
-            gap: 0.25rem;
-            overflow-x: auto;
-            white-space: nowrap;
-            flex-shrink: 0;
-            padding: 0.6rem 0.5rem;
-        }
-        .top-tab {
-            background: none;
-            border: none;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            border-radius: 2rem;
-            transition: all 0.2s;
-        }
-        .top-tab.active {
-            color: var(--accent-color);
-            background: rgba(128,128,128,0.2);
-        }
+async function initDB() {
+  // Таблица пользователей
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      nick VARCHAR(50) NOT NULL,
+      tag VARCHAR(4) NOT NULL,
+      full_nick VARCHAR(55) UNIQUE NOT NULL,
+      pin_hash TEXT NOT NULL,
+      token TEXT UNIQUE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  // Таблица сообщений трёх общих чатов
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS global_chat_messages (
+      id SERIAL PRIMARY KEY,
+      chat_id INTEGER NOT NULL,
+      full_nick VARCHAR(55) NOT NULL,
+      text TEXT NOT NULL,
+      reply_to_id INTEGER DEFAULT NULL,
+      edited BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  // Таблица реакций
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS global_chat_reactions (
+      id SERIAL PRIMARY KEY,
+      message_id INTEGER NOT NULL REFERENCES global_chat_messages(id) ON DELETE CASCADE,
+      full_nick VARCHAR(55) NOT NULL,
+      reaction VARCHAR(10) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(message_id, full_nick, reaction)
+    );
+  `);
+  console.log('✅ База данных готова (три общих чата)');
+}
+initDB();
 
-        .tab-content {
-            flex: 1;
-            overflow-y: auto;
-            display: none;
-            flex-direction: column;
-        }
-        .tab-content.active {
-            display: flex;
-        }
+function generateTag() {
+  return '#' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+}
 
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .message-item {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            position: relative;
-            background: transparent;
-            transition: background-color 0.3s;
-        }
-        .message-item.highlight {
-            background-color: rgba(var(--accent-rgb), 0.4);
-        }
-        .message-header {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            margin-bottom: 2px;
-        }
-        .message-nick {
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: flex;
-            align-items: baseline;
-            gap: 0;
-            cursor: pointer;
-        }
-        .nick-main { color: var(--text-secondary); }
-        .own-message .nick-main { color: var(--accent-color); }
-        .nick-tag { color:#6c6c70; font-weight:400; font-size:0.7rem; }
-        .message-actions-btn {
-            position: absolute; right: 0; top: 0;
-            background: none; border: none;
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px; border-radius: 14px;
-            color: var(--text-secondary);
-        }
-        .message-actions-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
-        .reply-context {
-            margin-bottom: 6px;
-            padding-left: 8px;
-            border-left: 2px solid var(--accent-color);
-            cursor: pointer;
-        }
-        .reply-context .reply-nick {
-            font-size: 0.7rem;
-            color: var(--accent-color);
-            font-weight: 600;
-        }
-        .reply-context .reply-text {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .message-text { 
-            font-size:1rem; line-height:1.4; color:var(--text-primary); 
-            white-space:pre-wrap; word-break:break-word; 
-        }
-        .message-text a {
-            color: var(--accent-color);
-            text-decoration: underline;
-        }
-        .message-footer {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .footer-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-        .timestamp {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-        .reaction-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 2rem;
-            background: var(--input-bg);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .reaction-btn svg {
-            width: 1rem;
-            height: 1rem;
-            fill: #ff375f;
-            stroke: #ff375f;
-        }
-        .reactions-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-left: 0;
-        }
-        .reaction-badge {
-            background: var(--input-bg);
-            border-radius: 2rem;
-            padding: 2px 8px;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            border: 0.5px solid var(--border-light);
-        }
-        .reaction-badge .reaction-count {
-            color: var(--text-secondary);
-        }
-        .reaction-badge.user-reacted .reaction-count {
-            color: var(--accent-color);
-        }
-        .edited-badge {
-            font-size:0.7rem;
-            color:var(--text-secondary);
-            font-style:italic;
-        }
-        .message-divider {
-            margin-top: 8px;
-            height: 1px;
-            background-color: var(--border-light);
-            width: 100%;
-        }
+async function isFullNickUnique(fullNick) {
+  const res = await pool.query('SELECT id FROM users WHERE full_nick = $1', [fullNick]);
+  return res.rows.length === 0;
+}
 
-        .typing-indicator {
-            background: var(--input-bg);
-            border-top: 1px solid var(--border-light);
-            padding: 0.4rem 1rem;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-        .typing-indicator.hidden {
-            display: none;
-        }
+app.post('/auth', async (req, res) => {
+  const { nick, pin } = req.body;
+  if (!nick || nick.trim() === '' || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
+    return res.status(400).json({ success: false, error: 'Неверный ник или PIN (4 цифры)' });
+  }
+  const cleanNick = nick.trim();
+  const existing = await pool.query('SELECT id, full_nick, pin_hash FROM users WHERE nick = $1', [cleanNick]);
+  if (existing.rows.length > 0) {
+    const valid = await bcrypt.compare(pin, existing.rows[0].pin_hash);
+    if (!valid) return res.json({ success: false, error: 'Неверный PIN' });
+    const token = uuidv4();
+    await pool.query('UPDATE users SET token = $1 WHERE id = $2', [token, existing.rows[0].id]);
+    return res.json({ success: true, full_nick: existing.rows[0].full_nick, token });
+  } else {
+    let tag, full_nick, unique = false, attempts = 0;
+    while (!unique && attempts < 20) {
+      tag = generateTag();
+      full_nick = `${cleanNick}${tag}`;
+      unique = await isFullNickUnique(full_nick);
+      attempts++;
+    }
+    if (!unique) return res.status(500).json({ success: false, error: 'Ошибка генерации тега' });
+    const pinHash = await bcrypt.hash(pin, 10);
+    const token = uuidv4();
+    await pool.query(
+      'INSERT INTO users (nick, tag, full_nick, pin_hash, token) VALUES ($1, $2, $3, $4, $5)',
+      [cleanNick, tag, full_nick, pinHash, token]
+    );
+    return res.json({ success: true, full_nick, token });
+  }
+});
 
-        .chats-list {
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            flex: 1;
-        }
-        .chat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid var(--border-light);
-        }
-        .chat-info {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            gap: 4px;
-        }
-        .chat-name {
-            font-weight: 500;
-            font-size: 1rem;
-        }
-        .open-chat-btn {
-            background: var(--accent-color);
-            border: none;
-            padding: 0.4rem 1rem;
-            border-radius: 1rem;
-            color: white;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
+app.post('/verify', async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.json({ success: false });
+  const user = await pool.query('SELECT full_nick FROM users WHERE token = $1', [token]);
+  if (user.rows.length > 0) res.json({ success: true, full_nick: user.rows[0].full_nick });
+  else res.json({ success: false });
+});
 
-        .chat-header {
-            background: var(--input-bg);
-            border-bottom: 1px solid var(--border-light);
-            padding: 0.7rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-shrink: 0;
-        }
-        .back-btn {
-            background: var(--input-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 1rem;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: var(--text-primary);
-            width: 2.2rem;
-            height: 2.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .chat-title {
-            flex: 1;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
+app.post('/change-nick', async (req, res) => {
+  const { token, newNick } = req.body;
+  if (!token || !newNick || newNick.trim() === '') {
+    return res.status(400).json({ success: false, error: 'Данные неполные' });
+  }
+  const user = await pool.query('SELECT full_nick, nick FROM users WHERE token = $1', [token]);
+  if (user.rows.length === 0) return res.json({ success: false, error: 'Сессия недействительна' });
+  const oldFullNick = user.rows[0].full_nick;
+  const oldNick = user.rows[0].nick;
+  if (newNick === oldNick) return res.json({ success: true, newFullNick: oldFullNick });
+  const tag = oldFullNick.substring(oldNick.length);
+  const newFullNick = `${newNick}${tag}`;
+  const existing = await pool.query('SELECT id FROM users WHERE full_nick = $1', [newFullNick]);
+  if (existing.rows.length > 0) {
+    return res.json({ success: false, error: 'Ник уже существует' });
+  }
+  await pool.query('UPDATE users SET nick = $1, full_nick = $2 WHERE token = $3', [newNick, newFullNick, token]);
+  await pool.query('UPDATE global_chat_messages SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
+  await pool.query('UPDATE global_chat_reactions SET full_nick = $1 WHERE full_nick = $2', [newFullNick, oldFullNick]);
+  io.emit('nick changed', { oldFullNick, newFullNick });
+  res.json({ success: true, newFullNick });
+});
 
-        .settings-container { 
-            padding: 1.5rem; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 0;
-        }
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-light);
-        }
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-        .setting-label {
-            font-weight: 500;
-            font-size: 1rem;
-            color: var(--text-primary);
-        }
-        .nick-readonly {
-            background: var(--input-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 1rem;
-            padding: 0.6rem 1rem;
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-        .setting-row select, .setting-row button {
-            background: var(--input-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 1rem;
-            padding: 0.6rem 2rem 0.6rem 1rem;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            appearance: none;
-            cursor: pointer;
-            min-width: 120px;
-            text-align: center;
-        }
-        .setting-row button {
-            padding: 0.6rem 1rem;
-            background: var(--input-bg);
-        }
-        .accent-select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.2rem;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #2c2c2e;
-            transition: 0.2s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: 0.2s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: var(--accent-color);
-        }
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
+app.post('/change-pin', async (req, res) => {
+  const { token, oldPin, newPin } = req.body;
+  if (!token || !oldPin || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
+    return res.status(400).json({ success: false, error: 'Некорректные данные' });
+  }
+  const user = await pool.query('SELECT pin_hash FROM users WHERE token = $1', [token]);
+  if (user.rows.length === 0) return res.json({ success: false, error: 'Сессия недействительна' });
+  const valid = await bcrypt.compare(oldPin, user.rows[0].pin_hash);
+  if (!valid) return res.json({ success: false, error: 'Неверный старый PIN' });
+  const newHash = await bcrypt.hash(newPin, 10);
+  await pool.query('UPDATE users SET pin_hash = $1 WHERE token = $2', [newHash, token]);
+  res.json({ success: true });
+});
 
-        .input-wrapper {
-            background: var(--input-bg);
-            border-top: 1px solid var(--border-light);
-            padding-bottom: env(safe-area-inset-bottom,0);
-        }
-        .input-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            padding: 0.9rem 1rem;
-        }
-        .input-row textarea {
-            flex:1; background:transparent; border:none; padding:0.75rem 0; font-size:1rem;
-            color:var(--text-primary); outline:none; resize: none; 
-            font-family:inherit; line-height:1.4; max-height:150px; overflow-y: auto;
-        }
-        .send-btn {
-            background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
-            color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
-        }
-        /* Индикаторы ответа и редактирования — без скругления левой полоски, уменьшенной по вертикали */
-        .reply-indicator, .edit-indicator {
-            margin: 0.5rem 1rem 0;
-            background: var(--input-bg);
-            border-left: 2px solid var(--accent-color);
-            border-radius: 0;  /* убираем скругление */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 0.4rem 0.8rem;  /* уменьшили вертикальный отступ */
-            position: relative;
-        }
-        .reply-indicator::before, .edit-indicator::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: var(--border-light);
-        }
-        .reply-indicator .reply-content, .edit-indicator .edit-content {
-            flex: 1;
-            overflow: hidden;
-        }
-        .reply-indicator .reply-nick, .edit-indicator .edit-label {
-            font-size: 0.7rem;
-            color: var(--accent-color);
-            font-weight: 600;
-        }
-        .reply-indicator .reply-text, .edit-indicator .edit-text {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .cancel-reply, .cancel-edit {
-            background: var(--bg-page);
-            border: none;
-            border-radius: 1rem;
-            width: 2rem;
-            height: 2rem;
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: auto;
-        }
+app.get('/chat-messages', async (req, res) => {
+  const { chatId, full_nick } = req.query;
+  if (!chatId || !full_nick) return res.status(400).json([]);
+  const result = await pool.query(`
+    SELECT m.id, m.full_nick, m.text, m.reply_to_id, m.edited, m.created_at,
+           COALESCE(r.reactions, '[]'::json) as reactions,
+           rep.full_nick as reply_nick, rep.text as reply_text,
+           (SELECT array_agg(reaction) FROM global_chat_reactions WHERE message_id = m.id AND full_nick = $2) as user_reactions
+    FROM global_chat_messages m
+    LEFT JOIN LATERAL (
+      SELECT json_agg(json_build_object('reaction', reaction, 'count', cnt)) as reactions
+      FROM (
+        SELECT reaction, COUNT(*) as cnt
+        FROM global_chat_reactions
+        WHERE message_id = m.id
+        GROUP BY reaction
+      ) sub
+    ) r ON true
+    LEFT JOIN global_chat_messages rep ON m.reply_to_id = rep.id
+    WHERE m.chat_id = $1
+    ORDER BY m.created_at ASC
+  `, [chatId, full_nick]);
+  res.json(result.rows);
+});
 
-        .modal {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background-color:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1000;
-            justify-content:center; align-items:center;
-        }
-        .modal-content {
-            background:var(--input-bg); border-radius:2rem; padding:1.5rem; width:90%; max-width:340px;
-            border:0.5px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3);
-        }
-        .modal-content h3 { margin-bottom:1rem; font-size:1.3rem; font-weight:590; color:var(--text-primary); }
-        .modal-setting { margin-bottom:1.2rem; }
-        .modal-setting label { display:block; margin-bottom:0.4rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary); }
-        .modal-setting input {
-            width:100%; padding:0.6rem 1rem; background:var(--bg-page); border:0.5px solid var(--border-light);
-            border-radius:1rem; font-size:1rem; color:var(--text-primary); outline:none;
-        }
-        .modal-buttons { display:flex; gap:10px; margin-top:1rem; }
-        .modal-buttons button {
-            flex:1; padding:0.7rem; border-radius:1rem; font-weight:590; cursor:pointer; border:none;
-            font-size:0.9rem; background: var(--bg-page); color: var(--text-primary);
-        }
-        .modal-buttons button:last-child { background: var(--accent-color); color:white; }
+app.post('/add-chat-reaction', async (req, res) => {
+  const { messageId, full_nick, reaction, chatId } = req.body;
+  if (!messageId || !full_nick || !reaction) return res.status(400).json({ success: false });
+  try {
+    await pool.query(
+      `INSERT INTO global_chat_reactions (message_id, full_nick, reaction) VALUES ($1, $2, $3)`,
+      [messageId, full_nick, reaction]
+    );
+    const reactionsRes = await pool.query(
+      `SELECT reaction, COUNT(*) as count FROM global_chat_reactions WHERE message_id = $1 GROUP BY reaction`,
+      [messageId]
+    );
+    const reactions = reactionsRes.rows;
+    io.to(`chat_${chatId}`).emit('chat reaction updated', { chatId, messageId, reactions });
+    res.json({ success: true, reactions });
+  } catch (err) {
+    if (err.code === '23505') {
+      await pool.query(
+        `DELETE FROM global_chat_reactions WHERE message_id = $1 AND full_nick = $2 AND reaction = $3`,
+        [messageId, full_nick, reaction]
+      );
+      const reactionsRes = await pool.query(
+        `SELECT reaction, COUNT(*) as count FROM global_chat_reactions WHERE message_id = $1 GROUP BY reaction`,
+        [messageId]
+      );
+      const reactions = reactionsRes.rows;
+      io.to(`chat_${chatId}`).emit('chat reaction updated', { chatId, messageId, reactions });
+      res.json({ success: true, reactions });
+    } else {
+      res.status(500).json({ success: false });
+    }
+  }
+});
 
-        .context-menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        .context-menu-buttons button {
-            background: var(--bg-page);
-            border: 1px solid var(--border-light);
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            font-size: 1rem;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-        .context-menu-buttons button:active {
-            background: rgba(128,128,128,0.2);
-        }
-        .context-menu-buttons svg {
-            width: 1.2rem;
-            height: 1.2rem;
-            stroke: currentColor;
-            stroke-width: 1.5;
-            fill: none;
-        }
-        .context-message-nick {
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        .context-message-preview {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            padding: 0.5rem 0;
-            border-top: 1px solid var(--border-light);
-            border-bottom: 1px solid var(--border-light);
-            margin-bottom: 0.5rem;
-            word-break: break-word;
-        }
+app.post('/delete-chat-message', async (req, res) => {
+  const { full_nick, messageId, chatId } = req.body;
+  if (!full_nick || !messageId || !chatId) return res.status(400).json({ success: false });
+  const msg = await pool.query('SELECT full_nick FROM global_chat_messages WHERE id = $1', [messageId]);
+  if (msg.rows.length === 0) return res.json({ success: false });
+  if (msg.rows[0].full_nick !== full_nick) return res.json({ success: false });
+  const result = await pool.query('DELETE FROM global_chat_messages WHERE id = $1 RETURNING id', [messageId]);
+  if (result.rowCount > 0) {
+    io.to(`chat_${chatId}`).emit('chat message deleted', { chatId, messageId });
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
 
-        .reactions-picker {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 0.5rem;
-            justify-items: center;
-            margin-bottom: 1rem;
-        }
-        .reactions-picker button {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.3rem;
-            border-radius: 1rem;
-        }
-    </style>
-</head>
-<body>
+app.post('/edit-chat-message', async (req, res) => {
+  const { messageId, full_nick, newText, chatId } = req.body;
+  if (!messageId || !full_nick || !newText || newText.trim() === '') {
+    return res.status(400).json({ success: false });
+  }
+  const result = await pool.query(
+    'UPDATE global_chat_messages SET text = $1, edited = TRUE WHERE id = $2 AND full_nick = $3 RETURNING id',
+    [newText.trim(), messageId, full_nick]
+  );
+  if (result.rowCount > 0) {
+    io.to(`chat_${chatId}`).emit('chat message edited', { chatId, messageId, newText: newText.trim() });
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
 
-<div id="loginScreen" class="login-screen">
-    <div class="login-card">
-        <h2>ChatX</h2>
-        <input type="text" id="loginNick" placeholder="Ник" autocomplete="off">
-        <input type="text" id="loginPin" placeholder="PIN (4 цифры)" maxlength="4" inputmode="numeric" pattern="\d*" autocomplete="off">
-        <button id="loginBtn">Войти</button>
-        <div id="loginError" class="error"></div>
-    </div>
-</div>
+const onlineUsers = new Set();
+io.on('connection', (socket) => {
+  let currentFullNick = null;
 
-<div id="appContainer" class="app-container" style="display: none;">
-    <div class="top-tab-bar">
-        <button class="top-tab active" data-tab="chats">Чаты</button>
-        <button class="top-tab" data-tab="settings">Настройки</button>
-    </div>
+  socket.on('user online', (full_nick) => {
+    currentFullNick = full_nick;
+    onlineUsers.add(full_nick);
+    io.emit('online count', onlineUsers.size);
+  });
 
-    <div id="chatsTab" class="tab-content active">
-        <div id="chatsList" class="chats-list">Загрузка...</div>
-    </div>
+  socket.on('disconnect', () => {
+    if (currentFullNick) {
+      onlineUsers.delete(currentFullNick);
+      io.emit('online count', onlineUsers.size);
+    }
+  });
 
-    <div id="settingsTab" class="tab-content">
-        <div class="settings-container">
-            <div class="setting-row">
-                <span class="setting-label">Ваш ник</span>
-                <div id="displayNickWithTag" class="nick-readonly"></div>
-                <button id="changeNickBtn">Изменить</button>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Сменить PIN</span>
-                <button id="changePinBtn">Сменить</button>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Тёмная тема</span>
-                <select id="darkThemeSelect">
-                    <option value="regular">Обычная</option>
-                    <option value="black">Чёрная</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Оттенок</span>
-                <select id="accentSelect" class="accent-select">
-                    <option value="blue">Стандартный</option>
-                    <option value="ios-blue">Синий (iOS)</option>
-                    <option value="purple">Фиолетовый (iPhone 11)</option>
-                    <option value="pink">Розовый (iPhone 15)</option>
-                    <option value="red">Красный (iPhone 12)</option>
-                    <option value="orange">Оранжевый</option>
-                    <option value="beige">Бежевый</option>
-                    <option value="yellow">Жёлтый (iPhone 15)</option>
-                    <option value="mint">Зелёный (батарея)</option>
-                    <option value="lime">Лаймовый (iPhone 15)</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Показывать дату</span>
-                <label class="switch">
-                    <input type="checkbox" id="showDateToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Реакции</span>
-                <label class="switch">
-                    <input type="checkbox" id="showReactionsToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Уведомления</span>
-                <label class="switch">
-                    <input type="checkbox" id="notificationsToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-    </div>
-</div>
+  socket.on('join chat', (chatId) => {
+    socket.join(`chat_${chatId}`);
+  });
+  socket.on('leave chat', (chatId) => {
+    socket.leave(`chat_${chatId}`);
+  });
 
-<div id="chatView" style="display: none; flex-direction: column; height: 100%;">
-    <div class="chat-header">
-        <button class="back-btn" id="closeChatBtn">←</button>
-        <div class="chat-title" id="chatTitle">Чат</div>
-    </div>
-    <div class="chat-messages" id="chatMessagesContainer"></div>
-    <div class="typing-indicator hidden" id="chatTypingIndicator"></div>
-    <div class="input-wrapper">
-        <div class="input-row">
-            <textarea id="chatMessageInput" placeholder="Сообщение..." rows="1"></textarea>
-            <button class="send-btn" id="sendChatBtn">↑</button>
-        </div>
-    </div>
-</div>
+  socket.on('join typing chat', (chatId) => {
+    socket.join(`typing_chat_${chatId}`);
+  });
+  socket.on('leave typing chat', (chatId) => {
+    socket.leave(`typing_chat_${chatId}`);
+  });
+  socket.on('chat typing', ({ chatId, full_nick }) => {
+    socket.to(`chat_${chatId}`).emit('chat typing', { chatId, full_nick });
+  });
+  socket.on('chat stop typing', ({ chatId }) => {
+    socket.to(`chat_${chatId}`).emit('chat stop typing', { chatId });
+  });
 
-<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-<script>
-    let socket = null;
-    let currentUser = { full_nick: "" };
-    let authToken = localStorage.getItem('simply_token');
-    let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { 
-        accent: 'blue', 
-        showDate: true, 
-        showReactions: true,
-        notifications: true,
-        darkThemeVariant: 'regular'
+  socket.on('new chat message', async (data) => {
+    const { chatId, full_nick, text, reply_to_id } = data;
+    if (!chatId || !full_nick || !text || text.trim() === '') return;
+    const result = await pool.query(
+      'INSERT INTO global_chat_messages (chat_id, full_nick, text, reply_to_id) VALUES ($1, $2, $3, $4) RETURNING id, created_at',
+      [chatId, full_nick, text.trim(), reply_to_id || null]
+    );
+    const newMsg = {
+      id: result.rows[0].id,
+      full_nick,
+      text: text.trim(),
+      reply_to_id: reply_to_id || null,
+      edited: false,
+      created_at: result.rows[0].created_at,
+      reactions: [],
+      user_reactions: []
     };
-    
-    let currentChatId = null;
-    let chatMessages = { 1: [], 2: [], 3: [] };
-    let editingMessage = null;
-    let pendingDeleteMessageId = null;
-    let currentReactionMessage = null;
-    let replyingTo = null;
-    let typingTimeouts = {};
-
-    const CHATS = [
-        { id: 1, name: "Общий чат" },
-        { id: 2, name: "Чат 1" },
-        { id: 3, name: "Чат 2" }
-    ];
-
-    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
-    function splitFullNick(full) { const h=full.lastIndexOf('#'); if(h===-1) return {nick:full,tag:''}; return {nick:full.slice(0,h),tag:full.slice(h)}; }
-    function linkify(text) {
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        return text.replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-color); text-decoration: underline;">${url}</a>`);
+    if (reply_to_id) {
+      const replyMsg = await pool.query('SELECT full_nick, text FROM global_chat_messages WHERE id = $1', [reply_to_id]);
+      if (replyMsg.rows.length) {
+        newMsg.reply_nick = replyMsg.rows[0].full_nick;
+        newMsg.reply_text = replyMsg.rows[0].text;
+      }
     }
-    function formatTimestamp(isoString, showDate) {
-        const date = new Date(isoString);
-        const hours = String(date.getHours()).padStart(2,'0');
-        const minutes = String(date.getMinutes()).padStart(2,'0');
-        if (showDate) {
-            const day = String(date.getDate()).padStart(2,'0');
-            const month = String(date.getMonth()+1).padStart(2,'0');
-            const year = date.getFullYear();
-            return `${day}.${month}.${year} ${hours}:${minutes}`;
-        } else {
-            return `${hours}:${minutes}`;
-        }
-    }
+    io.to(`chat_${chatId}`).emit('chat message received', { chatId, message: newMsg });
+  });
+});
 
-    function applyTheme() {
-        document.body.classList.remove('theme-dark-regular', 'theme-dark-black');
-        document.body.classList.add(`theme-dark-${appSettings.darkThemeVariant}`);
-        localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        const color = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
-        if (color) {
-            const meta = document.getElementById('themeColorMeta');
-            if (meta) meta.setAttribute('content', color);
-        }
-    }
-
-    function applyAccent(accent) {
-        const classes = ['accent-blue','accent-ios-blue','accent-purple','accent-pink','accent-red','accent-orange','accent-beige','accent-yellow','accent-mint','accent-lime'];
-        document.body.classList.remove(...classes);
-        let accentClass = '';
-        switch(accent) {
-            case 'blue': accentClass = 'accent-blue'; break;
-            case 'ios-blue': accentClass = 'accent-ios-blue'; break;
-            case 'purple': accentClass = 'accent-purple'; break;
-            case 'pink': accentClass = 'accent-pink'; break;
-            case 'red': accentClass = 'accent-red'; break;
-            case 'orange': accentClass = 'accent-orange'; break;
-            case 'beige': accentClass = 'accent-beige'; break;
-            case 'yellow': accentClass = 'accent-yellow'; break;
-            case 'mint': accentClass = 'accent-mint'; break;
-            case 'lime': accentClass = 'accent-lime'; break;
-            default: accentClass = 'accent-blue';
-        }
-        document.body.classList.add(accentClass);
-        appSettings.accent = accent;
-        localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        const color = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
-        if (color) {
-            const rgb = color.match(/\d+/g);
-            if (rgb) document.body.style.setProperty('--accent-rgb', rgb.join(','));
-            const meta = document.getElementById('themeColorMeta');
-            if (meta) meta.setAttribute('content', color);
-        }
-    }
-
-    function renderChatsList() {
-        const container = document.getElementById('chatsList');
-        if (!container) return;
-        container.innerHTML = '';
-        CHATS.forEach(chat => {
-            const chatDiv = document.createElement('div');
-            chatDiv.className = 'chat-item';
-            chatDiv.innerHTML = `
-                <div class="chat-info">
-                    <div class="chat-name">${escapeHtml(chat.name)}</div>
-                </div>
-                <button class="open-chat-btn" data-id="${chat.id}">Открыть</button>
-            `;
-            container.appendChild(chatDiv);
-        });
-        document.querySelectorAll('.open-chat-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const chatId = parseInt(btn.dataset.id);
-                openChat(chatId);
-            });
-        });
-    }
-
-    function openChat(chatId) {
-        if (currentChatId) {
-            socket.emit('leave chat', currentChatId);
-            socket.emit('leave typing chat', currentChatId);
-        }
-        currentChatId = chatId;
-        const chat = CHATS.find(c => c.id === chatId);
-        document.getElementById('chatTitle').innerText = chat.name;
-        document.getElementById('chatView').style.display = 'flex';
-        document.getElementById('appContainer').style.display = 'none';
-        if (!chatMessages[chatId]) chatMessages[chatId] = [];
-        loadChatMessages(chatId);
-        socket.emit('join chat', chatId);
-        socket.emit('join typing chat', chatId);
-        renderChatMessages(chatId);
-    }
-
-    function closeChat() {
-        if (currentChatId) {
-            socket.emit('leave chat', currentChatId);
-            socket.emit('leave typing chat', currentChatId);
-        }
-        currentChatId = null;
-        editingMessage = null;
-        replyingTo = null;
-        hideReplyIndicator();
-        hideEditIndicator();
-        document.getElementById('chatView').style.display = 'none';
-        document.getElementById('appContainer').style.display = 'flex';
-        document.getElementById('chatMessageInput').value = '';
-    }
-
-    function renderChatMessages(chatId) {
-        const container = document.getElementById('chatMessagesContainer');
-        if (!container) return;
-        const wasNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
-        container.innerHTML = '';
-        const msgs = chatMessages[chatId] || [];
-        const showReactions = appSettings.showReactions !== false;
-        msgs.forEach(msg => {
-            const isOwn = currentUser && msg.full_nick === currentUser.full_nick;
-            const { nick, tag } = splitFullNick(msg.full_nick);
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message-item';
-            if (isOwn) msgDiv.classList.add('own-message');
-            msgDiv.setAttribute('data-id', msg.id);
-            msgDiv.setAttribute('data-full-nick', msg.full_nick);
-            let replyHtml = '';
-            if (msg.reply_to_id && msg.reply_nick && msg.reply_text) {
-                replyHtml = `
-                    <div class="reply-context" data-message="${msg.reply_to_id}">
-                        <div class="reply-nick">${escapeHtml(msg.reply_nick)}</div>
-                        <div class="reply-text">${escapeHtml(msg.reply_text)}</div>
-                    </div>
-                `;
-            }
-            let reactionsHtml = '';
-            if (showReactions && msg.reactions && msg.reactions.length) {
-                const sorted = [...msg.reactions].sort((a,b) => b.count - a.count);
-                reactionsHtml = '<div class="reactions-container">';
-                sorted.forEach(r => {
-                    const userReacted = msg.user_reactions && msg.user_reactions.includes(r.reaction);
-                    reactionsHtml += `<button class="reaction-badge ${userReacted ? 'user-reacted' : ''}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
-                });
-                reactionsHtml += '</div>';
-            }
-            const timestamp = formatTimestamp(msg.created_at, appSettings.showDate);
-            msgDiv.innerHTML = `
-                <div class="message-header">
-                    <div class="message-nick">
-                        <span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>
-                    </div>
-                </div>
-                ${replyHtml}
-                <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
-                <div class="message-footer">
-                    <div class="footer-left">
-                        ${showReactions ? `<button class="reaction-btn" data-message="${msg.id}"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="#ff375f"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>` : ''}
-                        ${reactionsHtml}
-                    </div>
-                    <div class="footer-right">
-                        <span class="timestamp">${timestamp}</span>
-                        ${msg.edited ? '<span class="edited-badge">изменено</span>' : ''}
-                    </div>
-                </div>
-                <div class="message-divider"></div>
-            `;
-            container.appendChild(msgDiv);
-            const actionsBtn = document.createElement('button');
-            actionsBtn.className = 'message-actions-btn';
-            actionsBtn.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>';
-            actionsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showContextMenu(msg.id, msg.full_nick, msg.text, isOwn);
-            });
-            msgDiv.appendChild(actionsBtn);
-        });
-        attachChatReactionEvents();
-        if (wasNearBottom && !window.isUserScrolling) container.scrollTop = container.scrollHeight;
-    }
-
-    function attachChatReactionEvents() {
-        const showReactions = appSettings.showReactions !== false;
-        if (showReactions) {
-            document.querySelectorAll('#chatMessagesContainer .reaction-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const messageId = parseInt(btn.dataset.message);
-                currentReactionMessage = messageId;
-                showReactionPicker();
-            }));
-            document.querySelectorAll('#chatMessagesContainer .reaction-badge').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const reaction = btn.dataset.reaction;
-                const messageId = parseInt(btn.dataset.message);
-                addChatReaction(messageId, reaction);
-            }));
-        }
-        document.querySelectorAll('#chatMessagesContainer .reply-context').forEach(el => {
-            el.addEventListener('click', () => {
-                const targetId = parseInt(el.dataset.message);
-                scrollToChatMessage(targetId);
-            });
-        });
-        document.querySelectorAll('#chatMessagesContainer .message-nick').forEach(el => {
-            el.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const fullNick = el.closest('.message-item').dataset.fullNick;
-                if (fullNick) navigator.clipboard.writeText(fullNick);
-            });
-        });
-    }
-
-    async function loadChatMessages(chatId) {
-        try {
-            const res = await fetch(`/chat-messages?chatId=${chatId}&full_nick=${encodeURIComponent(currentUser.full_nick)}`);
-            const data = await res.json();
-            chatMessages[chatId] = data;
-            if (currentChatId === chatId) renderChatMessages(chatId);
-        } catch(e) { console.error(e); }
-    }
-
-    async function addChatReaction(messageId, reaction) {
-        try {
-            const res = await fetch('/add-chat-reaction', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messageId, full_nick: currentUser.full_nick, reaction, chatId: currentChatId })
-            });
-            const data = await res.json();
-            if (data.success) {
-                const msg = chatMessages[currentChatId]?.find(m => m.id === messageId);
-                if (msg) {
-                    msg.reactions = data.reactions;
-                    if (!msg.user_reactions) msg.user_reactions = [];
-                    if (msg.user_reactions.includes(reaction)) msg.user_reactions = msg.user_reactions.filter(r => r !== reaction);
-                    else msg.user_reactions.push(reaction);
-                    renderChatMessages(currentChatId);
-                }
-            }
-        } catch(e) { console.error(e); }
-    }
-
-    function sendChatMessage() {
-        if (!currentChatId) return;
-        const input = document.getElementById('chatMessageInput');
-        let text = input.value.trim();
-        if (!text && !replyingTo && !editingMessage) return;
-        if (editingMessage) {
-            editChatMessage(editingMessage.id, text);
-            editingMessage = null;
-            input.value = '';
-            autoResizeTextarea(input);
-            hideEditIndicator();
-            return;
-        }
-        if (replyingTo) {
-            const payload = { chatId: currentChatId, full_nick: currentUser.full_nick, text, reply_to_id: replyingTo.messageId };
-            socket.emit('new chat message', payload);
-            replyingTo = null;
-            hideReplyIndicator();
-            input.value = '';
-            autoResizeTextarea(input);
-            input.focus();
-            return;
-        }
-        const payload = { chatId: currentChatId, full_nick: currentUser.full_nick, text };
-        socket.emit('new chat message', payload);
-        input.value = '';
-        autoResizeTextarea(input);
-        input.focus();
-        onChatTyping(false);
-    }
-
-    async function editChatMessage(messageId, newText) {
-        const res = await fetch('/edit-chat-message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messageId, full_nick: currentUser.full_nick, newText, chatId: currentChatId })
-        });
-        const data = await res.json();
-        if (!data.success) alert('Не удалось отредактировать');
-    }
-
-    function showContextMenu(messageId, full_nick, text, isOwn) {
-        const showReactions = appSettings.showReactions !== false;
-        const { nick, tag } = splitFullNick(full_nick);
-        document.getElementById('contextMessageNick').innerHTML = `<span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>`;
-        document.getElementById('contextMessagePreview').innerHTML = linkify(escapeHtml(text.substring(0, 150))) + (text.length>150?'…':'');
-        const container = document.getElementById('contextMenuButtons');
-        let buttonsHtml = '';
-        if (showReactions) {
-            buttonsHtml += `<button id="ctx-react"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="#ff375f"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Реакция</button>`;
-        }
-        buttonsHtml += `<button id="ctx-reply"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/></svg> Ответить</button>`;
-        if (isOwn) {
-            buttonsHtml += `<button id="ctx-edit"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg> Редактировать</button>`;
-        }
-        buttonsHtml += `<button id="ctx-copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Скопировать</button>`;
-        if (isOwn) {
-            buttonsHtml += `<button id="ctx-delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>`;
-        }
-        buttonsHtml += `<button id="ctx-close"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Закрыть</button>`;
-        container.innerHTML = buttonsHtml;
-        if (showReactions) {
-            document.getElementById('ctx-react').onclick = () => {
-                currentReactionMessage = messageId;
-                showReactionPicker();
-                document.getElementById('contextMenuModal').style.display = 'none';
-            };
-        }
-        document.getElementById('ctx-reply').onclick = () => {
-            if (editingMessage) {
-                editingMessage = null;
-                hideEditIndicator();
-                document.getElementById('chatMessageInput').value = '';
-            }
-            replyingTo = { messageId, full_nick, text };
-            showReplyIndicator(replyingTo);
-            document.getElementById('contextMenuModal').style.display = 'none';
-            document.getElementById('chatMessageInput').focus();
-        };
-        document.getElementById('ctx-copy').onclick = () => { navigator.clipboard.writeText(text); document.getElementById('contextMenuModal').style.display = 'none'; };
-        if (isOwn) {
-            document.getElementById('ctx-edit').onclick = () => {
-                if (replyingTo) {
-                    replyingTo = null;
-                    hideReplyIndicator();
-                }
-                editingMessage = { id: messageId, text };
-                showEditIndicator(editingMessage);
-                const input = document.getElementById('chatMessageInput');
-                input.value = text;
-                input.focus();
-                document.getElementById('contextMenuModal').style.display = 'none';
-            };
-            document.getElementById('ctx-delete').onclick = () => {
-                pendingDeleteMessageId = messageId;
-                document.getElementById('confirmMessage').innerText = 'Удалить сообщение?';
-                document.getElementById('confirmModal').style.display = 'flex';
-                document.getElementById('contextMenuModal').style.display = 'none';
-            };
-        }
-        document.getElementById('ctx-close').onclick = () => document.getElementById('contextMenuModal').style.display = 'none';
-        document.getElementById('contextMenuModal').style.display = 'flex';
-    }
-
-    function showReplyIndicator(reply) {
-        let indicator = document.getElementById('replyIndicator');
-        if (!indicator) {
-            const div = document.createElement('div');
-            div.id = 'replyIndicator';
-            div.className = 'reply-indicator';
-            div.innerHTML = `
-                <div class="reply-content">
-                    <div class="reply-nick">${escapeHtml(reply.full_nick)}</div>
-                    <div class="reply-text">${escapeHtml(reply.text)}</div>
-                </div>
-                <button class="cancel-reply">✕</button>
-            `;
-            const wrapper = document.querySelector('#chatView .input-wrapper');
-            wrapper.parentNode.insertBefore(div, wrapper);
-            div.querySelector('.cancel-reply').onclick = () => {
-                replyingTo = null;
-                div.remove();
-            };
-        } else {
-            indicator.querySelector('.reply-nick').innerHTML = escapeHtml(reply.full_nick);
-            indicator.querySelector('.reply-text').innerHTML = escapeHtml(reply.text);
-            indicator.style.display = 'flex';
-            indicator.querySelector('.cancel-reply').onclick = () => {
-                replyingTo = null;
-                indicator.style.display = 'none';
-            };
-        }
-    }
-
-    function hideReplyIndicator() {
-        const indicator = document.getElementById('replyIndicator');
-        if (indicator) indicator.style.display = 'none';
-    }
-
-    function showEditIndicator(edit) {
-        let indicator = document.getElementById('editIndicator');
-        if (!indicator) {
-            const div = document.createElement('div');
-            div.id = 'editIndicator';
-            div.className = 'edit-indicator';
-            div.innerHTML = `
-                <div class="edit-content">
-                    <div class="edit-label">Редактирование</div>
-                    <div class="edit-text">${escapeHtml(edit.text)}</div>
-                </div>
-                <button class="cancel-edit">✕</button>
-            `;
-            const wrapper = document.querySelector('#chatView .input-wrapper');
-            wrapper.parentNode.insertBefore(div, wrapper);
-            div.querySelector('.cancel-edit').onclick = () => {
-                editingMessage = null;
-                div.remove();
-                document.getElementById('chatMessageInput').value = '';
-            };
-        } else {
-            indicator.querySelector('.edit-text').innerHTML = escapeHtml(edit.text);
-            indicator.style.display = 'flex';
-            indicator.querySelector('.cancel-edit').onclick = () => {
-                editingMessage = null;
-                indicator.style.display = 'none';
-                document.getElementById('chatMessageInput').value = '';
-            };
-        }
-    }
-
-    function hideEditIndicator() {
-        const indicator = document.getElementById('editIndicator');
-        if (indicator) indicator.style.display = 'none';
-    }
-
-    function updateChatTypingIndicator(full_nick) {
-        const indicator = document.getElementById('chatTypingIndicator');
-        if (!indicator) return;
-        if (!full_nick) {
-            indicator.classList.add('hidden');
-            return;
-        }
-        const { nick, tag } = splitFullNick(full_nick);
-        indicator.innerHTML = `${escapeHtml(nick)}${escapeHtml(tag)} печатает...`;
-        indicator.classList.remove('hidden');
-        setTimeout(() => {
-            if (indicator.innerHTML.includes('печатает')) indicator.classList.add('hidden');
-        }, 2000);
-    }
-
-    function onChatTyping(isTyping) {
-        if (!socket || !currentChatId) return;
-        if (isTyping) {
-            socket.emit('chat typing', { chatId: currentChatId, full_nick: currentUser.full_nick });
-            if (typingTimeouts[currentChatId]) clearTimeout(typingTimeouts[currentChatId]);
-            typingTimeouts[currentChatId] = setTimeout(() => {
-                socket.emit('chat stop typing', { chatId: currentChatId, full_nick: currentUser.full_nick });
-            }, 1500);
-        } else {
-            if (typingTimeouts[currentChatId]) clearTimeout(typingTimeouts[currentChatId]);
-            socket.emit('chat stop typing', { chatId: currentChatId, full_nick: currentUser.full_nick });
-        }
-    }
-
-    function scrollToChatMessage(messageId) {
-        const element = document.querySelector(`#chatMessagesContainer .message-item[data-id="${messageId}"]`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.classList.add('highlight');
-            setTimeout(() => element.classList.remove('highlight'), 1000);
-        }
-    }
-
-    function autoResizeTextarea(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
-    }
-
-    async function authWithPin(nick, pin) {
-        try {
-            const res = await fetch('/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ nick, pin }) });
-            const data = await res.json();
-            if (data.success) {
-                currentUser.full_nick = data.full_nick;
-                authToken = data.token;
-                localStorage.setItem('simply_token', authToken);
-                localStorage.setItem('simply_nick', nick);
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                if (socket) socket.disconnect();
-                socket = io();
-                socket.emit('user online', currentUser.full_nick);
-                socket.on('chat message received', ({chatId, message}) => {
-                    if (!chatMessages[chatId]) chatMessages[chatId] = [];
-                    chatMessages[chatId].push(message);
-                    if (currentChatId === chatId) renderChatMessages(chatId);
-                    if (appSettings.notifications && window.OneSignalDeferred && chatId !== currentChatId) {
-                        OneSignalDeferred.push(async function(OneSignal) {
-                            await OneSignal.sendNotification({
-                                title: `Новое сообщение в ${CHATS.find(c => c.id === chatId)?.name}`,
-                                message: `${message.full_nick}: ${message.text.substring(0, 100)}`,
-                                url: window.location.href
-                            });
-                        });
-                    }
-                });
-                socket.on('chat message deleted', ({chatId, messageId}) => {
-                    if (chatMessages[chatId]) {
-                        chatMessages[chatId] = chatMessages[chatId].filter(m => m.id !== messageId);
-                        if (currentChatId === chatId) renderChatMessages(chatId);
-                    }
-                });
-                socket.on('chat message edited', ({chatId, messageId, newText}) => {
-                    const msg = chatMessages[chatId]?.find(m => m.id === messageId);
-                    if (msg) { msg.text = newText; msg.edited = true; if (currentChatId === chatId) renderChatMessages(chatId); }
-                });
-                socket.on('chat reaction updated', ({chatId, messageId, reactions}) => {
-                    const msg = chatMessages[chatId]?.find(m => m.id === messageId);
-                    if (msg) { msg.reactions = reactions; if (currentChatId === chatId) renderChatMessages(chatId); }
-                });
-                socket.on('chat typing', ({chatId, full_nick}) => {
-                    if (currentChatId === chatId && full_nick !== currentUser.full_nick) updateChatTypingIndicator(full_nick);
-                });
-                socket.on('chat stop typing', ({chatId}) => {
-                    if (currentChatId === chatId) updateChatTypingIndicator(null);
-                });
-                renderChatsList();
-                const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
-                document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
-                document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
-                document.getElementById('showReactionsToggle').checked = appSettings.showReactions !== false;
-                document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
-                document.getElementById('darkThemeSelect').value = appSettings.darkThemeVariant;
-                document.getElementById('accentSelect').value = appSettings.accent;
-                document.getElementById('showDateToggle').onchange = (e) => {
-                    appSettings.showDate = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    if (currentChatId) renderChatMessages(currentChatId);
-                };
-                document.getElementById('showReactionsToggle').onchange = (e) => {
-                    appSettings.showReactions = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    if (currentChatId) renderChatMessages(currentChatId);
-                };
-                document.getElementById('notificationsToggle').onchange = (e) => {
-                    appSettings.notifications = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                };
-                document.getElementById('darkThemeSelect').onchange = (e) => {
-                    appSettings.darkThemeVariant = e.target.value;
-                    applyTheme();
-                };
-                document.getElementById('accentSelect').onchange = e => applyAccent(e.target.value);
-                applyAccent(appSettings.accent);
-                applyTheme();
-                return true;
-            } else { document.getElementById('loginError').innerText = data.error || 'Ошибка входа'; return false; }
-        } catch(e) { document.getElementById('loginError').innerText = 'Ошибка соединения'; return false; }
-    }
-
-    async function verifyToken() {
-        const token = localStorage.getItem('simply_token');
-        if (!token) return false;
-        try {
-            const res = await fetch('/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ token }) });
-            const data = await res.json();
-            if (data.success) {
-                currentUser.full_nick = data.full_nick;
-                authToken = token;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                socket = io();
-                socket.emit('user online', currentUser.full_nick);
-                socket.on('chat message received', ({chatId, message}) => {
-                    if (!chatMessages[chatId]) chatMessages[chatId] = [];
-                    chatMessages[chatId].push(message);
-                    if (currentChatId === chatId) renderChatMessages(chatId);
-                    if (appSettings.notifications && window.OneSignalDeferred && chatId !== currentChatId) {
-                        OneSignalDeferred.push(async function(OneSignal) {
-                            await OneSignal.sendNotification({
-                                title: `Новое сообщение в ${CHATS.find(c => c.id === chatId)?.name}`,
-                                message: `${message.full_nick}: ${message.text.substring(0, 100)}`,
-                                url: window.location.href
-                            });
-                        });
-                    }
-                });
-                socket.on('chat message deleted', ({chatId, messageId}) => {
-                    if (chatMessages[chatId]) {
-                        chatMessages[chatId] = chatMessages[chatId].filter(m => m.id !== messageId);
-                        if (currentChatId === chatId) renderChatMessages(chatId);
-                    }
-                });
-                socket.on('chat message edited', ({chatId, messageId, newText}) => {
-                    const msg = chatMessages[chatId]?.find(m => m.id === messageId);
-                    if (msg) { msg.text = newText; msg.edited = true; if (currentChatId === chatId) renderChatMessages(chatId); }
-                });
-                socket.on('chat reaction updated', ({chatId, messageId, reactions}) => {
-                    const msg = chatMessages[chatId]?.find(m => m.id === messageId);
-                    if (msg) { msg.reactions = reactions; if (currentChatId === chatId) renderChatMessages(chatId); }
-                });
-                socket.on('chat typing', ({chatId, full_nick}) => {
-                    if (currentChatId === chatId && full_nick !== currentUser.full_nick) updateChatTypingIndicator(full_nick);
-                });
-                socket.on('chat stop typing', ({chatId}) => {
-                    if (currentChatId === chatId) updateChatTypingIndicator(null);
-                });
-                renderChatsList();
-                const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
-                document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
-                document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
-                document.getElementById('showReactionsToggle').checked = appSettings.showReactions !== false;
-                document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
-                document.getElementById('darkThemeSelect').value = appSettings.darkThemeVariant;
-                document.getElementById('accentSelect').value = appSettings.accent;
-                document.getElementById('showDateToggle').onchange = (e) => {
-                    appSettings.showDate = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    if (currentChatId) renderChatMessages(currentChatId);
-                };
-                document.getElementById('showReactionsToggle').onchange = (e) => {
-                    appSettings.showReactions = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    if (currentChatId) renderChatMessages(currentChatId);
-                };
-                document.getElementById('notificationsToggle').onchange = (e) => {
-                    appSettings.notifications = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                };
-                document.getElementById('darkThemeSelect').onchange = (e) => {
-                    appSettings.darkThemeVariant = e.target.value;
-                    applyTheme();
-                };
-                document.getElementById('accentSelect').onchange = e => applyAccent(e.target.value);
-                applyAccent(appSettings.accent);
-                applyTheme();
-                return true;
-            }
-        } catch(e) {}
-        return false;
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(`${tabId}Tab`).classList.add('active');
-        document.querySelector(`.top-tab[data-tab="${tabId}"]`).classList.add('active');
-    }
-
-    async function changeNick(newNick) {
-        const res = await fetch('/change-nick', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: authToken, newNick })
-        });
-        const data = await res.json();
-        if (data.success) {
-            currentUser.full_nick = data.newFullNick;
-            localStorage.setItem('simply_nick', newNick);
-            const { nick, tag } = splitFullNick(currentUser.full_nick);
-            document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(nick)}<span style="color:var(--text-secondary);">${escapeHtml(tag)}</span>`;
-            alert('Ник изменён');
-        } else alert(data.error || 'Ошибка');
-    }
-
-    async function changePin(oldPin, newPin) {
-        const res = await fetch('/change-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: authToken, oldPin, newPin })
-        });
-        const data = await res.json();
-        if (data.success) alert('PIN изменён');
-        else alert(data.error || 'Ошибка');
-    }
-
-    window.onload = async () => {
-        const logged = await verifyToken();
-        if (!logged) {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
-        } else {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'flex';
-        }
-        document.getElementById('loginBtn').onclick = () => {
-            const nick = document.getElementById('loginNick').value.trim();
-            const pin = document.getElementById('loginPin').value;
-            if (!nick || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) { document.getElementById('loginError').innerText = 'Введите ник и 4-значный PIN'; return; }
-            authWithPin(nick, pin);
-        };
-        document.getElementById('sendChatBtn').onclick = sendChatMessage;
-        const chatInput = document.getElementById('chatMessageInput');
-        chatInput.addEventListener('input', () => { autoResizeTextarea(chatInput); onChatTyping(true); });
-        chatInput.addEventListener('keypress', (e) => { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendChatMessage(); } });
-        document.querySelectorAll('.top-tab').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-        document.getElementById('changeNickBtn').onclick = () => document.getElementById('changeNickModal').style.display = 'flex';
-        document.getElementById('changePinBtn').onclick = () => document.getElementById('changePinModal').style.display = 'flex';
-        document.getElementById('applyNickBtn').onclick = async () => { const nn = document.getElementById('newNickInput').value.trim(); if(nn) await changeNick(nn); document.getElementById('changeNickModal').style.display = 'none'; document.getElementById('newNickInput').value = ''; };
-        document.getElementById('cancelNickBtn').onclick = () => document.getElementById('changeNickModal').style.display = 'none';
-        document.getElementById('applyPinBtn').onclick = async () => { const old=document.getElementById('oldPinInput').value, newP=document.getElementById('newPinInput').value; if(old&&newP&&newP.length===4&&/^\d+$/.test(newP)){ await changePin(old,newP); document.getElementById('changePinModal').style.display='none'; document.getElementById('oldPinInput').value=''; document.getElementById('newPinInput').value=''; } else alert('PIN должен быть 4 цифры'); };
-        document.getElementById('cancelPinBtn').onclick = () => document.getElementById('changePinModal').style.display = 'none';
-        document.getElementById('closeReactionPickerBtn').onclick = () => document.getElementById('reactionPickerModal').style.display = 'none';
-        document.getElementById('closeChatBtn').onclick = () => closeChat();
-        document.getElementById('confirmOkBtn').onclick = async () => {
-            if (pendingDeleteMessageId) {
-                await fetch('/delete-chat-message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messageId: pendingDeleteMessageId, full_nick: currentUser.full_nick, chatId: currentChatId })
-                });
-                pendingDeleteMessageId = null;
-            }
-            document.getElementById('confirmModal').style.display = 'none';
-        };
-        document.getElementById('confirmCancelBtn').onclick = () => { pendingDeleteMessageId = null; document.getElementById('confirmModal').style.display = 'none'; };
-        window.isUserScrolling = false;
-        document.getElementById('chatMessagesContainer')?.addEventListener('scroll', () => {
-            window.isUserScrolling = true;
-            clearTimeout(window.scrollTimeout);
-            window.scrollTimeout = setTimeout(() => { window.isUserScrolling = false; }, 200);
-        });
-    };
-</script>
-</body>
-</html>
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
