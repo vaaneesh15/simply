@@ -40,7 +40,7 @@
             user-select: none;
         }
         html {
-            font-size: 1.1rem; /* увеличили базовый размер на 10% */
+            font-size: 1.1rem; /* увеличение на 10% */
         }
         html, body {
             height: 100%;
@@ -117,7 +117,8 @@
             position: relative;
             background: transparent;
         }
-        .message-item.highlight .message-text {
+        /* Выделение текста при переходе по ответу */
+        .message-text.highlight {
             color: var(--accent-color);
             transition: color 0.2s;
         }
