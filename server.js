@@ -20,16 +20,15 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// ========== ONESIGNAL (APP API KEY) ==========
+// OneSignal (App API Key)
 const ONESIGNAL_APP_ID = '22366383-4ee8-4a91-b727-1c11e6bdc218';
 const ONESIGNAL_API_KEY = 'os_v2_app_ei3gha2o5bfjdnzhdqi6npocdcmfgbj53tueub5b652yjinbuneqr47iv2nqfnzpk5u3erklw73gp2lgl3gc54khnvqulaqf52qcg5i';
 
-// Функция отправки уведомления
-async function sendOneSignalNotification(message, excludeUserId = null) {
+async function sendOneSignalNotification(title, message, excludeUserId = null) {
   const data = {
     app_id: ONESIGNAL_APP_ID,
     contents: { en: message },
-    headings: { en: "Новое сообщение" },
+    headings: { en: title },
     included_segments: ['Subscribed Users']
   };
   if (excludeUserId) {
@@ -44,7 +43,7 @@ async function sendOneSignalNotification(message, excludeUserId = null) {
         'Authorization': `Basic ${ONESIGNAL_API_KEY}`
       }
     });
-    console.log(`✅ Уведомление отправлено: ${message.substring(0, 50)}...`, response.data.id);
+    console.log(`✅ Уведомление отправлено: ${title}`, response.data.id);
   } catch (err) {
     console.error('❌ Ошибка отправки уведомления:', err.response?.data || err.message);
   }
@@ -82,7 +81,7 @@ async function initDB() {
       UNIQUE(message_id, full_nick, reaction)
     );
   `);
-  console.log('✅ База данных готова (общий чат)');
+  console.log('✅ База данных готова');
 }
 initDB();
 
@@ -95,7 +94,6 @@ async function isFullNickUnique(fullNick) {
   return res.rows.length === 0;
 }
 
-// ========== АВТОРИЗАЦИЯ ==========
 app.post('/auth', async (req, res) => {
   const { nick, pin } = req.body;
   if (!nick || nick.trim() === '' || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
@@ -173,7 +171,6 @@ app.post('/change-pin', async (req, res) => {
   res.json({ success: true });
 });
 
-// ========== ОБЩИЙ ЧАТ ==========
 app.get('/messages', async (req, res) => {
   const { full_nick } = req.query;
   const result = await pool.query(`
@@ -263,7 +260,6 @@ app.post('/edit-message', async (req, res) => {
   }
 });
 
-// ========== SOCKET.IO ==========
 const onlineUsers = new Set();
 io.on('connection', (socket) => {
   let currentFullNick = null;
@@ -281,15 +277,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('join public', () => {
-    socket.join('public');
-  });
-
-  socket.on('typing', ({ full_nick }) => {
-    socket.to('public').emit('user typing', { full_nick });
+  socket.on('typing', (full_nick) => {
+    socket.broadcast.emit('user typing', full_nick);
   });
   socket.on('stop typing', () => {
-    socket.to('public').emit('user stop typing');
+    socket.broadcast.emit('user stop typing');
   });
 
   socket.on('new message', async (data) => {
@@ -316,10 +308,14 @@ io.on('connection', (socket) => {
         newMsg.reply_text = replyMsg.rows[0].text;
       }
     }
-    io.to('public').emit('message received', newMsg);
+    io.emit('message received', newMsg);
 
     // Отправка уведомления (исключая отправителя)
-    await sendOneSignalNotification(`${full_nick}: ${text.substring(0, 100)}`, full_nick);
+    await sendOneSignalNotification(
+      `Новое сообщение`,
+      `${full_nick}: ${text.substring(0, 100)}`,
+      full_nick
+    );
   });
 });
 
