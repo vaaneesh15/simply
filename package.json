@@ -1,7 +1,7 @@
 {
   "name": "chatx-server",
   "version": "3.0.0",
-  "description": "ChatX with three global chats",
+  "description": "ChatX - простой мессенджер",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
