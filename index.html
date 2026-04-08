@@ -9,6 +9,14 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
+    <!-- Запрещаем системное контекстное меню на всей странице -->
+    <script>
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+    </script>
+    
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -30,6 +38,9 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+        }
+        html {
+            font-size: 1.1rem; /* увеличили базовый размер на 10% */
         }
         html, body {
             height: 100%;
@@ -54,10 +65,11 @@
         button, .clickable {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            transition: all 0.05s ease;
         }
         button:active, .clickable:active {
             opacity: 0.6;
-            transition: opacity 0.05s;
+            transform: scale(0.97);
         }
 
         .login-screen {
@@ -66,18 +78,18 @@
             padding-top: 25vh; z-index:2000; overflow: hidden;
         }
         .login-card {
-            background: var(--input-bg); border-radius: 2rem; padding: 2rem; width:90%; max-width:320px;
+            background: var(--input-bg); border-radius: 2rem; padding: 2rem; width:90%; max-width:350px;
             border:1px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3);
         }
-        .login-card h2 { margin-bottom:1.5rem; text-align:center; font-weight:590; }
+        .login-card h2 { margin-bottom:1.5rem; text-align:center; font-weight:590; font-size:1.8rem; }
         .login-card input {
-            width:100%; padding:0.8rem; margin-bottom:1rem; background: var(--bg-page);
+            width:100%; padding:0.9rem; margin-bottom:1rem; background: var(--bg-page);
             border:1px solid var(--border-light); border-radius:1rem; color:var(--text-primary); font-size:1rem; outline:none;
         }
         .login-card input:focus { border-color:var(--accent-color); }
         .login-card button {
-            width:100%; padding:0.8rem; background:var(--accent-color); border:none;
-            border-radius:1rem; color:white; font-weight:600;
+            width:100%; padding:0.9rem; background:var(--accent-color); border:none;
+            border-radius:1rem; color:white; font-weight:600; font-size:1rem;
         }
         .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
 
@@ -96,7 +108,7 @@
             padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
         .message-item {
             display: flex;
@@ -107,15 +119,16 @@
         }
         .message-item.highlight .message-text {
             color: var(--accent-color);
+            transition: color 0.2s;
         }
         .message-header {
             display: flex;
             align-items: baseline;
             gap: 8px;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
         .message-nick {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 600;
             display: flex;
             align-items: baseline;
@@ -124,28 +137,28 @@
         }
         .nick-main { color: var(--text-secondary); }
         .own-message .nick-main { color: var(--accent-color); }
-        .nick-tag { color:#6c6c70; font-weight:400; font-size:0.7rem; }
+        .nick-tag { color:#6c6c70; font-weight:400; font-size:0.8rem; }
         .message-actions-btn {
             position: absolute; right: 0; top: 0;
             background: none; border: none;
             display: inline-flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px; border-radius: 14px;
+            width: 32px; height: 32px; border-radius: 16px;
             color: var(--text-secondary);
         }
-        .message-actions-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+        .message-actions-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
         .reply-context {
-            margin-bottom: 6px;
-            padding-left: 8px;
+            margin-bottom: 8px;
+            padding-left: 10px;
             border-left: 2px solid var(--accent-color);
             cursor: pointer;
         }
         .reply-context .reply-nick {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: var(--accent-color);
             font-weight: 600;
         }
         .reply-context .reply-text {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             white-space: pre-wrap;
             word-break: break-word;
@@ -153,7 +166,6 @@
         .message-text { 
             font-size:1rem; line-height:1.4; color:var(--text-primary); 
             white-space:pre-wrap; word-break:break-word; 
-            transition: color 0.2s;
         }
         .message-text a {
             color: var(--accent-color);
@@ -163,7 +175,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-top: 6px;
+            margin-top: 8px;
             flex-wrap: wrap;
             justify-content: space-between;
         }
@@ -177,18 +189,18 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
         .timestamp {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
         .reaction-btn {
             background: none;
             border: none;
             cursor: pointer;
-            padding: 2px 6px;
+            padding: 4px 8px;
             border-radius: 2rem;
             background: var(--input-bg);
             display: inline-flex;
@@ -196,8 +208,8 @@
             gap: 4px;
         }
         .reaction-btn svg {
-            width: 1rem;
-            height: 1rem;
+            width: 1.1rem;
+            height: 1.1rem;
             fill: #ff375f;
             stroke: #ff375f;
         }
@@ -210,8 +222,8 @@
         .reaction-badge {
             background: var(--input-bg);
             border-radius: 2rem;
-            padding: 2px 8px;
-            font-size: 0.8rem;
+            padding: 4px 10px;
+            font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -225,12 +237,12 @@
             color: var(--accent-color);
         }
         .edited-badge {
-            font-size:0.7rem;
+            font-size:0.75rem;
             color:var(--text-secondary);
             font-style:italic;
         }
         .message-divider {
-            margin-top: 8px;
+            margin-top: 10px;
             height: 1px;
             background-color: var(--border-light);
             width: 100%;
@@ -239,8 +251,8 @@
         .typing-indicator {
             background: var(--input-bg);
             border-top: 1px solid var(--border-light);
-            padding: 0.4rem 1rem;
-            font-size: 0.75rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             transition: all 0.2s;
         }
@@ -255,9 +267,9 @@
         }
         .input-row {
             display: flex;
-            gap: 12px;
+            gap: 14px;
             align-items: center;
-            padding: 0.9rem 1rem;
+            padding: 1rem 1rem;
         }
         .settings-icon {
             background: none;
@@ -268,25 +280,25 @@
             justify-content: center;
             color: var(--text-secondary);
             padding: 0;
-            width: 2rem;
-            height: 2rem;
+            width: 2.2rem;
+            height: 2.2rem;
             flex-shrink: 0;
         }
         .settings-icon svg {
-            width: 1.3rem;
-            height: 1.3rem;
+            width: 1.5rem;
+            height: 1.5rem;
             stroke: currentColor;
             stroke-width: 1.5;
             fill: none;
         }
         .input-row textarea {
-            flex:1; background:transparent; border:none; padding:0.75rem 0; font-size:1rem;
+            flex:1; background:transparent; border:none; padding:0.8rem 0; font-size:1rem;
             color:var(--text-primary); outline:none; resize: none; 
             font-family:inherit; line-height:1.4; max-height:150px; overflow-y: auto;
         }
         .send-btn {
-            background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
-            color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+            background:var(--accent-color); border:none; width:2.8rem; height:2.8rem; border-radius:2rem;
+            color:white; font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
         .reply-indicator, .edit-indicator {
             margin: 0.5rem 1rem 0;
@@ -297,7 +309,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 0.4rem 0.8rem;
+            padding: 0.5rem 0.8rem;
             position: relative;
         }
         .reply-indicator::before, .edit-indicator::before {
@@ -314,12 +326,12 @@
             overflow: hidden;
         }
         .reply-indicator .reply-nick, .edit-indicator .edit-label {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: var(--accent-color);
             font-weight: 600;
         }
         .reply-indicator .reply-text, .edit-indicator .edit-text {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
@@ -329,11 +341,11 @@
             background: var(--bg-page);
             border: none;
             border-radius: 1rem;
-            width: 2rem;
-            height: 2rem;
+            width: 2.2rem;
+            height: 2.2rem;
             color: var(--text-primary);
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -347,59 +359,57 @@
             justify-content:center; align-items:center;
         }
         .modal-content {
-            background:var(--input-bg); border-radius:2rem; padding:1.5rem; width:90%; max-width:340px;
+            background:var(--input-bg); border-radius:2rem; padding:1.8rem; width:90%; max-width:380px;
             border:0.5px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3);
         }
-        .modal-content h3 { margin-bottom:1rem; font-size:1.3rem; font-weight:590; color:var(--text-primary); }
+        .modal-content h3 { margin-bottom:1.2rem; font-size:1.4rem; font-weight:590; color:var(--text-primary); }
         .modal-setting { margin-bottom:1.2rem; }
-        .modal-setting label { display:block; margin-bottom:0.4rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary); }
+        .modal-setting label { display:block; margin-bottom:0.5rem; font-weight:500; font-size:0.9rem; color:var(--text-secondary); }
         .modal-setting input {
-            width:100%; padding:0.6rem 1rem; background:var(--bg-page); border:0.5px solid var(--border-light);
+            width:100%; padding:0.7rem 1rem; background:var(--bg-page); border:0.5px solid var(--border-light);
             border-radius:1rem; font-size:1rem; color:var(--text-primary); outline:none;
         }
-        .modal-buttons { display:flex; gap:10px; margin-top:1rem; }
+        .modal-buttons { display:flex; gap:12px; margin-top:1.5rem; }
         .modal-buttons button {
-            flex:1; padding:0.7rem; border-radius:1rem; font-weight:590; cursor:pointer; border:1px solid var(--border-light);
+            flex:1; padding:0.8rem; border-radius:1rem; font-weight:590; cursor:pointer; border:1px solid var(--border-light);
             font-size:0.9rem; background: var(--bg-page); color: var(--text-primary);
         }
-        .modal-buttons button:active {
-            background: rgba(128,128,128,0.2);
-        }
+        .modal-buttons button:last-child { background: var(--bg-page); color: var(--text-primary); border:1px solid var(--border-light); }
 
         .context-menu-buttons {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.6rem;
             margin-top: 1rem;
         }
         .context-menu-buttons button {
             background: var(--bg-page);
             border: 1px solid var(--border-light);
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1rem;
             border-radius: 1rem;
             font-size: 1rem;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             cursor: pointer;
         }
         .context-menu-buttons button:active {
             background: rgba(128,128,128,0.2);
         }
         .context-menu-buttons svg {
-            width: 1.2rem;
-            height: 1.2rem;
+            width: 1.3rem;
+            height: 1.3rem;
             stroke: currentColor;
             stroke-width: 1.5;
             fill: none;
         }
         .context-message-nick {
-            font-size: 0.9rem;
+            font-size: 1rem;
             margin-bottom: 0.5rem;
         }
         .context-message-preview {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
             padding: 0.5rem 0;
             border-top: 1px solid var(--border-light);
@@ -411,48 +421,56 @@
         .reactions-picker {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 0.5rem;
+            gap: 0.6rem;
             justify-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
         }
         .reactions-picker button {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
-            padding: 0.3rem;
+            padding: 0.4rem;
             border-radius: 1rem;
         }
 
         .settings-container {
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 1.2rem;
         }
         .setting-row {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            padding: 1rem 0;
+            gap: 0.6rem;
             border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.9rem;
         }
         .setting-row:last-of-type {
             border-bottom: none;
+        }
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .setting-label {
             font-size: 1rem;
             color: var(--text-primary);
         }
         .setting-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             width: 100%;
         }
         .nick-readonly {
             background: var(--bg-page);
             border: 1px solid var(--border-light);
             border-radius: 1rem;
-            padding: 0.6rem 1rem;
+            padding: 0.7rem 1rem;
             color: var(--text-primary);
-            font-size: 1rem;
+            font-size: 0.95rem;
             width: 100%;
             text-align: left;
         }
@@ -460,20 +478,16 @@
             background: var(--bg-page);
             border: 1px solid var(--border-light);
             border-radius: 1rem;
-            padding: 0.6rem 1rem;
+            padding: 0.6rem 1.2rem;
             color: var(--text-primary);
             font-size: 0.9rem;
             cursor: pointer;
-            width: 100%;
-        }
-        .setting-row button:active {
-            background: rgba(128,128,128,0.2);
         }
         .switch {
             position: relative;
             display: inline-block;
-            width: 48px;
-            height: 24px;
+            width: 52px;
+            height: 26px;
         }
         .switch input {
             opacity: 0;
@@ -489,13 +503,13 @@
             bottom: 0;
             background-color: #2c2c2e;
             transition: 0.2s;
-            border-radius: 24px;
+            border-radius: 26px;
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 22px;
+            width: 22px;
             left: 2px;
             bottom: 2px;
             background-color: white;
@@ -506,12 +520,7 @@
             background-color: var(--accent-color);
         }
         input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-        .setting-row-inline {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            transform: translateX(26px);
         }
     </style>
 </head>
@@ -534,7 +543,7 @@
         <div class="input-row">
             <button class="settings-icon" id="openSettingsBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" />
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.04.04A10 10 0 0 0 12 17.66a10 10 0 0 0 6.36-2.62l.04-.04Z" />
                     <path d="M16.5 9.4a10 10 0 0 0-9-5.4 10 10 0 0 0-9 5.4" />
                 </svg>
@@ -551,18 +560,22 @@
         <h3>Настройки</h3>
         <div class="settings-container">
             <div class="setting-row">
-                <div class="setting-label">Ваш ник</div>
-                <div class="setting-value">
-                    <div class="nick-readonly" id="displayNickWithTag"></div>
+                <div class="setting-header">
+                    <span class="setting-label">Ваш ник</span>
+                    <button id="changeNickBtn">Изменить</button>
                 </div>
-                <button id="changeNickBtn">Изменить</button>
+                <div class="setting-value">
+                    <div id="displayNickWithTag" class="nick-readonly"></div>
+                </div>
             </div>
             <div class="setting-row">
-                <div class="setting-label">PIN</div>
-                <button id="changePinBtn">Сменить</button>
+                <div class="setting-header">
+                    <span class="setting-label">PIN</span>
+                    <button id="changePinBtn">Сменить</button>
+                </div>
             </div>
             <div class="setting-row">
-                <div class="setting-row-inline">
+                <div class="setting-header">
                     <span class="setting-label">Показать дату</span>
                     <label class="switch">
                         <input type="checkbox" id="showDateToggle">
@@ -571,7 +584,7 @@
                 </div>
             </div>
             <div class="setting-row">
-                <div class="setting-row-inline">
+                <div class="setting-header">
                     <span class="setting-label">Реакции</span>
                     <label class="switch">
                         <input type="checkbox" id="showReactionsToggle" checked>
@@ -580,7 +593,7 @@
                 </div>
             </div>
             <div class="setting-row">
-                <div class="setting-row-inline">
+                <div class="setting-header">
                     <span class="setting-label">Уведомления</span>
                     <label class="switch">
                         <input type="checkbox" id="notificationsToggle" checked>
@@ -589,7 +602,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal-buttons" style="margin-top: 1rem;">
+        <div class="modal-buttons" style="margin-top: 1.5rem;">
             <button id="closeSettingsBtn">Закрыть</button>
         </div>
     </div>
@@ -1001,11 +1014,8 @@
         const element = document.querySelector(`.message-item[data-id="${messageId}"] .message-text`);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            const messageItem = element.closest('.message-item');
-            if (messageItem) messageItem.classList.add('highlight');
-            setTimeout(() => {
-                if (messageItem) messageItem.classList.remove('highlight');
-            }, 1000);
+            element.classList.add('highlight');
+            setTimeout(() => element.classList.remove('highlight'), 1000);
         }
     }
 
@@ -1039,7 +1049,6 @@
                 socket.on('message received', (newMsg) => {
                     messages.push(newMsg);
                     renderMessages();
-                    // Показываем уведомление, только если вкладка НЕ активна (document.hidden)
                     if (appSettings.notifications && newMsg.full_nick !== currentUser.full_nick && Notification.permission === 'granted' && document.hidden) {
                         const { nick, tag } = splitFullNick(newMsg.full_nick);
                         if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
@@ -1077,13 +1086,6 @@
                 });
                 
                 await loadMessages();
-                
-                // Запускаем фоновое обновление каждые 5 секунд
-                if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => {
-                    loadMessages();
-                }, 5000);
-                
                 const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
                 document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
                 document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
@@ -1104,6 +1106,11 @@
                     appSettings.notifications = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
                 };
+                
+                if (refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = setInterval(() => {
+                    if (socket && socket.connected) loadMessages();
+                }, 5000);
                 
                 return true;
             } else {
@@ -1177,12 +1184,6 @@
                 });
                 
                 await loadMessages();
-                
-                if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => {
-                    loadMessages();
-                }, 5000);
-                
                 const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
                 document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
                 document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
@@ -1203,6 +1204,11 @@
                     appSettings.notifications = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
                 };
+                
+                if (refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = setInterval(() => {
+                    if (socket && socket.connected) loadMessages();
+                }, 5000);
                 
                 return true;
             }
@@ -1275,18 +1281,23 @@
         document.getElementById('applyPinBtn').onclick = async () => { const old=document.getElementById('oldPinInput').value, newP=document.getElementById('newPinInput').value; if(old&&newP&&newP.length===4&&/^\d+$/.test(newP)){ await changePin(old,newP); document.getElementById('changePinModal').style.display='none'; document.getElementById('oldPinInput').value=''; document.getElementById('newPinInput').value=''; } else alert('PIN должен быть 4 цифры'); };
         document.getElementById('cancelPinBtn').onclick = () => document.getElementById('changePinModal').style.display = 'none';
         document.getElementById('closeReactionPickerBtn').onclick = () => document.getElementById('reactionPickerModal').style.display = 'none';
+        
+        // Исправление порядка удаления: сначала закрываем модалку, потом удаляем
         document.getElementById('confirmOkBtn').onclick = async () => {
-            if (pendingDeleteMessageId) {
+            const messageIdToDelete = pendingDeleteMessageId;
+            // Сразу закрываем модалку
+            document.getElementById('confirmModal').style.display = 'none';
+            if (messageIdToDelete) {
                 await fetch('/delete-message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messageId: pendingDeleteMessageId, full_nick: currentUser.full_nick })
+                    body: JSON.stringify({ messageId: messageIdToDelete, full_nick: currentUser.full_nick })
                 });
                 pendingDeleteMessageId = null;
             }
-            document.getElementById('confirmModal').style.display = 'none';
         };
         document.getElementById('confirmCancelBtn').onclick = () => { pendingDeleteMessageId = null; document.getElementById('confirmModal').style.display = 'none'; };
+        
         window.isUserScrolling = false;
         document.getElementById('messagesContainer')?.addEventListener('scroll', () => {
             window.isUserScrolling = true;
