@@ -57,11 +57,6 @@
             --accent-rgb: 10, 132, 255;
         }
         body.accent-blue { --accent-color: #0a84ff; --accent-rgb: 10, 132, 255; }
-        body.accent-purple { --accent-color: #9b4dff; --accent-rgb: 155, 77, 255; }
-        body.accent-pink { --accent-color: #ff2d55; --accent-rgb: 255, 45, 85; }
-        body.accent-red { --accent-color: #ff3b30; --accent-rgb: 255, 59, 48; }
-        body.accent-orange { --accent-color: #ff9500; --accent-rgb: 255, 149, 0; }
-        body.accent-mint { --accent-color: #00c7be; --accent-rgb: 0, 199, 190; }
 
         button, .clickable {
             cursor: pointer;
@@ -100,35 +95,6 @@
             background-color: var(--bg-page);
             position: relative;
             overflow: hidden;
-        }
-
-        /* Верхняя панель только с кнопкой настроек */
-        .top-bar {
-            background: var(--input-bg);
-            padding-top: env(safe-area-inset-top, 0);
-            border-bottom: 1px solid var(--border-light);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 0.6rem 1rem;
-            flex-shrink: 0;
-        }
-        .settings-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-        }
-        .settings-icon svg {
-            width: 1.5rem;
-            height: 1.5rem;
-            stroke: currentColor;
-            stroke-width: 1.5;
-            fill: none;
         }
 
         .chat-messages {
@@ -292,6 +258,7 @@
             background: var(--input-bg);
             border-top: 1px solid var(--border-light);
             padding-bottom: env(safe-area-inset-bottom,0);
+            position: relative;
         }
         .input-row {
             display: flex;
@@ -307,6 +274,27 @@
         .send-btn {
             background:var(--accent-color); border:none; width:2.5rem; height:2.5rem; border-radius:2rem;
             color:white; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+        }
+        .settings-gear {
+            position: absolute;
+            left: 1rem;
+            bottom: 0.9rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            z-index: 10;
+        }
+        .settings-gear svg {
+            width: 1.8rem;
+            height: 1.8rem;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
         }
         .reply-indicator, .edit-indicator {
             margin: 0.5rem 1rem 0;
@@ -472,27 +460,14 @@
             color: var(--text-primary);
             font-size: 1rem;
         }
-        .setting-row select, .setting-row button {
+        .setting-row button {
             background: var(--input-bg);
             border: 1px solid var(--border-light);
             border-radius: 1rem;
             padding: 0.6rem 1rem;
             color: var(--text-primary);
             font-size: 0.9rem;
-            appearance: none;
             cursor: pointer;
-            min-width: 120px;
-            text-align: center;
-        }
-        .setting-row select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.2rem;
-            padding-right: 2rem;
-        }
-        .setting-row button {
-            background: var(--input-bg);
         }
         .switch {
             position: relative;
@@ -548,18 +523,16 @@
 </div>
 
 <div id="appContainer" class="app-container" style="display: none;">
-    <div class="top-bar">
-        <button class="settings-icon" id="openSettingsBtn">
+    <div class="chat-messages" id="messagesContainer"></div>
+    <div class="typing-indicator hidden" id="typingIndicator"></div>
+    <div class="input-wrapper">
+        <button class="settings-gear" id="openSettingsBtn">
             <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none">
                 <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.04.04A10 10 0 0 0 12 17.66a10 10 0 0 0 6.36-2.62l.04-.04Z" />
                 <path d="M16.5 9.4a10 10 0 0 0-9-5.4 10 10 0 0 0-9 5.4" />
             </svg>
         </button>
-    </div>
-    <div class="chat-messages" id="messagesContainer"></div>
-    <div class="typing-indicator hidden" id="typingIndicator"></div>
-    <div class="input-wrapper">
         <div class="input-row">
             <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
             <button class="send-btn" id="sendBtn">↑</button>
@@ -580,17 +553,6 @@
             <div class="setting-row">
                 <span class="setting-label">Сменить PIN</span>
                 <button id="changePinBtn">Сменить</button>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Оттенок</span>
-                <select id="accentSelect">
-                    <option value="blue">Синий</option>
-                    <option value="purple">Фиолетовый</option>
-                    <option value="pink">Розовый</option>
-                    <option value="red">Красный</option>
-                    <option value="orange">Оранжевый</option>
-                    <option value="mint">Мятный</option>
-                </select>
             </div>
             <div class="setting-row">
                 <span class="setting-label">Показывать дату</span>
@@ -632,7 +594,6 @@
     let currentUser = { full_nick: "" };
     let authToken = localStorage.getItem('simply_token');
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { 
-        accent: 'blue', 
         showDate: true, 
         showReactions: true,
         notifications: true
@@ -662,31 +623,6 @@
             return `${day}.${month}.${year} ${hours}:${minutes}`;
         } else {
             return `${hours}:${minutes}`;
-        }
-    }
-
-    function applyAccent(accent) {
-        const classes = ['accent-blue','accent-purple','accent-pink','accent-red','accent-orange','accent-mint'];
-        document.body.classList.remove(...classes);
-        let accentClass = '';
-        switch(accent) {
-            case 'blue': accentClass = 'accent-blue'; break;
-            case 'purple': accentClass = 'accent-purple'; break;
-            case 'pink': accentClass = 'accent-pink'; break;
-            case 'red': accentClass = 'accent-red'; break;
-            case 'orange': accentClass = 'accent-orange'; break;
-            case 'mint': accentClass = 'accent-mint'; break;
-            default: accentClass = 'accent-blue';
-        }
-        document.body.classList.add(accentClass);
-        appSettings.accent = accent;
-        localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-        const color = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
-        if (color) {
-            const rgb = color.match(/\d+/g);
-            if (rgb) document.body.style.setProperty('--accent-rgb', rgb.join(','));
-            const meta = document.getElementById('themeColorMeta');
-            if (meta) meta.setAttribute('content', color);
         }
     }
 
@@ -1077,10 +1013,8 @@
                 socket.emit('user online', currentUser.full_nick);
                 socket.emit('join public');
                 
-                // Установка external_user_id для OneSignal
                 await setOneSignalUserId(currentUser.full_nick);
                 
-                // Запрос разрешения на уведомления
                 if (Notification.permission === 'default') {
                     Notification.requestPermission();
                 }
@@ -1088,7 +1022,6 @@
                 socket.on('message received', (newMsg) => {
                     messages.push(newMsg);
                     renderMessages();
-                    // Показываем уведомление, если включено и сообщение не от себя
                     if (appSettings.notifications && newMsg.full_nick !== currentUser.full_nick && Notification.permission === 'granted') {
                         const { nick, tag } = splitFullNick(newMsg.full_nick);
                         if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
@@ -1131,7 +1064,6 @@
                 document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
                 document.getElementById('showReactionsToggle').checked = appSettings.showReactions !== false;
                 document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
-                document.getElementById('accentSelect').value = appSettings.accent;
                 
                 document.getElementById('showDateToggle').onchange = (e) => {
                     appSettings.showDate = e.target.checked;
@@ -1147,9 +1079,7 @@
                     appSettings.notifications = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
                 };
-                document.getElementById('accentSelect').onchange = e => applyAccent(e.target.value);
                 
-                applyAccent(appSettings.accent);
                 return true;
             } else {
                 document.getElementById('loginError').innerText = data.error || 'Ошибка входа';
@@ -1227,7 +1157,6 @@
                 document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
                 document.getElementById('showReactionsToggle').checked = appSettings.showReactions !== false;
                 document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
-                document.getElementById('accentSelect').value = appSettings.accent;
                 
                 document.getElementById('showDateToggle').onchange = (e) => {
                     appSettings.showDate = e.target.checked;
@@ -1243,9 +1172,7 @@
                     appSettings.notifications = e.target.checked;
                     localStorage.setItem('simply_settings', JSON.stringify(appSettings));
                 };
-                document.getElementById('accentSelect').onchange = e => applyAccent(e.target.value);
                 
-                applyAccent(appSettings.accent);
                 return true;
             }
         } catch(e) {}
@@ -1281,7 +1208,6 @@
     }
 
     window.onload = async () => {
-        applyAccent(appSettings.accent);
         const logged = await verifyToken();
         if (!logged) {
             document.getElementById('loginScreen').style.display = 'flex';
@@ -1301,7 +1227,6 @@
         messageInput.addEventListener('input', () => { autoResizeTextarea(messageInput); onTyping(true); });
         messageInput.addEventListener('keypress', (e) => { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
         
-        // Настройки модалки
         const settingsModal = document.getElementById('settingsModal');
         document.getElementById('openSettingsBtn').onclick = () => settingsModal.style.display = 'flex';
         document.getElementById('closeSettingsBtn').onclick = () => settingsModal.style.display = 'none';
@@ -1338,7 +1263,6 @@
             window.scrollTimeout = setTimeout(() => { window.isUserScrolling = false; }, 200);
         });
         
-        // При возвращении на вкладку обновляем сообщения
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 loadMessages();
