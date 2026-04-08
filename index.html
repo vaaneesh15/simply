@@ -74,7 +74,8 @@
             cursor: pointer;
             transition: all 0.05s ease;
         }
-        button:active, .clickable:active {
+        button:active, .clickable:active,
+        button.tapped, .clickable.tapped {
             opacity: 0.6;
             transform: scale(0.97);
         }
@@ -548,10 +549,10 @@
     <div class="input-wrapper">
         <div class="input-row">
             <button class="settings-icon" id="openSettingsBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="12" cy="12" r="3" stroke="currentColor" />
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.04.04A10 10 0 0 0 12 17.66a10 10 0 0 0 6.36-2.62l.04-.04Z" />
-                    <path d="M16.5 9.4a10 10 0 0 0-9-5.4 10 10 0 0 0-9 5.4" />
+                <!-- Исправленная иконка шестерёнки (Feather Icons) -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
             <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
@@ -622,6 +623,30 @@
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
+    // --- Глобальная обработка касаний для iOS ---
+    (function() {
+        // Добавляем класс tapped при начале касания и убираем при окончании/отмене
+        function addTapped(e) {
+            const target = e.target.closest('button, .clickable');
+            if (target) {
+                target.classList.add('tapped');
+            }
+        }
+        function removeTapped(e) {
+            const target = e.target.closest('button, .clickable');
+            if (target) {
+                target.classList.remove('tapped');
+            }
+        }
+        document.addEventListener('touchstart', addTapped, { passive: true });
+        document.addEventListener('touchend', removeTapped);
+        document.addEventListener('touchcancel', removeTapped);
+        // Также можно для мыши, чтобы не мешать десктопу
+        document.addEventListener('mousedown', addTapped);
+        document.addEventListener('mouseup', removeTapped);
+        document.addEventListener('mouseleave', removeTapped);
+    })();
+
     let socket = null;
     let currentUser = { full_nick: "" };
     let authToken = localStorage.getItem('simply_token');
