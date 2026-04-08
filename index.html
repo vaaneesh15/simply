@@ -9,7 +9,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <!-- Запрещаем системное контекстное меню на всей странице -->
+    <!-- Отключаем системное контекстное меню -->
     <script>
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
@@ -119,7 +119,7 @@
         }
         /* Выделение текста при переходе по ответу */
         .message-text.highlight {
-            color: var(--accent-color);
+            color: var(--accent-color) !important;
             transition: color 0.2s;
         }
         .message-header {
