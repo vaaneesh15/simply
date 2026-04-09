@@ -189,7 +189,7 @@
             padding: 0.8rem 1rem;
             background: var(--input-bg);
             border-bottom: 1px solid var(--border-light);
-            border-top: 1px solid var(--border-light); /* добавлена верхняя полоска */
+            border-top: 1px solid var(--border-light);
         }
         .back-btn {
             background: var(--bg-page);
@@ -659,7 +659,8 @@
             margin-top: 0.2rem;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: space-between;
+            width: 100%;
         }
         .chat-time {
             font-size: 0.75rem;
@@ -814,7 +815,7 @@
             padding: 0.5rem 0.8rem;
             color: var(--text-primary);
             font-size: 0.9rem;
-            width: 70%; /* уменьшено на 30% */
+            width: 70%;
             outline: none;
             -webkit-appearance: none;
             appearance: none;
@@ -839,6 +840,11 @@
         }
         .fullscreen .modal-back-btn {
             margin-right: 0.5rem;
+        }
+
+        /* Полоска в контекстном меню */
+        .context-message-preview {
+            border-bottom: 1px solid var(--border-light);
         }
     </style>
 </head>
@@ -897,7 +903,7 @@
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
-                    Самовыражение
+                    Профиль
                 </button>
             </div>
             <div class="setting-row">
@@ -906,7 +912,7 @@
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                         <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
                     </svg>
-                    Уведы
+                    Уведомления
                 </button>
             </div>
             <div class="setting-row">
@@ -924,7 +930,7 @@
                         <path d="M15 3l5 5-8 8H8v-4l7-7z"/>
                         <path d="M4 20h16"/>
                     </svg>
-                    Стиль
+                    Оформление
                 </button>
             </div>
         </div>
@@ -981,7 +987,7 @@
     <div class="modal-content">
         <div style="margin-bottom:1rem; font-weight:600;" id="chatMenuNick"></div>
         <div class="context-menu-buttons" id="chatMenuButtons">
-            <button id="chatMenuPin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M5 12h14"/></svg> Закрепить</button>
+            <button id="chatMenuPin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M5 12h14"/></svg> <span id="pinButtonText">Закрепить</span></button>
             <button id="chatMenuFriend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> <span id="chatMenuFriendText">Добавить в друзья</span></button>
             <button id="chatMenuDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
             <button id="chatMenuClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Закрыть</button>
@@ -1008,7 +1014,7 @@
     <div class="modal-content">
         <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
             <button id="closeSelfExpressionBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:0.5rem;">Самовыражение</h3>
+            <h3 style="margin-left:0.5rem;">Профиль</h3>
         </div>
         <div class="setting-row">
             <div class="setting-header">
@@ -1067,7 +1073,7 @@
     <div class="modal-content">
         <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
             <button id="closeStyleSettingsBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:0.5rem;">Стиль</h3>
+            <h3 style="margin-left:0.5rem;">Оформление</h3>
         </div>
         <div class="setting-row">
             <div class="setting-header">
@@ -1248,7 +1254,7 @@
                     ${pinnedIcon}
                     <div style="flex:1">
                         <div class="friend-name">${escapeHtml(chat.name)}</div>
-                        <div class="chat-preview">${escapeHtml(preview)}<span class="chat-time">${timeStr}</span></div>
+                        <div class="chat-preview"><span>${escapeHtml(preview)}</span><span class="chat-time">${timeStr}</span></div>
                     </div>
                 </div>`;
             if (chat.type === 'private') {
@@ -1316,6 +1322,12 @@
         document.getElementById('chatMenuNick').innerText = other;
         const btn = document.getElementById('chatMenuFriend');
         const span = document.getElementById('chatMenuFriendText');
+        const pinBtn = document.getElementById('chatMenuPin');
+        const pinText = document.getElementById('pinButtonText');
+        
+        // Обновляем текст кнопки закрепа
+        const isPinned = pinnedChats.includes(chatId);
+        pinText.innerText = isPinned ? 'Открепить' : 'Закрепить';
         
         const res = await fetch(`/friendship-status?from=${encodeURIComponent(currentUser.full_nick)}&to=${encodeURIComponent(other)}`);
         const data = await res.json();
@@ -1331,8 +1343,11 @@
                 btn.onclick = null;
             } else {
                 span.innerText = 'Хочет дружить';
-                btn.style.opacity = '0.5';
-                btn.onclick = null;
+                btn.style.opacity = '1';
+                btn.onclick = async () => {
+                    await respondFriend(other, 'accept');
+                    document.getElementById('chatMenuModal').style.display = 'none';
+                };
             }
         } else {
             span.innerText = 'Добавить в друзья';
@@ -1343,10 +1358,13 @@
             };
         }
         
-        document.getElementById('chatMenuPin').onclick = () => {
+        pinBtn.onclick = () => {
             const index = pinnedChats.indexOf(chatId);
-            if (index === -1) pinnedChats.push(chatId);
-            else pinnedChats.splice(index, 1);
+            if (index === -1) {
+                pinnedChats.push(chatId);
+            } else {
+                pinnedChats.splice(index, 1);
+            }
             localStorage.setItem('pinned_chats', JSON.stringify(pinnedChats));
             loadChatsList();
             document.getElementById('chatMenuModal').style.display = 'none';
@@ -1485,8 +1503,9 @@
         loadFriends();
     }
 
-    // --- Значки пользователей ---
+    // --- Значки пользователей (заглушка, в будущем из БД) ---
     function getUserBadge(full_nick) {
+        // Пока у всех, кроме текущего, нет значка, но в будущем можно брать из API
         return full_nick === currentUser.full_nick ? (appSettings.userBadge || '') : '';
     }
 
