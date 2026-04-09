@@ -1139,6 +1139,20 @@
         return lastMsgId > lastReadId;
     }
 
+    // Показ общего уведомления о непрочитанных
+    function notifyUnreadSummary() {
+        if (!appSettings.notifications) return;
+        const unreadChats = chatsList.filter(c => hasUnreadMessages(c));
+        if (unreadChats.length > 0 && document.hidden) {
+            if (Notification.permission === 'granted') {
+                new Notification('ChatX', {
+                    body: `У вас ${unreadChats.length} непрочитанных чатов`,
+                    icon: '/favicon.ico'
+                });
+            }
+        }
+    }
+
     // --- Навигация ---
     function showTab(tabId) {
         document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
@@ -1267,6 +1281,7 @@
                 el.addEventListener('mouseleave', () => clearTimeout(pressTimer));
             }
         });
+        notifyUnreadSummary();
     }
 
     async function openChat(chat) {
@@ -1472,7 +1487,7 @@
             }
             const timestamp = formatTimestamp(msg.created_at, appSettings.showDate);
             msgDiv.innerHTML = `
-                <div class="message-header"><div class="message-nick"><span class="user-badge">${currentUser.badge || ''}</span><span class="nick-main">${escapeHtml(msg.nick)}</span></div></div>
+                <div class="message-header"><div class="message-nick"><span class="user-badge">${msg.nick === currentUser.nick ? (currentUser.badge || '') : ''}</span><span class="nick-main">${escapeHtml(msg.nick)}</span></div></div>
                 ${replyHtml}
                 <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
                 <div class="message-footer">
@@ -1573,6 +1588,7 @@
             input.value = '';
             autoResizeTextarea(input);
             hideEditIndicator();
+            input.focus();
             return;
         }
 
@@ -1594,7 +1610,7 @@
         input.value = '';
         autoResizeTextarea(input);
         onTyping(false);
-        input.focus();
+        input.focus(); // оставляем фокус
     }
 
     async function editMessage(messageId, newText) {
@@ -1805,6 +1821,7 @@
                     });
                 }
             }
+            notifyUnreadSummary();
         });
 
         socket.on('message deleted', (msgId) => {
@@ -1875,6 +1892,7 @@
             if (document.getElementById('contactsPanel').style.display === 'flex') {
                 loadContacts();
             }
+            notifyUnreadSummary();
         }, 3000);
     }
 
