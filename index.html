@@ -641,6 +641,9 @@
         }
         .friend-info, .chat-info {
             flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .friend-name {
             font-weight: 500;
@@ -649,6 +652,11 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             margin-top: 0.2rem;
+        }
+        .chat-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: auto;
         }
         .friend-actions {
             display: flex;
@@ -692,7 +700,7 @@
             margin-bottom: 1rem;
         }
 
-        /* Кнопка Подружиться в стиле контекстного меню */
+        /* Кнопка Подружиться внизу */
         .add-friend-btn {
             background: var(--bg-page);
             border: 1px solid var(--border-light);
@@ -758,6 +766,30 @@
         /* Меню чата */
         .chat-menu-modal .modal-content {
             max-width: 320px;
+        }
+        /* Увеличенная кнопка меню чата */
+        .chat-menu-btn {
+            width: 36px;
+            height: 36px;
+        }
+        .chat-menu-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Иконка значка пользователя */
+        .user-badge {
+            margin-right: 4px;
+            font-size: 1.1rem;
+        }
+        /* Иконка pin в закрепленном чате */
+        .pinned-icon {
+            margin-right: 4px;
+            width: 14px;
+            height: 14px;
+            stroke: var(--accent-color);
+            stroke-width: 2;
+            fill: none;
         }
     </style>
 </head>
@@ -840,8 +872,8 @@
             <div class="setting-row">
                 <button id="openStyleSettingsBtn" class="profile-menu-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 2v20M2 12h20"/>
                         <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                     </svg>
                     Стиль
                 </button>
@@ -849,7 +881,7 @@
         </div>
     </div>
 
-    <!-- Представление чата (ЛС, общий, блокнот) -->
+    <!-- Представление чата -->
     <div id="chatView" class="chat-view">
         <div class="chat-header">
             <button class="back-btn" id="backFromChatBtn">←</button>
@@ -857,7 +889,6 @@
                 <div class="chat-header-name" id="chatTitle"></div>
                 <div class="chat-header-status" id="chatStatus"></div>
             </div>
-            <!-- Кнопка меню чата убрана -->
         </div>
         <div class="chat-messages" id="messagesContainer"></div>
         <div class="typing-indicator hidden" id="typingIndicator"></div>
@@ -909,11 +940,113 @@
     </div>
 </div>
 
+<!-- Модалка смены ника -->
+<div id="changeNickModal" class="modal">
+    <div class="modal-content">
+        <h3>Сменить ник</h3>
+        <div class="modal-setting">
+            <input type="text" id="newNickInput" placeholder="Новый ник">
+        </div>
+        <div class="modal-buttons">
+            <button id="cancelNickChangeBtn">Отмена</button>
+            <button id="applyNickChangeBtn">Применить</button>
+        </div>
+    </div>
+</div>
+
 <!-- Полноэкранные модалки настроек -->
-<div id="selfExpressionModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeSelfExpressionBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Самовыражение</h3></div><div class="modal-setting"><label>Новый ник</label><input type="text" id="changeNickInput" placeholder="Новый ник"></div><button id="applyNickChangeBtn" style="width:100%; padding:0.8rem; background:var(--accent-color); border:none; border-radius:1rem; color:white;">Сохранить</button></div></div>
-<div id="notifSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeNotifSettingsBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Уведомления</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Уведомления</span><label class="switch"><input type="checkbox" id="notificationsToggle" checked><span class="slider"></span></label></div></div></div></div>
-<div id="privacySettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closePrivacySettingsBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Приватность</h3></div><div class="setting-row"><button id="changePinFromPrivacyBtn" class="profile-menu-btn" style="justify-content:flex-start;">Сменить PIN</button></div><div class="setting-row"><button id="logoutBtn" class="profile-menu-btn" style="justify-content:flex-start;">Выйти из аккаунта</button></div><div class="setting-row"><button id="deleteAccountBtn" class="profile-menu-btn" style="color:#ff375f; justify-content:flex-start;">Удалить аккаунт</button></div></div></div>
-<div id="styleSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeStyleSettingsBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Стиль</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Показывать дату</span><label class="switch"><input type="checkbox" id="showDateToggle"><span class="slider"></span></label></div></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Реакции</span><label class="switch"><input type="checkbox" id="showReactionsToggle" checked><span class="slider"></span></label></div></div></div></div>
+<div id="selfExpressionModal" class="modal fullscreen">
+    <div class="modal-content">
+        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+            <button id="closeSelfExpressionBtn" class="modal-back-btn">←</button>
+            <h3 style="margin-left:1rem;">Самовыражение</h3>
+        </div>
+        <div class="setting-row">
+            <div class="setting-header">
+                <span class="setting-label">Ник</span>
+                <button id="openChangeNickModalBtn">Сменить</button>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div class="setting-header">
+                <span class="setting-label">Значок</span>
+                <select id="badgeSelect" class="badge-select">
+                    <option value="⭐">⭐ Звезда</option>
+                    <option value="❤️">❤️ Сердечко</option>
+                    <option value="🔥">🔥 Огонёк</option>
+                    <option value="🍀">🍀 Листочек</option>
+                    <option value="⚡">⚡ Молния</option>
+                    <option value="🌹">🌹 Розочка</option>
+                    <option value="🔕">🔕 Не беспокоить</option>
+                    <option value="🎁">🎁 Подарок</option>
+                    <option value="🎉">🎉 Конфетти</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="notifSettingsModal" class="modal fullscreen">
+    <div class="modal-content">
+        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+            <button id="closeNotifSettingsBtn" class="modal-back-btn">←</button>
+            <h3 style="margin-left:1rem;">Уведомления</h3>
+        </div>
+        <div class="setting-row">
+            <div class="setting-header">
+                <span class="setting-label">Уведомления</span>
+                <label class="switch"><input type="checkbox" id="notificationsToggle" checked><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="privacySettingsModal" class="modal fullscreen">
+    <div class="modal-content">
+        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+            <button id="closePrivacySettingsBtn" class="modal-back-btn">←</button>
+            <h3 style="margin-left:1rem;">Приватность</h3>
+        </div>
+        <div class="setting-row"><button id="changePinFromPrivacyBtn" class="profile-menu-btn" style="justify-content:flex-start;">Сменить PIN</button></div>
+        <div class="setting-row" style="border-bottom:none;"><button id="logoutBtn" class="profile-menu-btn" style="justify-content:flex-start;">Выйти из аккаунта</button></div>
+        <div class="setting-row"><button id="deleteAccountBtn" class="profile-menu-btn" style="color:#ff375f; justify-content:flex-start;">Удалить аккаунт</button></div>
+    </div>
+</div>
+
+<div id="styleSettingsModal" class="modal fullscreen">
+    <div class="modal-content">
+        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+            <button id="closeStyleSettingsBtn" class="modal-back-btn">←</button>
+            <h3 style="margin-left:1rem;">Стиль</h3>
+        </div>
+        <div class="setting-row">
+            <div class="setting-header">
+                <span class="setting-label">Показывать дату</span>
+                <label class="switch"><input type="checkbox" id="showDateToggle"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div class="setting-header">
+                <span class="setting-label">Реакции</span>
+                <label class="switch"><input type="checkbox" id="showReactionsToggle" checked><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div class="setting-header">
+                <span class="setting-label">Оттенок</span>
+                <select id="accentColorSelect" class="badge-select">
+                    <option value="#0a84ff">Небо</option>
+                    <option value="#ff3b30">Алый</option>
+                    <option value="#ff9500">Медный</option>
+                    <option value="#ff2d55">Пинки</option>
+                    <option value="#00c7be">Мята</option>
+                    <option value="#af52de">Лаванда</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4"></div><div class="modal-buttons"><button id="cancelPinBtn">Отмена</button><button id="applyPinBtn">Применить</button></div></div></div>
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -934,11 +1067,18 @@
     let socket = null;
     let currentUser = { full_nick: "" };
     let authToken = localStorage.getItem('simply_token');
-    let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { showDate: true, showReactions: true, notifications: true };
+    let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { 
+        showDate: true, 
+        showReactions: true, 
+        notifications: true, 
+        accentColor: '#0a84ff', 
+        userBadge: '⭐' 
+    };
     
     let messages = [];
     let currentChat = { id: null, type: null, other: null, name: '' };
     let chatsList = [];
+    let pinnedChats = JSON.parse(localStorage.getItem('pinned_chats')) || [];
     let friendsData = { accepted: [], incoming: [], outgoing: [] };
     let friendsFilter = 'accepted';
     let friendsSearchQuery = '';
@@ -952,6 +1092,9 @@
     let pendingAction = null;
     let selectedChatForMenu = null;
     const onlineUsers = new Set();
+
+    // Применяем сохранённый цвет акцента
+    document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
     // --- Вспомогательные функции ---
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
@@ -990,7 +1133,12 @@
             btn.classList.toggle('active', btn.dataset.tab === tabId);
         });
         if (tabId === 'friends') loadFriends();
-        else if (tabId === 'chats') loadChatsList();
+        else if (tabId === 'chats') {
+            document.getElementById('chatSearchInput').value = '';
+            chatSearchQuery = '';
+            loadChatsList();
+            document.getElementById('userSearchResults').innerHTML = '';
+        }
         else if (tabId === 'profile') {
             document.getElementById('profileNickDisplay').innerText = currentUser.full_nick;
         }
@@ -1012,6 +1160,7 @@
         try {
             const res = await fetch(`/chats?full_nick=${encodeURIComponent(currentUser.full_nick)}`);
             chatsList = await res.json();
+            chatsList.forEach(c => { c.pinned = pinnedChats.includes(c.id); });
             renderChatsList();
         } catch(e) { console.error(e); }
     }
@@ -1020,18 +1169,36 @@
         const container = document.getElementById('chatsListContainer');
         const query = chatSearchQuery.toLowerCase();
         let filtered = chatsList.filter(c => c.type === 'public' || c.type === 'notebook' || c.name.toLowerCase().includes(query));
+        filtered.sort((a, b) => {
+            if (a.type === 'public') return -1;
+            if (b.type === 'public') return 1;
+            if (a.type === 'notebook') return -1;
+            if (b.type === 'notebook') return 1;
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            const aTime = a.last_message ? new Date(a.last_message.created_at).getTime() : 0;
+            const bTime = b.last_message ? new Date(b.last_message.created_at).getTime() : 0;
+            return bTime - aTime;
+        });
         let html = '';
         filtered.forEach(chat => {
             let preview = '';
+            let timeStr = '';
             if (chat.last_message) {
                 const isOwn = chat.last_message.full_nick === currentUser.full_nick;
                 const prefix = isOwn ? 'Вы: ' : (chat.type==='private' ? '' : splitFullNick(chat.last_message.full_nick).nick+': ');
                 preview = prefix + (chat.last_message.text.length > 30 ? chat.last_message.text.substring(0,30)+'…' : chat.last_message.text);
+                timeStr = formatTimestamp(chat.last_message.created_at, appSettings.showDate);
             }
+            const pinnedIcon = chat.pinned ? '<svg class="pinned-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M5 12h14"/></svg>' : '';
             html += `<div class="chat-item clickable" data-chat-id="${chat.id}" data-chat-type="${chat.type}" data-other="${chat.other||''}" data-name="${escapeHtml(chat.name)}">
                 <div class="chat-info">
-                    <div class="friend-name">${escapeHtml(chat.name)}</div>
-                    <div class="chat-preview">${escapeHtml(preview)}</div>
+                    ${pinnedIcon}
+                    <div style="flex:1">
+                        <div class="friend-name">${escapeHtml(chat.name)}</div>
+                        <div class="chat-preview">${escapeHtml(preview)}</div>
+                    </div>
+                    <div class="chat-time">${timeStr}</div>
                 </div>`;
             if (chat.type === 'private') {
                 html += `<button class="message-actions-btn chat-menu-btn" style="position:relative; right:auto; top:auto;" data-chat-id="${chat.id}" data-other="${chat.other}">⋮</button>`;
@@ -1099,7 +1266,6 @@
         const btn = document.getElementById('chatMenuFriend');
         const span = document.getElementById('chatMenuFriendText');
         
-        // Получаем статус дружбы
         const res = await fetch(`/friendship-status?from=${encodeURIComponent(currentUser.full_nick)}&to=${encodeURIComponent(other)}`);
         const data = await res.json();
         
@@ -1125,6 +1291,15 @@
                 document.getElementById('chatMenuModal').style.display = 'none';
             };
         }
+        
+        document.getElementById('chatMenuPin').onclick = () => {
+            const index = pinnedChats.indexOf(chatId);
+            if (index === -1) pinnedChats.push(chatId);
+            else pinnedChats.splice(index, 1);
+            localStorage.setItem('pinned_chats', JSON.stringify(pinnedChats));
+            loadChatsList();
+            document.getElementById('chatMenuModal').style.display = 'none';
+        };
         
         document.getElementById('chatMenuDelete').onclick = async () => {
             if (!selectedChatForMenu) return;
@@ -1171,8 +1346,9 @@
         list = list.filter(u => u.full_nick.toLowerCase().includes(query) || u.nick.toLowerCase().includes(query));
         let html = '';
         list.forEach(user => {
+            const badge = getUserBadge(user.full_nick);
             html += `<div class="friend-item">
-                <div class="friend-info"><span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
+                <div class="friend-info"><span class="user-badge">${badge}</span><span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
                 <div class="friend-actions">`;
             if (friendsFilter === 'incoming') {
                 html += `<button class="accept-friend" data-nick="${user.full_nick}">✓</button>
@@ -1192,11 +1368,19 @@
     }
 
     async function respondFriend(from, action) {
-        await fetch('/friend-respond', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ full_nick: currentUser.full_nick, from, action })
-        });
+        if (action === 'accept') {
+            await fetch('/friend-respond', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ full_nick: currentUser.full_nick, from, action: 'accept' })
+            });
+        } else {
+            await fetch('/friend-respond', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ full_nick: currentUser.full_nick, from, action: 'reject' })
+            });
+        }
         loadFriends();
     }
 
@@ -1215,13 +1399,19 @@
 
     // --- Поиск пользователей в чатах ---
     async function searchUsers(query) {
-        if (!query) { document.getElementById('userSearchResults').innerHTML = ''; return; }
+        if (!query) {
+            document.getElementById('userSearchResults').innerHTML = '';
+            document.getElementById('chatsListContainer').style.display = 'block';
+            return;
+        }
+        document.getElementById('chatsListContainer').style.display = 'none';
         const res = await fetch(`/search-users?q=${encodeURIComponent(query)}&full_nick=${encodeURIComponent(currentUser.full_nick)}`);
         const users = await res.json();
         let html = '';
         users.forEach(u => {
+            const badge = getUserBadge(u.full_nick);
             html += `<div class="friend-item">
-                <div class="friend-info">${escapeHtml(u.full_nick)}</div>
+                <div class="friend-info"><span class="user-badge">${badge}</span><span class="friend-name">${escapeHtml(u.full_nick)}</span></div>
                 <div class="friend-actions">
                     <button class="add-friend-search" data-nick="${u.full_nick}">👤+</button>
                     <button class="write-search" data-nick="${u.full_nick}">💬</button>
@@ -1242,6 +1432,11 @@
         const data = await res.json();
         alert(data.success ? 'Запрос отправлен' : (data.error || 'Ошибка'));
         loadFriends();
+    }
+
+    // --- Значки пользователей ---
+    function getUserBadge(full_nick) {
+        return full_nick === currentUser.full_nick ? appSettings.userBadge : '⭐';
     }
 
     // --- Рендер сообщений ---
@@ -1272,8 +1467,9 @@
                 reactionsHtml += '</div>';
             }
             const timestamp = formatTimestamp(msg.created_at, appSettings.showDate);
+            const badge = getUserBadge(msg.full_nick);
             msgDiv.innerHTML = `
-                <div class="message-header"><div class="message-nick"><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
+                <div class="message-header"><div class="message-nick"><span class="user-badge">${badge}</span><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
                 ${replyHtml}
                 <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
                 <div class="message-footer">
@@ -1552,11 +1748,14 @@
         document.getElementById('showDateToggle').checked = appSettings.showDate;
         document.getElementById('showReactionsToggle').checked = appSettings.showReactions;
         document.getElementById('notificationsToggle').checked = appSettings.notifications;
+        document.getElementById('badgeSelect').value = appSettings.userBadge;
+        document.getElementById('accentColorSelect').value = appSettings.accentColor;
 
         document.getElementById('showDateToggle').onchange = e => {
             appSettings.showDate = e.target.checked;
             localStorage.setItem('simply_settings', JSON.stringify(appSettings));
             renderMessages();
+            renderChatsList();
         };
         document.getElementById('showReactionsToggle').onchange = e => {
             appSettings.showReactions = e.target.checked;
@@ -1566,6 +1765,17 @@
         document.getElementById('notificationsToggle').onchange = e => {
             appSettings.notifications = e.target.checked;
             localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+        };
+        document.getElementById('badgeSelect').onchange = e => {
+            appSettings.userBadge = e.target.value;
+            localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+            renderMessages();
+            renderFriendsList();
+        };
+        document.getElementById('accentColorSelect').onchange = e => {
+            appSettings.accentColor = e.target.value;
+            localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+            document.documentElement.style.setProperty('--accent-color', e.target.value);
         };
 
         await loadChatsList();
@@ -1629,7 +1839,7 @@
             if (document.getElementById('friendsPanel').style.display === 'flex') {
                 loadFriends();
             }
-        }, 3000);
+        }, 1000);
     }
 
     // --- Настройка модалок ---
@@ -1640,8 +1850,15 @@
         document.getElementById('closeSelfExpressionBtn').onclick = () => {
             document.getElementById('selfExpressionModal').style.display = 'none';
         };
+        document.getElementById('openChangeNickModalBtn').onclick = () => {
+            document.getElementById('changeNickModal').style.display = 'flex';
+            document.getElementById('newNickInput').value = '';
+        };
+        document.getElementById('cancelNickChangeBtn').onclick = () => {
+            document.getElementById('changeNickModal').style.display = 'none';
+        };
         document.getElementById('applyNickChangeBtn').onclick = async () => {
-            const newNick = document.getElementById('changeNickInput').value.trim();
+            const newNick = document.getElementById('newNickInput').value.trim();
             if (!newNick) return;
             const res = await fetch('/change-nick', {
                 method: 'POST',
@@ -1652,7 +1869,7 @@
             if (data.success) {
                 currentUser.full_nick = data.newFullNick;
                 document.getElementById('profileNickDisplay').innerText = data.newFullNick;
-                document.getElementById('selfExpressionModal').style.display = 'none';
+                document.getElementById('changeNickModal').style.display = 'none';
                 alert('Ник изменён');
             } else alert(data.error);
         };
@@ -1671,7 +1888,6 @@
             document.getElementById('privacySettingsModal').style.display = 'none';
         };
         document.getElementById('changePinFromPrivacyBtn').onclick = () => {
-            document.getElementById('privacySettingsModal').style.display = 'none';
             document.getElementById('changePinModal').style.display = 'flex';
         };
         document.getElementById('logoutBtn').onclick = () => {
