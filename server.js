@@ -34,17 +34,17 @@ async function initDB() {
 
   // Добавляем колонку badge, если её нет (миграция)
   try {
-    await pool.query(`ALTER TABLE users ADD COLUMN badge VARCHAR(10) DEFAULT ''`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS badge VARCHAR(10) DEFAULT ''`);
   } catch (e) {
-    if (e.code !== '42701') console.log('Колонка badge уже существует');
+    console.log('Колонка badge уже существует или ошибка:', e.message);
   }
 
   // Удаляем колонки tag и full_nick, если они есть (миграция)
   try {
-    await pool.query(`ALTER TABLE users DROP COLUMN tag`);
+    await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS tag`);
   } catch (e) {}
   try {
-    await pool.query(`ALTER TABLE users DROP COLUMN full_nick`);
+    await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS full_nick`);
   } catch (e) {}
 
   // Чаты
@@ -90,7 +90,7 @@ async function initDB() {
     );
   `);
 
-  // Контакты (бывшие друзья, упрощённые)
+  // Контакты
   await pool.query(`
     CREATE TABLE IF NOT EXISTS contacts (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
