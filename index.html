@@ -9,7 +9,6 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <!-- Отключаем системное контекстное меню и выделение на iOS -->
     <style>
         * {
             -webkit-touch-callout: none;
@@ -48,7 +47,7 @@
             -webkit-touch-callout: none;
         }
         html {
-            font-size: 1.1rem; /* увеличение на 10% */
+            font-size: 1.1rem;
         }
         html, body {
             height: 100%;
@@ -108,6 +107,98 @@
             background-color: var(--bg-page);
             position: relative;
             overflow: hidden;
+        }
+
+        /* Панели вкладок */
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1rem;
+            padding-bottom: 5rem;
+        }
+        .panel-header {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 1rem;
+        }
+        .panel-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Нижняя навигация */
+        .nav-bar {
+            display: flex;
+            background: var(--input-bg);
+            border-top: 1px solid var(--border-light);
+            padding: 0.5rem 0;
+            padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            padding: 0.3rem;
+            border-radius: 0.5rem;
+            transition: all 0.1s;
+        }
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+        .nav-item svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+        }
+
+        /* Чат вьюха */
+        .chat-view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            background: var(--input-bg);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .chat-header .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+        .chat-header-info {
+            flex: 1;
+        }
+        .chat-header-name {
+            font-weight: 600;
+        }
+        .chat-header-status {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
         }
 
         .chat-messages {
@@ -365,9 +456,24 @@
             background-color:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:10000;
             justify-content:center; align-items:center;
         }
+        .modal.fullscreen {
+            background: var(--bg-page);
+            backdrop-filter: none;
+            align-items: flex-start;
+            padding-top: 1rem;
+        }
         .modal-content {
             background:var(--input-bg); border-radius:2rem; padding:1.8rem; width:90%; max-width:380px;
             border:0.5px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3);
+        }
+        .fullscreen .modal-content {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 0;
+            background: var(--bg-page);
+            box-shadow: none;
+            border: none;
+            padding: 1rem;
         }
         .modal-content h3 { margin-bottom:1.2rem; font-size:1.4rem; font-weight:590; color:var(--text-primary); }
         .modal-setting { margin-bottom:1.2rem; }
@@ -529,6 +635,67 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        /* Списки друзей и чатов */
+        .friend-item, .chat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .friend-info, .chat-info {
+            flex: 1;
+        }
+        .friend-name {
+            font-weight: 500;
+        }
+        .chat-preview {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .friend-actions button {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            padding: 0.3rem;
+        }
+        .segment-control {
+            display: flex;
+            background: var(--input-bg);
+            border-radius: 0.8rem;
+            padding: 0.2rem;
+            margin-bottom: 1rem;
+        }
+        .segment-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.6rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .segment-btn.active {
+            background: var(--bg-page);
+            color: var(--text-primary);
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -544,126 +711,138 @@
 </div>
 
 <div id="appContainer" class="app-container" style="display: none;">
-    <div class="chat-messages" id="messagesContainer"></div>
-    <div class="typing-indicator hidden" id="typingIndicator"></div>
-    <div class="input-wrapper">
-        <div class="input-row">
-            <button class="settings-icon" id="openSettingsBtn">
-                <!-- Исправленная иконка шестерёнки (Feather Icons) -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-            </button>
-            <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
-            <button class="send-btn" id="sendBtn">↑</button>
+    <!-- Панель друзей -->
+    <div id="friendsPanel" class="panel" style="display: none;">
+        <div class="panel-header">
+            <div class="panel-title">Друзья</div>
+            <div class="segment-control" id="friendsSegment">
+                <button class="segment-btn active" data-filter="accepted">Мои</button>
+                <button class="segment-btn" data-filter="incoming">Хотят</button>
+                <button class="segment-btn" data-filter="outgoing">Хочу</button>
+            </div>
+            <input type="text" id="friendsSearchInput" class="search-input" placeholder="Поиск...">
+            <button id="addFriendBtn" style="width:100%; padding:0.8rem; background:var(--accent-color); border:none; border-radius:1rem; color:white; font-weight:600;">Подружиться</button>
         </div>
+        <div id="friendsListContainer"></div>
+    </div>
+
+    <!-- Панель чатов -->
+    <div id="chatsPanel" class="panel" style="display: flex;">
+        <div class="panel-header">
+            <div class="panel-title">Чаты</div>
+            <input type="text" id="chatSearchInput" class="search-input" placeholder="Поиск пользователей...">
+        </div>
+        <div id="chatsListContainer"></div>
+        <div id="userSearchResults" style="margin-top: 1rem;"></div>
+    </div>
+
+    <!-- Панель профиля -->
+    <div id="profilePanel" class="panel" style="display: none;">
+        <div class="panel-header">
+            <div class="panel-title" id="profileNickDisplay"></div>
+        </div>
+        <div class="settings-container">
+            <div class="setting-row">
+                <button id="openSelfExpressionBtn" style="width:100%; text-align:left;">Самовыражение</button>
+            </div>
+            <div class="setting-row">
+                <button id="openNotifSettingsBtn" style="width:100%; text-align:left;">Уведы</button>
+            </div>
+            <div class="setting-row">
+                <button id="openPrivacySettingsBtn" style="width:100%; text-align:left;">Приватность</button>
+            </div>
+            <div class="setting-row">
+                <button id="openStyleSettingsBtn" style="width:100%; text-align:left;">Стиль</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Представление чата (ЛС, общий, блокнот) -->
+    <div id="chatView" class="chat-view">
+        <div class="chat-header">
+            <button class="back-btn" id="backFromChatBtn">←</button>
+            <div class="chat-header-info">
+                <div class="chat-header-name" id="chatTitle"></div>
+                <div class="chat-header-status" id="chatStatus"></div>
+            </div>
+            <button class="settings-icon" id="chatMenuBtn">⋮</button>
+        </div>
+        <div class="chat-messages" id="messagesContainer"></div>
+        <div class="typing-indicator hidden" id="typingIndicator"></div>
+        <div class="input-wrapper">
+            <div class="input-row">
+                <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
+                <button class="send-btn" id="sendBtn">↑</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижняя навигация -->
+    <div class="nav-bar">
+        <button class="nav-item" data-tab="friends">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Друзья</span>
+        </button>
+        <button class="nav-item active" data-tab="chats">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span>Чаты</span>
+        </button>
+        <button class="nav-item" data-tab="profile">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Профиль</span>
+        </button>
     </div>
 </div>
 
 <!-- Модальные окна -->
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
-        <h3>Настройки</h3>
-        <div class="settings-container">
-            <div class="setting-row">
-                <div class="setting-header">
-                    <span class="setting-label">Ваш ник</span>
-                    <button id="changeNickBtn">Изменить</button>
-                </div>
-                <div class="setting-value">
-                    <div id="displayNickWithTag" class="nick-readonly"></div>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div class="setting-header">
-                    <span class="setting-label">PIN</span>
-                    <button id="changePinBtn">Сменить</button>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div class="setting-header">
-                    <span class="setting-label">Показать дату</span>
-                    <label class="switch">
-                        <input type="checkbox" id="showDateToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div class="setting-header">
-                    <span class="setting-label">Реакции</span>
-                    <label class="switch">
-                        <input type="checkbox" id="showReactionsToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div class="setting-header">
-                    <span class="setting-label">Уведомления</span>
-                    <label class="switch">
-                        <input type="checkbox" id="notificationsToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="modal-buttons" style="margin-top: 1.5rem;">
-            <button id="closeSettingsBtn">Закрыть</button>
-        </div>
-    </div>
-</div>
+<div id="addFriendModal" class="modal"><div class="modal-content"><h3>Добавить друга</h3><div class="modal-setting"><input type="text" id="friendFullNickInput" placeholder="ник#тег"></div><div class="modal-buttons"><button id="cancelAddFriendBtn">Отмена</button><button id="sendFriendRequestBtn">Запрос</button></div></div></div>
+<div id="confirmModal" class="modal"><div class="modal-content"><h3>Подтверждение</h3><p id="confirmMessage">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">OK</button></div></div></div>
+<div id="pinConfirmModal" class="modal"><div class="modal-content"><h3>Введите PIN</h3><div class="modal-setting"><input type="password" id="pinConfirmInput" placeholder="PIN" maxlength="4"></div><div class="modal-buttons"><button id="pinConfirmCancelBtn">Отмена</button><button id="pinConfirmOkBtn">Подтвердить</button></div></div></div>
+<div id="reactionPickerModal" class="modal"><div class="modal-content"><h3>Реакция</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div>
+<div id="contextMenuModal" class="modal"><div class="modal-content"><div id="contextMessageNick"></div><div id="contextMessagePreview"></div><div class="context-menu-buttons" id="contextMenuButtons"></div></div></div>
 
-<div id="changeNickModal" class="modal"><div class="modal-content"><h3>Смена ника</h3><div class="modal-setting"><label>Новый ник</label><input type="text" id="newNickInput" placeholder="Новый ник"></div><div class="modal-buttons"><button id="cancelNickBtn">Закрыть</button><button id="applyNickBtn">Применить</button></div></div></div>
-<div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4" inputmode="numeric"></div><div class="modal-buttons"><button id="cancelPinBtn">Закрыть</button><button id="applyPinBtn">Применить</button></div></div></div>
-<div id="contextMenuModal" class="modal context-menu-modal"><div class="modal-content"><div id="contextMessageNick" class="context-message-nick"></div><div id="contextMessagePreview" class="context-message-preview"></div><div class="context-menu-buttons" id="contextMenuButtons"></div></div></div>
-<div id="confirmModal" class="modal"><div class="modal-content"><h3>Подтверждение</h3><p id="confirmMessage" style="margin-bottom:1rem;">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">Удалить</button></div></div></div>
-<div id="reactionPickerModal" class="modal"><div class="modal-content"><h3>Выберите реакцию</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div>
+<!-- Полноэкранные модалки настроек -->
+<div id="selfExpressionModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeSelfExpressionBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Самовыражение</h3></div><div class="modal-setting"><label>Новый ник</label><input type="text" id="changeNickInput" placeholder="Новый ник"></div><button id="applyNickChangeBtn" style="width:100%; padding:0.8rem; background:var(--accent-color); border:none; border-radius:1rem; color:white;">Сохранить</button></div></div>
+<div id="notifSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeNotifSettingsBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Уведомления</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Уведомления</span><label class="switch"><input type="checkbox" id="notificationsToggle" checked><span class="slider"></span></label></div></div></div></div>
+<div id="privacySettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closePrivacySettingsBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Приватность</h3></div><div class="setting-row"><button id="changePinFromPrivacyBtn">Сменить PIN</button></div><div class="setting-row"><button id="logoutBtn">Выйти из аккаунта</button></div><div class="setting-row"><button id="deleteAccountBtn" style="color:#ff375f;">Удалить аккаунт</button></div></div></div>
+<div id="styleSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeStyleSettingsBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Стиль</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Показывать дату</span><label class="switch"><input type="checkbox" id="showDateToggle"><span class="slider"></span></label></div></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Реакции</span><label class="switch"><input type="checkbox" id="showReactionsToggle" checked><span class="slider"></span></label></div></div></div></div>
+<div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4"></div><div class="modal-buttons"><button id="cancelPinBtn">Отмена</button><button id="applyPinBtn">Применить</button></div></div></div>
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
-    // --- Глобальная обработка касаний для iOS ---
     (function() {
-        // Добавляем класс tapped при начале касания и убираем при окончании/отмене
-        function addTapped(e) {
-            const target = e.target.closest('button, .clickable');
-            if (target) {
-                target.classList.add('tapped');
-            }
-        }
-        function removeTapped(e) {
-            const target = e.target.closest('button, .clickable');
-            if (target) {
-                target.classList.remove('tapped');
-            }
-        }
-        document.addEventListener('touchstart', addTapped, { passive: true });
+        function addTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.add('tapped'); }
+        function removeTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.remove('tapped'); }
+        document.addEventListener('touchstart', addTapped, {passive: true});
         document.addEventListener('touchend', removeTapped);
         document.addEventListener('touchcancel', removeTapped);
-        // Также можно для мыши, чтобы не мешать десктопу
         document.addEventListener('mousedown', addTapped);
         document.addEventListener('mouseup', removeTapped);
         document.addEventListener('mouseleave', removeTapped);
     })();
 
+    // --- Глобальное состояние ---
     let socket = null;
     let currentUser = { full_nick: "" };
     let authToken = localStorage.getItem('simply_token');
-    let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { 
-        showDate: true, 
-        showReactions: true,
-        notifications: true
-    };
+    let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { showDate: true, showReactions: true, notifications: true };
     
     let messages = [];
+    let currentChat = { id: null, type: null, other: null, name: '' };
+    let chatsList = [];
+    let friendsData = { accepted: [], incoming: [], outgoing: [] };
+    let friendsFilter = 'accepted';
+    let friendsSearchQuery = '';
+    let chatSearchQuery = '';
     let editingMessage = null;
     let pendingDeleteMessageId = null;
     let currentReactionMessage = null;
     let replyingTo = null;
     let typingTimeout = null;
     let refreshInterval = null;
+    let pendingAction = null; // для подтверждений
 
+    // --- Вспомогательные функции ---
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
     function splitFullNick(full) { const h=full.lastIndexOf('#'); if(h===-1) return {nick:full,tag:''}; return {nick:full.slice(0,h),tag:full.slice(h)}; }
     function linkify(text) {
@@ -688,20 +867,219 @@
         if (window.OneSignalDeferred) {
             OneSignalDeferred.push(async function(OneSignal) {
                 await OneSignal.login(userId);
-                console.log('OneSignal external_user_id установлен:', userId);
             });
         }
     }
 
-    async function loadMessages() {
+    // --- Навигация ---
+    function showTab(tabId) {
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.getElementById(tabId + 'Panel').style.display = 'flex';
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+        if (tabId === 'friends') loadFriends();
+        else if (tabId === 'chats') loadChatsList();
+        else if (tabId === 'profile') {
+            document.getElementById('profileNickDisplay').innerText = currentUser.full_nick;
+        }
+        if (currentChat.id) closeChatView();
+    }
+
+    function closeChatView() {
+        document.getElementById('chatView').style.display = 'none';
+        if (currentChat.id) {
+            socket.emit('leave chat', currentChat.id);
+            currentChat = { id: null, type: null, other: null, name: '' };
+        }
+        showTab('chats');
+    }
+
+    // --- Работа с чатами ---
+    async function loadChatsList() {
         try {
-            const res = await fetch(`/messages?full_nick=${encodeURIComponent(currentUser.full_nick)}`);
-            const data = await res.json();
-            messages = data;
-            renderMessages();
+            const res = await fetch(`/chats?full_nick=${encodeURIComponent(currentUser.full_nick)}`);
+            chatsList = await res.json();
+            renderChatsList();
         } catch(e) { console.error(e); }
     }
 
+    function renderChatsList() {
+        const container = document.getElementById('chatsListContainer');
+        const query = chatSearchQuery.toLowerCase();
+        let filtered = chatsList.filter(c => c.type === 'public' || c.type === 'notebook' || c.name.toLowerCase().includes(query));
+        let html = '';
+        filtered.forEach(chat => {
+            let preview = '';
+            if (chat.last_message) {
+                const isOwn = chat.last_message.full_nick === currentUser.full_nick;
+                const prefix = isOwn ? 'Вы: ' : (chat.type==='private' ? '' : splitFullNick(chat.last_message.full_nick).nick+': ');
+                preview = prefix + (chat.last_message.text.length > 30 ? chat.last_message.text.substring(0,30)+'…' : chat.last_message.text);
+            }
+            html += `<div class="chat-item clickable" data-chat-id="${chat.id}" data-chat-type="${chat.type}" data-other="${chat.other||''}" data-name="${chat.name}">
+                <div class="chat-info">
+                    <div class="friend-name">${escapeHtml(chat.name)}</div>
+                    <div class="chat-preview">${escapeHtml(preview)}</div>
+                </div>
+                <button class="chat-menu-btn" data-chat-id="${chat.id}">⋮</button>
+            </div>`;
+        });
+        container.innerHTML = html || '<div style="color:var(--text-secondary); text-align:center;">Нет чатов</div>';
+        document.querySelectorAll('.chat-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target.closest('.chat-menu-btn')) return;
+                const chat = {
+                    id: parseInt(el.dataset.chatId),
+                    type: el.dataset.chatType,
+                    other: el.dataset.other || null,
+                    name: el.dataset.name
+                };
+                openChat(chat);
+            });
+        });
+        document.querySelectorAll('.chat-menu-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Заглушка контекстного меню чата
+                alert('Меню чата (в разработке)');
+            });
+        });
+    }
+
+    async function openChat(chat) {
+        currentChat = chat;
+        document.getElementById('chatsPanel').style.display = 'none';
+        document.getElementById('chatView').style.display = 'flex';
+        document.getElementById('chatTitle').innerText = chat.name;
+        document.getElementById('chatStatus').innerText = (chat.type === 'public' || chat.type === 'notebook') ? '' : 'загрузка...';
+        if (chat.type === 'private' && chat.other) {
+            updateChatStatus(chat.other);
+        }
+        socket.emit('join chat', chat.id);
+        await loadChatMessages();
+        renderMessages();
+    }
+
+    async function loadChatMessages() {
+        if (!currentChat.id) return;
+        try {
+            const res = await fetch(`/chat-messages?chat_id=${currentChat.id}&full_nick=${encodeURIComponent(currentUser.full_nick)}`);
+            messages = await res.json();
+        } catch(e) { console.error(e); }
+    }
+
+    function updateChatStatus(full_nick) {
+        const isOnline = onlineUsers.has(full_nick);
+        document.getElementById('chatStatus').innerText = isOnline ? 'В сети' : 'Не в сети';
+    }
+
+    // --- Друзья ---
+    async function loadFriends() {
+        try {
+            const [accepted, incoming, outgoing] = await Promise.all([
+                fetch(`/friends?full_nick=${currentUser.full_nick}&filter=accepted`).then(r=>r.json()),
+                fetch(`/friends?full_nick=${currentUser.full_nick}&filter=pending_incoming`).then(r=>r.json()),
+                fetch(`/friends?full_nick=${currentUser.full_nick}&filter=pending_outgoing`).then(r=>r.json())
+            ]);
+            friendsData = { accepted, incoming, outgoing };
+            renderFriendsList();
+        } catch(e) { console.error(e); }
+    }
+
+    function renderFriendsList() {
+        const container = document.getElementById('friendsListContainer');
+        const query = friendsSearchQuery.toLowerCase();
+        let list = [];
+        if (friendsFilter === 'accepted') list = friendsData.accepted;
+        else if (friendsFilter === 'incoming') list = friendsData.incoming;
+        else list = friendsData.outgoing;
+        
+        list = list.filter(u => u.full_nick.toLowerCase().includes(query) || u.nick.toLowerCase().includes(query));
+        let html = '';
+        list.forEach(user => {
+            html += `<div class="friend-item">
+                <div class="friend-info"><span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
+                <div class="friend-actions">`;
+            if (friendsFilter === 'incoming') {
+                html += `<button class="accept-friend" data-nick="${user.full_nick}">✓</button>
+                         <button class="reject-friend" data-nick="${user.full_nick}">✕</button>`;
+            } else if (friendsFilter === 'outgoing') {
+                html += `<button class="cancel-request" data-nick="${user.full_nick}">✕</button>`;
+            } else {
+                html += `<button class="chat-with-friend" data-nick="${user.full_nick}">💬</button>`;
+            }
+            html += `</div></div>`;
+        });
+        container.innerHTML = html || '<div style="color:var(--text-secondary); text-align:center;">Пусто</div>';
+        
+        document.querySelectorAll('.accept-friend').forEach(b => b.onclick = () => respondFriend(b.dataset.nick, 'accept'));
+        document.querySelectorAll('.reject-friend, .cancel-request').forEach(b => b.onclick = () => respondFriend(b.dataset.nick, 'reject'));
+        document.querySelectorAll('.chat-with-friend').forEach(b => b.onclick = () => createPrivateChat(b.dataset.nick));
+    }
+
+    async function respondFriend(from, action) {
+        await fetch('/friend-respond', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ full_nick: currentUser.full_nick, from, action })
+        });
+        loadFriends();
+    }
+
+    async function createPrivateChat(otherFullNick) {
+        const res = await fetch('/create-private-chat', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ user1: currentUser.full_nick, user2: otherFullNick })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const chat = { id: data.chatId, type: 'private', other: otherFullNick, name: otherFullNick };
+            openChat(chat);
+        }
+    }
+
+    // --- Поиск пользователей в чатах ---
+    async function searchUsers(query) {
+        if (!query) { document.getElementById('userSearchResults').innerHTML = ''; return; }
+        const res = await fetch(`/search-users?q=${encodeURIComponent(query)}&full_nick=${encodeURIComponent(currentUser.full_nick)}`);
+        const users = await res.json();
+        let html = '';
+        users.forEach(u => {
+            html += `<div class="friend-item">
+                <div class="friend-info">${escapeHtml(u.full_nick)}</div>
+                <div class="friend-actions">
+                    <button class="add-friend-search" data-nick="${u.full_nick}">👤+</button>
+                    <button class="write-search" data-nick="${u.full_nick}">💬</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('userSearchResults').innerHTML = html;
+        document.querySelectorAll('.add-friend-search').forEach(b => b.onclick = () => sendFriendRequest(b.dataset.nick));
+        document.querySelectorAll('.write-search').forEach(b => b.onclick = () => createPrivateChat(b.dataset.nick));
+    }
+
+    async function sendFriendRequest(to) {
+        const res = await fetch('/friend-request', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ from: currentUser.full_nick, to })
+        });
+        const data = await res.json();
+        alert(data.success ? 'Запрос отправлен' : (data.error || 'Ошибка'));
+    }
+
+    // --- Онлайн статус ---
+    const onlineUsers = new Set();
+    socket?.on('online status', ({ full_nick, online }) => {
+        if (online) onlineUsers.add(full_nick);
+        else onlineUsers.delete(full_nick);
+        if (currentChat.type === 'private' && currentChat.other === full_nick) {
+            updateChatStatus(full_nick);
+        }
+    });
+
+    // --- Рендер сообщений (адаптирован) ---
     function renderMessages() {
         const container = document.getElementById('messagesContainer');
         if (!container) return;
@@ -709,39 +1087,28 @@
         container.innerHTML = '';
         const showReactions = appSettings.showReactions !== false;
         messages.forEach(msg => {
-            const isOwn = currentUser && msg.full_nick === currentUser.full_nick;
+            const isOwn = msg.full_nick === currentUser.full_nick;
             const { nick, tag } = splitFullNick(msg.full_nick);
             const msgDiv = document.createElement('div');
-            msgDiv.className = 'message-item';
-            if (isOwn) msgDiv.classList.add('own-message');
-            msgDiv.setAttribute('data-id', msg.id);
-            msgDiv.setAttribute('data-full-nick', msg.full_nick);
+            msgDiv.className = 'message-item' + (isOwn ? ' own-message' : '');
+            msgDiv.dataset.id = msg.id;
+            msgDiv.dataset.fullNick = msg.full_nick;
             let replyHtml = '';
             if (msg.reply_to_id && msg.reply_nick && msg.reply_text) {
-                replyHtml = `
-                    <div class="reply-context" data-message="${msg.reply_to_id}">
-                        <div class="reply-nick">${escapeHtml(msg.reply_nick)}</div>
-                        <div class="reply-text">${escapeHtml(msg.reply_text)}</div>
-                    </div>
-                `;
+                replyHtml = `<div class="reply-context" data-message="${msg.reply_to_id}"><div class="reply-nick">${escapeHtml(msg.reply_nick)}</div><div class="reply-text">${escapeHtml(msg.reply_text)}</div></div>`;
             }
             let reactionsHtml = '';
-            if (showReactions && msg.reactions && msg.reactions.length) {
-                const sorted = [...msg.reactions].sort((a,b) => b.count - a.count);
+            if (showReactions && msg.reactions?.length) {
                 reactionsHtml = '<div class="reactions-container">';
-                sorted.forEach(r => {
-                    const userReacted = msg.user_reactions && msg.user_reactions.includes(r.reaction);
+                msg.reactions.sort((a,b) => b.count - a.count).forEach(r => {
+                    const userReacted = msg.user_reactions?.includes(r.reaction);
                     reactionsHtml += `<button class="reaction-badge ${userReacted ? 'user-reacted' : ''}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`;
                 });
                 reactionsHtml += '</div>';
             }
             const timestamp = formatTimestamp(msg.created_at, appSettings.showDate);
             msgDiv.innerHTML = `
-                <div class="message-header">
-                    <div class="message-nick">
-                        <span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>
-                    </div>
-                </div>
+                <div class="message-header"><div class="message-nick"><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
                 ${replyHtml}
                 <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
                 <div class="message-footer">
@@ -749,10 +1116,7 @@
                         ${showReactions ? `<button class="reaction-btn" data-message="${msg.id}"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="#ff375f"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>` : ''}
                         ${reactionsHtml}
                     </div>
-                    <div class="footer-right">
-                        <span class="timestamp">${timestamp}</span>
-                        ${msg.edited ? '<span class="edited-badge">изменено</span>' : ''}
-                    </div>
+                    <div class="footer-right"><span class="timestamp">${timestamp}</span>${msg.edited?'<span class="edited-badge">изменено</span>':''}</div>
                 </div>
                 <div class="message-divider"></div>
             `;
@@ -760,72 +1124,69 @@
             const actionsBtn = document.createElement('button');
             actionsBtn.className = 'message-actions-btn';
             actionsBtn.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>';
-            actionsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showContextMenu(msg.id, msg.full_nick, msg.text, isOwn);
-            });
+            actionsBtn.onclick = (e) => { e.stopPropagation(); showContextMenu(msg.id, msg.full_nick, msg.text, isOwn); };
             msgDiv.appendChild(actionsBtn);
         });
-        attachReactionEvents();
         if (wasNearBottom && !window.isUserScrolling) container.scrollTop = container.scrollHeight;
+        attachReactionEvents();
     }
 
+        // --- Продолжение: функции реакций, контекстного меню, отправки сообщений ---
+
     function attachReactionEvents() {
-        const showReactions = appSettings.showReactions !== false;
-        if (showReactions) {
-            document.querySelectorAll('.reaction-btn').forEach(btn => btn.addEventListener('click', (e) => {
+        if (appSettings.showReactions === false) return;
+        document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const messageId = parseInt(btn.dataset.message);
-                currentReactionMessage = messageId;
+                currentReactionMessage = parseInt(btn.dataset.message);
                 showReactionPicker();
-            }));
-            document.querySelectorAll('.reaction-badge').forEach(btn => btn.addEventListener('click', (e) => {
+            });
+        });
+        document.querySelectorAll('.reaction-badge').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const reaction = btn.dataset.reaction;
                 const messageId = parseInt(btn.dataset.message);
                 addReaction(messageId, reaction);
-            }));
-        }
-        document.querySelectorAll('.reply-context').forEach(el => {
-            el.addEventListener('click', () => {
-                const targetId = parseInt(el.dataset.message);
-                scrollToMessage(targetId);
             });
+        });
+        document.querySelectorAll('.reply-context').forEach(el => {
+            el.addEventListener('click', () => scrollToMessage(parseInt(el.dataset.message)));
         });
         document.querySelectorAll('.message-nick').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const fullNick = el.closest('.message-item').dataset.fullNick;
-                if (fullNick) navigator.clipboard.writeText(fullNick);
+                const fullNick = el.closest('.message-item')?.dataset.fullNick;
+                if (fullNick) navigator.clipboard?.writeText(fullNick);
             });
         });
     }
 
     async function addReaction(messageId, reaction) {
-        try {
-            const res = await fetch('/add-reaction', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messageId, full_nick: currentUser.full_nick, reaction, isRoom: false })
-            });
-            const data = await res.json();
-            if (data.success) {
-                const msg = messages.find(m => m.id === messageId);
-                if (msg) {
-                    msg.reactions = data.reactions;
-                    if (!msg.user_reactions) msg.user_reactions = [];
-                    if (msg.user_reactions.includes(reaction)) msg.user_reactions = msg.user_reactions.filter(r => r !== reaction);
-                    else msg.user_reactions.push(reaction);
-                    renderMessages();
-                }
+        const res = await fetch('/add-reaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messageId, full_nick: currentUser.full_nick, reaction, isRoom: false })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const msg = messages.find(m => m.id === messageId);
+            if (msg) {
+                msg.reactions = data.reactions;
+                if (!msg.user_reactions) msg.user_reactions = [];
+                if (msg.user_reactions.includes(reaction))
+                    msg.user_reactions = msg.user_reactions.filter(r => r !== reaction);
+                else
+                    msg.user_reactions.push(reaction);
+                renderMessages();
             }
-        } catch(e) { console.error(e); }
+        }
     }
 
     function showReactionPicker() {
-        const pickerDiv = document.getElementById('reactionsPicker');
+        const picker = document.getElementById('reactionsPicker');
         const reactionsList = ['❤️','🔥','👍','👎','👌','🖕','👀','😁','😭','😔','😩','😳','😠','😨','💩','👻','👽','👾','💋','💊'];
-        pickerDiv.innerHTML = '';
+        picker.innerHTML = '';
         reactionsList.forEach(emoji => {
             const btn = document.createElement('button');
             btn.textContent = emoji;
@@ -833,15 +1194,17 @@
                 addReaction(currentReactionMessage, emoji);
                 document.getElementById('reactionPickerModal').style.display = 'none';
             };
-            pickerDiv.appendChild(btn);
+            picker.appendChild(btn);
         });
         document.getElementById('reactionPickerModal').style.display = 'flex';
     }
 
     function sendMessage() {
         const input = document.getElementById('messageInput');
-        let text = input.value.trim();
+        const text = input.value.trim();
         if (!text && !replyingTo && !editingMessage) return;
+        if (!currentChat.id) return;
+
         if (editingMessage) {
             editMessage(editingMessage.id, text);
             editingMessage = null;
@@ -850,21 +1213,28 @@
             hideEditIndicator();
             return;
         }
-        if (replyingTo) {
-            const payload = { full_nick: currentUser.full_nick, text, reply_to_id: replyingTo.messageId };
-            socket.emit('new message', payload);
-            replyingTo = null;
-            hideReplyIndicator();
-            input.value = '';
-            autoResizeTextarea(input);
-            input.focus();
-            return;
-        }
-        const payload = { full_nick: currentUser.full_nick, text };
-        socket.emit('new message', payload);
+
+        const payload = {
+            chat_id: currentChat.id,
+            full_nick: currentUser.full_nick,
+            text,
+            reply_to_id: replyingTo?.messageId || null
+        };
+
+        fetch('/chat-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                // сообщение будет получено через сокет
+            }
+        });
+
+        replyingTo = null;
+        hideReplyIndicator();
         input.value = '';
         autoResizeTextarea(input);
-        input.focus();
         onTyping(false);
     }
 
@@ -881,172 +1251,135 @@
     function showContextMenu(messageId, full_nick, text, isOwn) {
         const showReactions = appSettings.showReactions !== false;
         const { nick, tag } = splitFullNick(full_nick);
-        document.getElementById('contextMessageNick').innerHTML = `<span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span>`;
+        document.getElementById('contextMessageNick').innerHTML = `${escapeHtml(nick)}<span class="nick-tag">${escapeHtml(tag)}</span>`;
         document.getElementById('contextMessagePreview').innerHTML = linkify(escapeHtml(text.substring(0, 150))) + (text.length>150?'…':'');
         const container = document.getElementById('contextMenuButtons');
-        let buttonsHtml = '';
-        if (showReactions) {
-            buttonsHtml += `<button id="ctx-react"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="#ff375f"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Реакция</button>`;
-        }
-        buttonsHtml += `<button id="ctx-reply"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/></svg> Ответить</button>`;
-        if (isOwn) {
-            buttonsHtml += `<button id="ctx-edit"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg> Редактировать</button>`;
-        }
-        buttonsHtml += `<button id="ctx-copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Скопировать</button>`;
-        if (isOwn) {
-            buttonsHtml += `<button id="ctx-delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>`;
-        }
-        buttonsHtml += `<button id="ctx-close"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Закрыть</button>`;
-        container.innerHTML = buttonsHtml;
-        if (showReactions) {
-            document.getElementById('ctx-react').onclick = () => {
-                currentReactionMessage = messageId;
-                showReactionPicker();
-                document.getElementById('contextMenuModal').style.display = 'none';
-            };
-        }
+        let html = '';
+        if (showReactions) html += `<button id="ctx-react"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Реакция</button>`;
+        html += `<button id="ctx-reply"><svg viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/></svg> Ответить</button>`;
+        if (isOwn) html += `<button id="ctx-edit"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg> Редактировать</button>`;
+        html += `<button id="ctx-copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Скопировать</button>`;
+        if (isOwn) html += `<button id="ctx-delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>`;
+        html += `<button id="ctx-close">Закрыть</button>`;
+        container.innerHTML = html;
+
+        const modal = document.getElementById('contextMenuModal');
+        if (showReactions) document.getElementById('ctx-react').onclick = () => {
+            currentReactionMessage = messageId;
+            showReactionPicker();
+            modal.style.display = 'none';
+        };
         document.getElementById('ctx-reply').onclick = () => {
-            if (editingMessage) {
-                editingMessage = null;
-                hideEditIndicator();
-                document.getElementById('messageInput').value = '';
-            }
+            if (editingMessage) { editingMessage = null; hideEditIndicator(); }
             replyingTo = { messageId, full_nick, text };
             showReplyIndicator(replyingTo);
-            document.getElementById('contextMenuModal').style.display = 'none';
+            modal.style.display = 'none';
             document.getElementById('messageInput').focus();
         };
-        document.getElementById('ctx-copy').onclick = () => { navigator.clipboard.writeText(text); document.getElementById('contextMenuModal').style.display = 'none'; };
+        document.getElementById('ctx-copy').onclick = () => {
+            navigator.clipboard.writeText(text);
+            modal.style.display = 'none';
+        };
         if (isOwn) {
             document.getElementById('ctx-edit').onclick = () => {
-                if (replyingTo) {
-                    replyingTo = null;
-                    hideReplyIndicator();
-                }
+                if (replyingTo) { replyingTo = null; hideReplyIndicator(); }
                 editingMessage = { id: messageId, text };
                 showEditIndicator(editingMessage);
-                const input = document.getElementById('messageInput');
-                input.value = text;
-                input.focus();
-                document.getElementById('contextMenuModal').style.display = 'none';
+                const inp = document.getElementById('messageInput');
+                inp.value = text;
+                inp.focus();
+                modal.style.display = 'none';
             };
             document.getElementById('ctx-delete').onclick = () => {
                 pendingDeleteMessageId = messageId;
                 document.getElementById('confirmMessage').innerText = 'Удалить сообщение?';
+                pendingAction = 'delete_message';
                 document.getElementById('confirmModal').style.display = 'flex';
-                document.getElementById('contextMenuModal').style.display = 'none';
+                modal.style.display = 'none';
             };
         }
-        document.getElementById('ctx-close').onclick = () => document.getElementById('contextMenuModal').style.display = 'none';
-        document.getElementById('contextMenuModal').style.display = 'flex';
+        document.getElementById('ctx-close').onclick = () => modal.style.display = 'none';
+        modal.style.display = 'flex';
     }
 
     function showReplyIndicator(reply) {
-        let indicator = document.getElementById('replyIndicator');
-        if (!indicator) {
-            const div = document.createElement('div');
-            div.id = 'replyIndicator';
-            div.className = 'reply-indicator';
-            div.innerHTML = `
-                <div class="reply-content">
-                    <div class="reply-nick">${escapeHtml(reply.full_nick)}</div>
-                    <div class="reply-text">${escapeHtml(reply.text)}</div>
-                </div>
-                <button class="cancel-reply">✕</button>
-            `;
-            const wrapper = document.querySelector('.input-wrapper');
-            wrapper.parentNode.insertBefore(div, wrapper);
-            div.querySelector('.cancel-reply').onclick = () => {
+        let ind = document.getElementById('replyIndicator');
+        if (!ind) {
+            ind = document.createElement('div');
+            ind.id = 'replyIndicator';
+            ind.className = 'reply-indicator';
+            ind.innerHTML = `<div class="reply-content"><div class="reply-nick"></div><div class="reply-text"></div></div><button class="cancel-reply">✕</button>`;
+            document.querySelector('.input-wrapper').before(ind);
+            ind.querySelector('.cancel-reply').onclick = () => {
                 replyingTo = null;
-                div.remove();
-            };
-        } else {
-            indicator.querySelector('.reply-nick').innerHTML = escapeHtml(reply.full_nick);
-            indicator.querySelector('.reply-text').innerHTML = escapeHtml(reply.text);
-            indicator.style.display = 'flex';
-            indicator.querySelector('.cancel-reply').onclick = () => {
-                replyingTo = null;
-                indicator.style.display = 'none';
+                ind.style.display = 'none';
             };
         }
+        ind.querySelector('.reply-nick').innerHTML = escapeHtml(reply.full_nick);
+        ind.querySelector('.reply-text').innerHTML = escapeHtml(reply.text);
+        ind.style.display = 'flex';
     }
 
     function hideReplyIndicator() {
-        const indicator = document.getElementById('replyIndicator');
-        if (indicator) indicator.style.display = 'none';
+        const ind = document.getElementById('replyIndicator');
+        if (ind) ind.style.display = 'none';
     }
 
     function showEditIndicator(edit) {
-        let indicator = document.getElementById('editIndicator');
-        if (!indicator) {
-            const div = document.createElement('div');
-            div.id = 'editIndicator';
-            div.className = 'edit-indicator';
-            div.innerHTML = `
-                <div class="edit-content">
-                    <div class="edit-label">Редактирование</div>
-                    <div class="edit-text">${escapeHtml(edit.text)}</div>
-                </div>
-                <button class="cancel-edit">✕</button>
-            `;
-            const wrapper = document.querySelector('.input-wrapper');
-            wrapper.parentNode.insertBefore(div, wrapper);
-            div.querySelector('.cancel-edit').onclick = () => {
+        let ind = document.getElementById('editIndicator');
+        if (!ind) {
+            ind = document.createElement('div');
+            ind.id = 'editIndicator';
+            ind.className = 'edit-indicator';
+            ind.innerHTML = `<div class="edit-content"><div class="edit-label">Редактирование</div><div class="edit-text"></div></div><button class="cancel-edit">✕</button>`;
+            document.querySelector('.input-wrapper').before(ind);
+            ind.querySelector('.cancel-edit').onclick = () => {
                 editingMessage = null;
-                div.remove();
-                document.getElementById('messageInput').value = '';
-            };
-        } else {
-            indicator.querySelector('.edit-text').innerHTML = escapeHtml(edit.text);
-            indicator.style.display = 'flex';
-            indicator.querySelector('.cancel-edit').onclick = () => {
-                editingMessage = null;
-                indicator.style.display = 'none';
+                ind.style.display = 'none';
                 document.getElementById('messageInput').value = '';
             };
         }
+        ind.querySelector('.edit-text').innerHTML = escapeHtml(edit.text);
+        ind.style.display = 'flex';
     }
 
     function hideEditIndicator() {
-        const indicator = document.getElementById('editIndicator');
-        if (indicator) indicator.style.display = 'none';
+        const ind = document.getElementById('editIndicator');
+        if (ind) ind.style.display = 'none';
     }
 
-    function updateTypingIndicator(full_nick) {
-        const indicator = document.getElementById('typingIndicator');
-        if (!indicator) return;
-        if (!full_nick) {
-            indicator.classList.add('hidden');
+    function updateTypingIndicator(data) {
+        const ind = document.getElementById('typingIndicator');
+        if (!ind) return;
+        if (!data || data.full_nick === currentUser.full_nick) {
+            ind.classList.add('hidden');
             return;
         }
-        const { nick, tag } = splitFullNick(full_nick);
-        indicator.innerHTML = `${escapeHtml(nick)}${escapeHtml(tag)} печатает...`;
-        indicator.classList.remove('hidden');
-        setTimeout(() => {
-            if (indicator.innerHTML.includes('печатает')) indicator.classList.add('hidden');
-        }, 2000);
+        const { nick, tag } = splitFullNick(data.full_nick);
+        ind.innerHTML = `${escapeHtml(nick)}${escapeHtml(tag)} печатает...`;
+        ind.classList.remove('hidden');
+        clearTimeout(window.typingHideTimeout);
+        window.typingHideTimeout = setTimeout(() => ind.classList.add('hidden'), 2000);
     }
 
     function onTyping(isTyping) {
-        if (!socket) return;
+        if (!socket || !currentChat.id) return;
         if (isTyping) {
-            socket.emit('typing', { roomId: 'public', full_nick: currentUser.full_nick });
-            if (typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                socket.emit('stop typing', { roomId: 'public', full_nick: currentUser.full_nick });
-            }, 1500);
+            socket.emit('typing', { chatId: currentChat.id, full_nick: currentUser.full_nick });
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => socket.emit('stop typing', { chatId: currentChat.id }), 1500);
         } else {
-            if (typingTimeout) clearTimeout(typingTimeout);
-            socket.emit('stop typing', { roomId: 'public', full_nick: currentUser.full_nick });
+            clearTimeout(typingTimeout);
+            socket.emit('stop typing', { chatId: currentChat.id });
         }
     }
 
     function scrollToMessage(messageId) {
-        const element = document.querySelector(`.message-item[data-id="${messageId}"] .message-text`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.classList.add('highlight');
-            setTimeout(() => element.classList.remove('highlight'), 1000);
+        const el = document.querySelector(`.message-item[data-id="${messageId}"] .message-text`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('highlight');
+            setTimeout(() => el.classList.remove('highlight'), 1000);
         }
     }
 
@@ -1055,111 +1388,304 @@
         textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
     }
 
-    async function authWithPin(nick, pin) {
-        try {
-            const res = await fetch('/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ nick, pin }) });
-            const data = await res.json();
-            if (data.success) {
-                currentUser.full_nick = data.full_nick;
-                authToken = data.token;
-                localStorage.setItem('simply_token', authToken);
-                localStorage.setItem('simply_nick', nick);
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                if (socket) socket.disconnect();
-                socket = io();
-                socket.emit('user online', currentUser.full_nick);
-                socket.emit('join public');
-                
-                await setOneSignalUserId(currentUser.full_nick);
-                
-                if (Notification.permission === 'default') {
-                    Notification.requestPermission();
-                }
-                
-                socket.on('message received', (newMsg) => {
-                    messages.push(newMsg);
-                    renderMessages();
-                    if (appSettings.notifications && newMsg.full_nick !== currentUser.full_nick && Notification.permission === 'granted' && document.hidden) {
-                        const { nick, tag } = splitFullNick(newMsg.full_nick);
-                        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
-                            navigator.serviceWorker.ready.then(registration => {
-                                registration.showNotification('Новое сообщение', {
-                                    body: `${nick}${tag}: ${newMsg.text.substring(0, 100)}`,
-                                    icon: '/favicon.ico'
-                                });
-                            });
-                        } else {
-                            new Notification('Новое сообщение', {
-                                body: `${nick}${tag}: ${newMsg.text.substring(0, 100)}`,
-                                icon: '/favicon.ico'
-                            });
-                        }
-                    }
-                });
-                socket.on('message deleted', (msgId) => {
-                    messages = messages.filter(m => m.id !== msgId);
-                    renderMessages();
-                });
-                socket.on('message edited', ({messageId, newText}) => {
-                    const msg = messages.find(m => m.id === messageId);
-                    if (msg) { msg.text = newText; msg.edited = true; renderMessages(); }
-                });
-                socket.on('reaction updated', ({messageId, reactions}) => {
-                    const msg = messages.find(m => m.id === messageId);
-                    if (msg) { msg.reactions = reactions; renderMessages(); }
-                });
-                socket.on('user typing', ({roomId, full_nick}) => {
-                    if (roomId === 'public' && full_nick !== currentUser.full_nick) updateTypingIndicator(full_nick);
-                });
-                socket.on('user stop typing', ({roomId}) => {
-                    if (roomId === 'public') updateTypingIndicator(null);
-                });
-                
-                await loadMessages();
-                const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
-                document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
-                document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
-                document.getElementById('showReactionsToggle').checked = appSettings.showReactions !== false;
-                document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
-                
-                document.getElementById('showDateToggle').onchange = (e) => {
-                    appSettings.showDate = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    renderMessages();
-                };
-                document.getElementById('showReactionsToggle').onchange = (e) => {
-                    appSettings.showReactions = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    renderMessages();
-                };
-                document.getElementById('notificationsToggle').onchange = (e) => {
-                    appSettings.notifications = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                };
-                
-                if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => {
-                    if (socket && socket.connected) loadMessages();
-                }, 5000);
-                
-                return true;
-            } else {
-                document.getElementById('loginError').innerText = data.error || 'Ошибка входа';
-                return false;
+    // --- Инициализация сокетов и событий после входа ---
+    async function initializeApp() {
+        // Загрузка настроек
+        document.getElementById('showDateToggle').checked = appSettings.showDate;
+        document.getElementById('showReactionsToggle').checked = appSettings.showReactions;
+        document.getElementById('notificationsToggle').checked = appSettings.notifications;
+
+        document.getElementById('showDateToggle').onchange = e => {
+            appSettings.showDate = e.target.checked;
+            localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+            renderMessages();
+        };
+        document.getElementById('showReactionsToggle').onchange = e => {
+            appSettings.showReactions = e.target.checked;
+            localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+            renderMessages();
+        };
+        document.getElementById('notificationsToggle').onchange = e => {
+            appSettings.notifications = e.target.checked;
+            localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+        };
+
+        // Загрузка чатов и друзей
+        await loadChatsList();
+        await loadFriends();
+
+        // Сокет-события
+        socket.on('chat message received', (newMsg) => {
+            if (currentChat.id === newMsg.chat_id) {
+                messages.push(newMsg);
+                renderMessages();
             }
-        } catch(e) {
-            document.getElementById('loginError').innerText = 'Ошибка соединения';
-            return false;
-        }
+            loadChatsList(); // обновить превью
+        });
+
+        socket.on('message deleted', (msgId) => {
+            messages = messages.filter(m => m.id !== msgId);
+            renderMessages();
+            loadChatsList();
+        });
+
+        socket.on('message edited', ({ messageId, newText }) => {
+            const msg = messages.find(m => m.id === messageId);
+            if (msg) { msg.text = newText; msg.edited = true; renderMessages(); }
+            loadChatsList();
+        });
+
+        socket.on('reaction updated', ({ messageId, reactions }) => {
+            const msg = messages.find(m => m.id === messageId);
+            if (msg) { msg.reactions = reactions; renderMessages(); }
+        });
+
+        socket.on('user typing', (data) => {
+            if (data.chatId === currentChat.id) updateTypingIndicator(data);
+        });
+
+        socket.on('user stop typing', (data) => {
+            if (data.chatId === currentChat.id) updateTypingIndicator(null);
+        });
+
+        socket.on('online status', ({ full_nick, online }) => {
+            if (online) onlineUsers.add(full_nick);
+            else onlineUsers.delete(full_nick);
+            if (currentChat.type === 'private' && currentChat.other === full_nick)
+                updateChatStatus(full_nick);
+        });
+
+        socket.on('nick changed', ({ oldFullNick, newFullNick }) => {
+            if (currentUser.full_nick === oldFullNick) {
+                currentUser.full_nick = newFullNick;
+                document.getElementById('profileNickDisplay').innerText = newFullNick;
+            }
+            loadFriends();
+            loadChatsList();
+        });
+
+        // Периодическое обновление (опционально)
+        refreshInterval = setInterval(() => {
+            if (currentChat.id) loadChatMessages().then(renderMessages);
+        }, 5000);
     }
 
-    async function verifyToken() {
-        const token = localStorage.getItem('simply_token');
-        if (!token) return false;
-        try {
-            const res = await fetch('/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ token }) });
+    // --- Функции для модалок профиля ---
+    function setupProfileModals() {
+        // Самовыражение
+        document.getElementById('openSelfExpressionBtn').onclick = () => {
+            document.getElementById('selfExpressionModal').style.display = 'flex';
+        };
+        document.getElementById('closeSelfExpressionBtn').onclick = () => {
+            document.getElementById('selfExpressionModal').style.display = 'none';
+        };
+        document.getElementById('applyNickChangeBtn').onclick = async () => {
+            const newNick = document.getElementById('changeNickInput').value.trim();
+            if (!newNick) return;
+            const res = await fetch('/change-nick', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken, newNick })
+            });
             const data = await res.json();
+            if (data.success) {
+                currentUser.full_nick = data.newFullNick;
+                document.getElementById('profileNickDisplay').innerText = data.newFullNick;
+                document.getElementById('selfExpressionModal').style.display = 'none';
+                alert('Ник изменён');
+            } else alert(data.error);
+        };
+
+        // Уведы
+        document.getElementById('openNotifSettingsBtn').onclick = () => {
+            document.getElementById('notifSettingsModal').style.display = 'flex';
+        };
+        document.getElementById('closeNotifSettingsBtn').onclick = () => {
+            document.getElementById('notifSettingsModal').style.display = 'none';
+        };
+
+        // Приватность
+        document.getElementById('openPrivacySettingsBtn').onclick = () => {
+            document.getElementById('privacySettingsModal').style.display = 'flex';
+        };
+        document.getElementById('closePrivacySettingsBtn').onclick = () => {
+            document.getElementById('privacySettingsModal').style.display = 'none';
+        };
+        document.getElementById('changePinFromPrivacyBtn').onclick = () => {
+            document.getElementById('privacySettingsModal').style.display = 'none';
+            document.getElementById('changePinModal').style.display = 'flex';
+        };
+        document.getElementById('logoutBtn').onclick = () => {
+            pendingAction = 'logout';
+            document.getElementById('confirmMessage').innerText = 'Выйти из аккаунта?';
+            document.getElementById('confirmModal').style.display = 'flex';
+        };
+        document.getElementById('deleteAccountBtn').onclick = () => {
+            pendingAction = 'delete_account';
+            document.getElementById('pinConfirmModal').style.display = 'flex';
+            document.getElementById('pinConfirmInput').value = '';
+        };
+
+        // Стиль
+        document.getElementById('openStyleSettingsBtn').onclick = () => {
+            document.getElementById('styleSettingsModal').style.display = 'flex';
+        };
+        document.getElementById('closeStyleSettingsBtn').onclick = () => {
+            document.getElementById('styleSettingsModal').style.display = 'none';
+        };
+
+        // Смена PIN
+        document.getElementById('applyPinBtn').onclick = async () => {
+            const old = document.getElementById('oldPinInput').value;
+            const newP = document.getElementById('newPinInput').value;
+            if (!old || !newP || newP.length!==4 || !/^\d+$/.test(newP)) {
+                alert('PIN должен быть 4 цифры');
+                return;
+            }
+            const res = await fetch('/change-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken, oldPin: old, newPin: newP })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('PIN изменён');
+                document.getElementById('changePinModal').style.display = 'none';
+            } else alert(data.error);
+        };
+        document.getElementById('cancelPinBtn').onclick = () => {
+            document.getElementById('changePinModal').style.display = 'none';
+        };
+    }
+
+    // Подтверждения
+    document.getElementById('confirmOkBtn').onclick = async () => {
+        const modal = document.getElementById('confirmModal');
+        modal.style.display = 'none';
+        if (pendingAction === 'delete_message' && pendingDeleteMessageId) {
+            await fetch('/delete-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messageId: pendingDeleteMessageId, full_nick: currentUser.full_nick })
+            });
+            pendingDeleteMessageId = null;
+        } else if (pendingAction === 'logout') {
+            localStorage.removeItem('simply_token');
+            location.reload();
+        }
+        pendingAction = null;
+    };
+    document.getElementById('confirmCancelBtn').onclick = () => {
+        document.getElementById('confirmModal').style.display = 'none';
+        pendingAction = null;
+    };
+
+    // PIN подтверждение для удаления аккаунта
+    document.getElementById('pinConfirmOkBtn').onclick = async () => {
+        const pin = document.getElementById('pinConfirmInput').value;
+        if (!pin) return;
+        const res = await fetch('/delete-account', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: authToken, pin })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.removeItem('simply_token');
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+        document.getElementById('pinConfirmModal').style.display = 'none';
+    };
+    document.getElementById('pinConfirmCancelBtn').onclick = () => {
+        document.getElementById('pinConfirmModal').style.display = 'none';
+    };
+
+    // Закрытие пикера реакций
+    document.getElementById('closeReactionPickerBtn').onclick = () => {
+        document.getElementById('reactionPickerModal').style.display = 'none';
+    };
+
+    // --- Обработчики UI ---
+    function bindUI() {
+        // Навигация
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.onclick = () => showTab(btn.dataset.tab);
+        });
+
+        // Сегмент друзей
+        document.querySelectorAll('.segment-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                friendsFilter = btn.dataset.filter;
+                renderFriendsList();
+            };
+        });
+
+        // Поиск друзей
+        document.getElementById('friendsSearchInput').oninput = (e) => {
+            friendsSearchQuery = e.target.value;
+            renderFriendsList();
+        };
+
+        // Поиск чатов / пользователей
+        document.getElementById('chatSearchInput').oninput = (e) => {
+            chatSearchQuery = e.target.value;
+            renderChatsList();
+            searchUsers(e.target.value);
+        };
+
+        // Кнопка "Подружиться"
+        document.getElementById('addFriendBtn').onclick = () => {
+            document.getElementById('addFriendModal').style.display = 'flex';
+            document.getElementById('friendFullNickInput').value = '';
+        };
+        document.getElementById('cancelAddFriendBtn').onclick = () => {
+            document.getElementById('addFriendModal').style.display = 'none';
+        };
+        document.getElementById('sendFriendRequestBtn').onclick = async () => {
+            const to = document.getElementById('friendFullNickInput').value.trim();
+            if (!to) return;
+            await sendFriendRequest(to);
+            document.getElementById('addFriendModal').style.display = 'none';
+        };
+
+        // Назад из чата
+        document.getElementById('backFromChatBtn').onclick = closeChatView;
+
+        // Отправка сообщения
+        document.getElementById('sendBtn').onclick = sendMessage;
+        const msgInput = document.getElementById('messageInput');
+        msgInput.addEventListener('input', () => {
+            autoResizeTextarea(msgInput);
+            onTyping(true);
+        });
+        msgInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Прокрутка
+        window.isUserScrolling = false;
+        document.getElementById('messagesContainer')?.addEventListener('scroll', () => {
+            window.isUserScrolling = true;
+            clearTimeout(window.scrollTimeout);
+            window.scrollTimeout = setTimeout(() => window.isUserScrolling = false, 200);
+        });
+    }
+
+    // --- Запуск ---
+    const token = localStorage.getItem('simply_token');
+    if (token) {
+        fetch('/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        }).then(r => r.json()).then(async data => {
             if (data.success) {
                 currentUser.full_nick = data.full_nick;
                 authToken = token;
@@ -1167,180 +1693,49 @@
                 document.getElementById('appContainer').style.display = 'flex';
                 socket = io();
                 socket.emit('user online', currentUser.full_nick);
-                socket.emit('join public');
-                
                 await setOneSignalUserId(currentUser.full_nick);
-                
-                if (Notification.permission === 'default') {
-                    Notification.requestPermission();
-                }
-                
-                socket.on('message received', (newMsg) => {
-                    messages.push(newMsg);
-                    renderMessages();
-                    if (appSettings.notifications && newMsg.full_nick !== currentUser.full_nick && Notification.permission === 'granted' && document.hidden) {
-                        const { nick, tag } = splitFullNick(newMsg.full_nick);
-                        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
-                            navigator.serviceWorker.ready.then(registration => {
-                                registration.showNotification('Новое сообщение', {
-                                    body: `${nick}${tag}: ${newMsg.text.substring(0, 100)}`,
-                                    icon: '/favicon.ico'
-                                });
-                            });
-                        } else {
-                            new Notification('Новое сообщение', {
-                                body: `${nick}${tag}: ${newMsg.text.substring(0, 100)}`,
-                                icon: '/favicon.ico'
-                            });
-                        }
-                    }
-                });
-                socket.on('message deleted', (msgId) => {
-                    messages = messages.filter(m => m.id !== msgId);
-                    renderMessages();
-                });
-                socket.on('message edited', ({messageId, newText}) => {
-                    const msg = messages.find(m => m.id === messageId);
-                    if (msg) { msg.text = newText; msg.edited = true; renderMessages(); }
-                });
-                socket.on('reaction updated', ({messageId, reactions}) => {
-                    const msg = messages.find(m => m.id === messageId);
-                    if (msg) { msg.reactions = reactions; renderMessages(); }
-                });
-                socket.on('user typing', ({roomId, full_nick}) => {
-                    if (roomId === 'public' && full_nick !== currentUser.full_nick) updateTypingIndicator(full_nick);
-                });
-                socket.on('user stop typing', ({roomId}) => {
-                    if (roomId === 'public') updateTypingIndicator(null);
-                });
-                
-                await loadMessages();
-                const { nick: n, tag: t } = splitFullNick(currentUser.full_nick);
-                document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(n)}<span style="color:var(--text-secondary);">${escapeHtml(t)}</span>`;
-                document.getElementById('showDateToggle').checked = appSettings.showDate !== false;
-                document.getElementById('showReactionsToggle').checked = appSettings.showReactions !== false;
-                document.getElementById('notificationsToggle').checked = appSettings.notifications !== false;
-                
-                document.getElementById('showDateToggle').onchange = (e) => {
-                    appSettings.showDate = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    renderMessages();
-                };
-                document.getElementById('showReactionsToggle').onchange = (e) => {
-                    appSettings.showReactions = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                    renderMessages();
-                };
-                document.getElementById('notificationsToggle').onchange = (e) => {
-                    appSettings.notifications = e.target.checked;
-                    localStorage.setItem('simply_settings', JSON.stringify(appSettings));
-                };
-                
-                if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => {
-                    if (socket && socket.connected) loadMessages();
-                }, 5000);
-                
-                return true;
+                bindUI();
+                setupProfileModals();
+                await initializeApp();
+                showTab('chats');
+            } else {
+                localStorage.removeItem('simply_token');
+                document.getElementById('loginScreen').style.display = 'flex';
             }
-        } catch(e) {}
-        return false;
+        });
+    } else {
+        document.getElementById('loginScreen').style.display = 'flex';
     }
 
-    async function changeNick(newNick) {
-        const res = await fetch('/change-nick', {
+    document.getElementById('loginBtn').onclick = async () => {
+        const nick = document.getElementById('loginNick').value.trim();
+        const pin = document.getElementById('loginPin').value;
+        if (!nick || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
+            document.getElementById('loginError').innerText = 'Введите ник и 4-значный PIN';
+            return;
+        }
+        const res = await fetch('/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: authToken, newNick })
+            body: JSON.stringify({ nick, pin })
         });
         const data = await res.json();
         if (data.success) {
-            currentUser.full_nick = data.newFullNick;
-            localStorage.setItem('simply_nick', newNick);
-            const { nick, tag } = splitFullNick(currentUser.full_nick);
-            document.getElementById('displayNickWithTag').innerHTML = `${escapeHtml(nick)}<span style="color:var(--text-secondary);">${escapeHtml(tag)}</span>`;
-            await loadMessages();
-            alert('Ник изменён');
-        } else alert(data.error || 'Ошибка');
-    }
-
-    async function changePin(oldPin, newPin) {
-        const res = await fetch('/change-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: authToken, oldPin, newPin })
-        });
-        const data = await res.json();
-        if (data.success) alert('PIN изменён');
-        else alert(data.error || 'Ошибка');
-    }
-
-    window.onload = async () => {
-        const logged = await verifyToken();
-        if (!logged) {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
-        } else {
+            currentUser.full_nick = data.full_nick;
+            authToken = data.token;
+            localStorage.setItem('simply_token', authToken);
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
+            socket = io();
+            socket.emit('user online', currentUser.full_nick);
+            await setOneSignalUserId(currentUser.full_nick);
+            bindUI();
+            setupProfileModals();
+            await initializeApp();
+            showTab('chats');
+        } else {
+            document.getElementById('loginError').innerText = data.error || 'Ошибка входа';
         }
-        document.getElementById('loginBtn').onclick = () => {
-            const nick = document.getElementById('loginNick').value.trim();
-            const pin = document.getElementById('loginPin').value;
-            if (!nick || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) { document.getElementById('loginError').innerText = 'Введите ник и 4-значный PIN'; return; }
-            authWithPin(nick, pin);
-        };
-        document.getElementById('sendBtn').onclick = sendMessage;
-        const messageInput = document.getElementById('messageInput');
-        messageInput.addEventListener('input', () => { autoResizeTextarea(messageInput); onTyping(true); });
-        messageInput.addEventListener('keypress', (e) => { if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
-        
-        const settingsModal = document.getElementById('settingsModal');
-        document.getElementById('openSettingsBtn').onclick = () => settingsModal.style.display = 'flex';
-        document.getElementById('closeSettingsBtn').onclick = () => settingsModal.style.display = 'none';
-        
-        document.getElementById('changeNickBtn').onclick = () => {
-            settingsModal.style.display = 'none';
-            document.getElementById('changeNickModal').style.display = 'flex';
-        };
-        document.getElementById('changePinBtn').onclick = () => {
-            settingsModal.style.display = 'none';
-            document.getElementById('changePinModal').style.display = 'flex';
-        };
-        document.getElementById('applyNickBtn').onclick = async () => { const nn = document.getElementById('newNickInput').value.trim(); if(nn) await changeNick(nn); document.getElementById('changeNickModal').style.display = 'none'; document.getElementById('newNickInput').value = ''; };
-        document.getElementById('cancelNickBtn').onclick = () => document.getElementById('changeNickModal').style.display = 'none';
-        document.getElementById('applyPinBtn').onclick = async () => { const old=document.getElementById('oldPinInput').value, newP=document.getElementById('newPinInput').value; if(old&&newP&&newP.length===4&&/^\d+$/.test(newP)){ await changePin(old,newP); document.getElementById('changePinModal').style.display='none'; document.getElementById('oldPinInput').value=''; document.getElementById('newPinInput').value=''; } else alert('PIN должен быть 4 цифры'); };
-        document.getElementById('cancelPinBtn').onclick = () => document.getElementById('changePinModal').style.display = 'none';
-        document.getElementById('closeReactionPickerBtn').onclick = () => document.getElementById('reactionPickerModal').style.display = 'none';
-        
-        // Исправление порядка удаления: сначала закрываем модалку, потом удаляем
-        document.getElementById('confirmOkBtn').onclick = async () => {
-            const messageIdToDelete = pendingDeleteMessageId;
-            // Сразу закрываем модалку
-            document.getElementById('confirmModal').style.display = 'none';
-            if (messageIdToDelete) {
-                await fetch('/delete-message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messageId: messageIdToDelete, full_nick: currentUser.full_nick })
-                });
-                pendingDeleteMessageId = null;
-            }
-        };
-        document.getElementById('confirmCancelBtn').onclick = () => { pendingDeleteMessageId = null; document.getElementById('confirmModal').style.display = 'none'; };
-        
-        window.isUserScrolling = false;
-        document.getElementById('messagesContainer')?.addEventListener('scroll', () => {
-            window.isUserScrolling = true;
-            clearTimeout(window.scrollTimeout);
-            window.scrollTimeout = setTimeout(() => { window.isUserScrolling = false; }, 200);
-        });
-        
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                loadMessages();
-            }
-        });
     };
 </script>
 </body>
