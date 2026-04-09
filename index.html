@@ -1117,7 +1117,7 @@
 
     // --- Глобальное состояние ---
     let socket = null;
-    let currentUser = { full_nick: "" };
+    let currentUser = { full_nick: "", badge: "" };
     let authToken = localStorage.getItem('simply_token');
     let appSettings = JSON.parse(localStorage.getItem('simply_settings')) || { 
         showDate: true, 
@@ -1131,7 +1131,6 @@
     let currentChat = { id: null, type: null, other: null, name: '' };
     let chatsList = [];
     let pinnedChats = JSON.parse(localStorage.getItem('pinned_chats')) || [];
-    // Хранилище последнего прочитанного сообщения для каждого чата
     let lastReadMessage = JSON.parse(localStorage.getItem('last_read_message')) || {};
     let friendsData = { accepted: [], incoming: [] };
     let friendsSearchQuery = '';
@@ -1144,8 +1143,8 @@
     let refreshInterval = null;
     let pendingAction = null;
     let selectedChatForMenu = null;
-    const onlineUsers = new Set(); // полный список онлайн пользователей
-    const usersInChat = new Map(); // chatId -> Set(full_nick)
+    const onlineUsers = new Set();
+    const usersInChat = new Map();
 
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
@@ -1218,7 +1217,6 @@
         document.getElementById('mainNavBar').classList.remove('hidden');
         if (currentChat.id) {
             socket.emit('leave chat', currentChat.id);
-            // Сохраняем последнее прочитанное сообщение
             if (messages.length > 0) {
                 const lastMsg = messages[messages.length - 1];
                 lastReadMessage[currentChat.id] = lastMsg.id;
@@ -1315,7 +1313,6 @@
         renderMessages();
         await loadChatMessages();
         renderMessages();
-        // Сбрасываем непрочитанные
         if (messages.length > 0) {
             const lastMsg = messages[messages.length - 1];
             lastReadMessage[chat.id] = lastMsg.id;
@@ -1422,13 +1419,11 @@
         const query = friendsSearchQuery.toLowerCase();
         let html = '';
         
-        // Входящие запросы
         const filteredIncoming = friendsData.incoming.filter(u => u.full_nick.toLowerCase().includes(query) || u.nick.toLowerCase().includes(query));
         filteredIncoming.forEach(user => {
-            const badge = getUserBadge(user.full_nick);
             html += `<div class="friend-item">
                 <div class="friend-info">
-                    <span class="user-badge">${badge}</span>
+                    <span class="user-badge">${user.badge || ''}</span>
                     <div>
                         <div>Входящий запрос дружбы</div>
                         <div class="friend-request-nick">${escapeHtml(user.full_nick)}</div>
@@ -1441,12 +1436,10 @@
             </div>`;
         });
         
-        // Принятые друзья
         const filteredAccepted = friendsData.accepted.filter(u => u.full_nick.toLowerCase().includes(query) || u.nick.toLowerCase().includes(query));
         filteredAccepted.forEach(user => {
-            const badge = getUserBadge(user.full_nick);
             html += `<div class="friend-item">
-                <div class="friend-info"><span class="user-badge">${badge}</span><span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
+                <div class="friend-info"><span class="user-badge">${user.badge || ''}</span><span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
                 <div class="friend-actions">
                     <button class="remove-friend" data-nick="${user.full_nick}">−</button>
                     <button class="chat-with-friend" data-nick="${user.full_nick}">💬</button>
@@ -1504,9 +1497,8 @@
         const users = await res.json();
         let html = '';
         users.forEach(u => {
-            const badge = getUserBadge(u.full_nick);
             html += `<div class="friend-item">
-                <div class="friend-info"><span class="user-badge">${badge}</span><span class="friend-name">${escapeHtml(u.full_nick)}</span></div>
+                <div class="friend-info"><span class="user-badge">${u.badge || ''}</span><span class="friend-name">${escapeHtml(u.full_nick)}</span></div>
                 <div class="friend-actions">
                     <button class="add-friend-search" data-nick="${u.full_nick}">👤+</button>
                     <button class="write-search" data-nick="${u.full_nick}">💬</button>
@@ -1527,19 +1519,6 @@
         const data = await res.json();
         alert(data.success ? 'Запрос отправлен' : (data.error || 'Ошибка'));
         loadFriends();
-    }
-
-    // --- Значки пользователей (заглушка, в будущем из БД) ---
-    const badgeOptions = ['⭐','❤️','🔥','🍀','⚡','🌹','🔕','🎁','🎉'];
-    function getUserBadge(full_nick) {
-        if (!full_nick) return '';
-        let hash = 0;
-        for (let i = 0; i < full_nick.length; i++) {
-            hash = ((hash << 5) - hash) + full_nick.charCodeAt(i);
-            hash |= 0;
-        }
-        const index = Math.abs(hash) % badgeOptions.length;
-        return badgeOptions[index];
     }
 
     // --- Рендер сообщений ---
@@ -1570,9 +1549,8 @@
                 reactionsHtml += '</div>';
             }
             const timestamp = formatTimestamp(msg.created_at, appSettings.showDate);
-            const badge = getUserBadge(msg.full_nick);
             msgDiv.innerHTML = `
-                <div class="message-header"><div class="message-nick"><span class="user-badge">${badge}</span><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
+                <div class="message-header"><div class="message-nick"><span class="user-badge">${currentUser.badge || ''}</span><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
                 ${replyHtml}
                 <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
                 <div class="message-footer">
@@ -1852,7 +1830,7 @@
         document.getElementById('showDateToggle').checked = appSettings.showDate;
         document.getElementById('showReactionsToggle').checked = appSettings.showReactions;
         document.getElementById('notificationsToggle').checked = appSettings.notifications;
-        document.getElementById('badgeSelect').value = appSettings.userBadge;
+        document.getElementById('badgeSelect').value = currentUser.badge || '';
         document.getElementById('accentColorSelect').value = appSettings.accentColor;
 
         document.getElementById('showDateToggle').onchange = e => {
@@ -1870,9 +1848,14 @@
             appSettings.notifications = e.target.checked;
             localStorage.setItem('simply_settings', JSON.stringify(appSettings));
         };
-        document.getElementById('badgeSelect').onchange = e => {
-            appSettings.userBadge = e.target.value;
-            localStorage.setItem('simply_settings', JSON.stringify(appSettings));
+        document.getElementById('badgeSelect').onchange = async e => {
+            const newBadge = e.target.value;
+            currentUser.badge = newBadge;
+            await fetch('/update-badge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken, badge: newBadge })
+            });
             renderMessages();
             renderFriendsList();
         };
@@ -1889,7 +1872,6 @@
             if (currentChat.id === newMsg.chat_id) {
                 messages.push(newMsg);
                 renderMessages();
-                // Обновляем последнее прочитанное, если чат открыт
                 lastReadMessage[currentChat.id] = newMsg.id;
                 localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage));
             }
@@ -1924,11 +1906,6 @@
         socket.on('online status', ({ full_nick, online }) => {
             if (online) onlineUsers.add(full_nick);
             else onlineUsers.delete(full_nick);
-            // Обновляем статус в текущем чате, если это собеседник
-            if (currentChat.type === 'private' && currentChat.other === full_nick) {
-                document.getElementById('chatStatus').innerText = online ? 'В сети' : 'Не в сети';
-                document.getElementById('chatTitle').innerHTML = `${escapeHtml(currentChat.name)}${online ? ' <span style="color:var(--accent-color);">●</span>' : ''}`;
-            }
             renderChatsList();
         });
 
@@ -1949,6 +1926,15 @@
                 document.getElementById('chatStatus').innerText = 'Не в сети';
                 document.getElementById('chatTitle').innerText = currentChat.name;
             }
+        });
+
+        socket.on('nick changed', ({ oldFullNick, newFullNick }) => {
+            if (currentUser.full_nick === oldFullNick) {
+                currentUser.full_nick = newFullNick;
+                document.getElementById('profileNickDisplay').innerText = newFullNick;
+            }
+            loadFriends();
+            loadChatsList();
         });
 
         refreshInterval = setInterval(() => {
@@ -2157,6 +2143,7 @@
         }).then(r => r.json()).then(async data => {
             if (data.success) {
                 currentUser.full_nick = data.full_nick;
+                currentUser.badge = data.badge || '';
                 authToken = token;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'flex';
@@ -2192,6 +2179,7 @@
         const data = await res.json();
         if (data.success) {
             currentUser.full_nick = data.full_nick;
+            currentUser.badge = data.badge || '';
             authToken = data.token;
             localStorage.setItem('simply_token', authToken);
             document.getElementById('loginScreen').style.display = 'none';
