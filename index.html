@@ -692,13 +692,72 @@
             margin-bottom: 1rem;
         }
 
-        /* Исправление отступа в настройках стиля */
-        .fullscreen .setting-row {
-            padding-left: 0;
-            padding-right: 0;
+        /* Кнопка Подружиться в стиле контекстного меню */
+        .add-friend-btn {
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-light);
+            padding-top: 1rem;
         }
-        .fullscreen .switch {
-            margin-right: 0;
+        .add-friend-btn svg {
+            width: 1.4rem;
+            height: 1.4rem;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        /* Иконки в профиле */
+        .profile-menu-btn {
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .profile-menu-btn svg {
+            width: 1.4rem;
+            height: 1.4rem;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        /* Круглая кнопка назад в полноэкранных модалках */
+        .modal-back-btn {
+            background: var(--bg-page);
+            border: none;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 0.5px solid var(--border-light);
+        }
+
+        /* Меню чата */
+        .chat-menu-modal .modal-content {
+            max-width: 320px;
         }
     </style>
 </head>
@@ -725,9 +784,14 @@
                 <button class="segment-btn" data-filter="outgoing">Хочу</button>
             </div>
             <input type="text" id="friendsSearchInput" class="search-input" placeholder="Поиск...">
-            <button id="addFriendBtn" style="width:100%; padding:0.8rem; background:var(--accent-color); border:none; border-radius:1rem; color:white; font-weight:600;">Подружиться</button>
         </div>
         <div id="friendsListContainer"></div>
+        <button id="addFriendBtn" class="add-friend-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Подружиться
+        </button>
     </div>
 
     <!-- Панель чатов -->
@@ -747,16 +811,40 @@
         </div>
         <div class="settings-container">
             <div class="setting-row">
-                <button id="openSelfExpressionBtn" style="width:100%; text-align:left;">Самовыражение</button>
+                <button id="openSelfExpressionBtn" class="profile-menu-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Самовыражение
+                </button>
             </div>
             <div class="setting-row">
-                <button id="openNotifSettingsBtn" style="width:100%; text-align:left;">Уведы</button>
+                <button id="openNotifSettingsBtn" class="profile-menu-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
+                    </svg>
+                    Уведы
+                </button>
             </div>
             <div class="setting-row">
-                <button id="openPrivacySettingsBtn" style="width:100%; text-align:left;">Приватность</button>
+                <button id="openPrivacySettingsBtn" class="profile-menu-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Приватность
+                </button>
             </div>
             <div class="setting-row">
-                <button id="openStyleSettingsBtn" style="width:100%; text-align:left;">Стиль</button>
+                <button id="openStyleSettingsBtn" class="profile-menu-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    Стиль
+                </button>
             </div>
         </div>
     </div>
@@ -769,7 +857,7 @@
                 <div class="chat-header-name" id="chatTitle"></div>
                 <div class="chat-header-status" id="chatStatus"></div>
             </div>
-            <button class="settings-icon" id="chatMenuBtn">⋮</button>
+            <!-- Кнопка меню чата убрана -->
         </div>
         <div class="chat-messages" id="messagesContainer"></div>
         <div class="typing-indicator hidden" id="typingIndicator"></div>
@@ -792,10 +880,9 @@
             <span>Чаты</span>
         </button>
         <button class="nav-item" data-tab="profile">
-            <!-- Иконка настроек вместо профиля -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
             <span>Настройки</span>
         </button>
@@ -809,15 +896,28 @@
 <div id="reactionPickerModal" class="modal"><div class="modal-content"><h3>Реакция</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div>
 <div id="contextMenuModal" class="modal"><div class="modal-content"><div id="contextMessageNick"></div><div id="contextMessagePreview"></div><div class="context-menu-buttons" id="contextMenuButtons"></div></div></div>
 
+<!-- Модалка меню чата -->
+<div id="chatMenuModal" class="modal chat-menu-modal">
+    <div class="modal-content">
+        <div style="margin-bottom:1rem; font-weight:600;" id="chatMenuNick"></div>
+        <div class="context-menu-buttons" id="chatMenuButtons">
+            <button id="chatMenuPin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M5 12h14"/></svg> Закрепить</button>
+            <button id="chatMenuFriend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> <span id="chatMenuFriendText">Добавить в друзья</span></button>
+            <button id="chatMenuDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
+            <button id="chatMenuClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <!-- Полноэкранные модалки настроек -->
-<div id="selfExpressionModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeSelfExpressionBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Самовыражение</h3></div><div class="modal-setting"><label>Новый ник</label><input type="text" id="changeNickInput" placeholder="Новый ник"></div><button id="applyNickChangeBtn" style="width:100%; padding:0.8rem; background:var(--accent-color); border:none; border-radius:1rem; color:white;">Сохранить</button></div></div>
-<div id="notifSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeNotifSettingsBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Уведомления</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Уведомления</span><label class="switch"><input type="checkbox" id="notificationsToggle" checked><span class="slider"></span></label></div></div></div></div>
-<div id="privacySettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closePrivacySettingsBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Приватность</h3></div><div class="setting-row"><button id="changePinFromPrivacyBtn">Сменить PIN</button></div><div class="setting-row"><button id="logoutBtn">Выйти из аккаунта</button></div><div class="setting-row"><button id="deleteAccountBtn" style="color:#ff375f;">Удалить аккаунт</button></div></div></div>
-<div id="styleSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeStyleSettingsBtn" style="background:none; border:none; color:var(--accent-color); font-size:1.2rem;">←</button><h3 style="margin-left:1rem;">Стиль</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Показывать дату</span><label class="switch"><input type="checkbox" id="showDateToggle"><span class="slider"></span></label></div></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Реакции</span><label class="switch"><input type="checkbox" id="showReactionsToggle" checked><span class="slider"></span></label></div></div></div></div>
+<div id="selfExpressionModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeSelfExpressionBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Самовыражение</h3></div><div class="modal-setting"><label>Новый ник</label><input type="text" id="changeNickInput" placeholder="Новый ник"></div><button id="applyNickChangeBtn" style="width:100%; padding:0.8rem; background:var(--accent-color); border:none; border-radius:1rem; color:white;">Сохранить</button></div></div>
+<div id="notifSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeNotifSettingsBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Уведомления</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Уведомления</span><label class="switch"><input type="checkbox" id="notificationsToggle" checked><span class="slider"></span></label></div></div></div></div>
+<div id="privacySettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closePrivacySettingsBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Приватность</h3></div><div class="setting-row"><button id="changePinFromPrivacyBtn" class="profile-menu-btn" style="justify-content:flex-start;">Сменить PIN</button></div><div class="setting-row"><button id="logoutBtn" class="profile-menu-btn" style="justify-content:flex-start;">Выйти из аккаунта</button></div><div class="setting-row"><button id="deleteAccountBtn" class="profile-menu-btn" style="color:#ff375f; justify-content:flex-start;">Удалить аккаунт</button></div></div></div>
+<div id="styleSettingsModal" class="modal fullscreen"><div class="modal-content"><div style="display:flex; align-items:center; margin-bottom:1.5rem;"><button id="closeStyleSettingsBtn" class="modal-back-btn">←</button><h3 style="margin-left:1rem;">Стиль</h3></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Показывать дату</span><label class="switch"><input type="checkbox" id="showDateToggle"><span class="slider"></span></label></div></div><div class="setting-row"><div class="setting-header"><span class="setting-label">Реакции</span><label class="switch"><input type="checkbox" id="showReactionsToggle" checked><span class="slider"></span></label></div></div></div></div>
 <div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4"></div><div class="modal-buttons"><button id="cancelPinBtn">Отмена</button><button id="applyPinBtn">Применить</button></div></div></div>
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-<!-- Конец HTML, начало JavaScript -->
+<!-- Далее будет JavaScript -->
 <script>
     (function() {
         function addTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.add('tapped'); }
@@ -850,6 +950,7 @@
     let typingTimeout = null;
     let refreshInterval = null;
     let pendingAction = null;
+    let selectedChatForMenu = null;
     const onlineUsers = new Set();
 
     // --- Вспомогательные функции ---
@@ -932,9 +1033,8 @@
                     <div class="friend-name">${escapeHtml(chat.name)}</div>
                     <div class="chat-preview">${escapeHtml(preview)}</div>
                 </div>`;
-            // Кнопка меню только для приватных чатов
             if (chat.type === 'private') {
-                html += `<button class="chat-menu-btn" data-chat-id="${chat.id}">⋮</button>`;
+                html += `<button class="message-actions-btn chat-menu-btn" style="position:relative; right:auto; top:auto;" data-chat-id="${chat.id}" data-other="${chat.other}">⋮</button>`;
             }
             html += `</div>`;
         });
@@ -954,8 +1054,10 @@
         document.querySelectorAll('.chat-menu-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Заглушка контекстного меню чата
-                alert('Меню чата (в разработке)');
+                const chatId = parseInt(btn.dataset.chatId);
+                const other = btn.dataset.other;
+                selectedChatForMenu = { chatId, other };
+                openChatMenu(chatId, other);
             });
         });
     }
@@ -971,6 +1073,8 @@
             updateChatStatus(chat.other);
         }
         socket.emit('join chat', chat.id);
+        messages = [];
+        renderMessages();
         await loadChatMessages();
         renderMessages();
     }
@@ -986,6 +1090,61 @@
     function updateChatStatus(full_nick) {
         const isOnline = onlineUsers.has(full_nick);
         document.getElementById('chatStatus').innerText = isOnline ? 'В сети' : 'Не в сети';
+    }
+
+    // --- Меню чата ---
+    async function openChatMenu(chatId, other) {
+        if (!other) return;
+        document.getElementById('chatMenuNick').innerText = other;
+        const btn = document.getElementById('chatMenuFriend');
+        const span = document.getElementById('chatMenuFriendText');
+        
+        // Получаем статус дружбы
+        const res = await fetch(`/friendship-status?from=${encodeURIComponent(currentUser.full_nick)}&to=${encodeURIComponent(other)}`);
+        const data = await res.json();
+        
+        if (data.status === 'accepted') {
+            span.innerText = 'Друзья';
+            btn.style.opacity = '1';
+            btn.onclick = null;
+        } else if (data.status === 'pending') {
+            if (data.isOutgoing) {
+                span.innerText = 'Хочу дружить';
+                btn.style.opacity = '0.5';
+                btn.onclick = null;
+            } else {
+                span.innerText = 'Хочет дружить';
+                btn.style.opacity = '0.5';
+                btn.onclick = null;
+            }
+        } else {
+            span.innerText = 'Добавить в друзья';
+            btn.style.opacity = '1';
+            btn.onclick = async () => {
+                await sendFriendRequest(other);
+                document.getElementById('chatMenuModal').style.display = 'none';
+            };
+        }
+        
+        document.getElementById('chatMenuDelete').onclick = async () => {
+            if (!selectedChatForMenu) return;
+            await fetch('/delete-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: selectedChatForMenu.chatId, full_nick: currentUser.full_nick })
+            });
+            document.getElementById('chatMenuModal').style.display = 'none';
+            loadChatsList();
+            if (currentChat.id === selectedChatForMenu.chatId) {
+                closeChatView();
+            }
+        };
+        
+        document.getElementById('chatMenuClose').onclick = () => {
+            document.getElementById('chatMenuModal').style.display = 'none';
+        };
+        
+        document.getElementById('chatMenuModal').style.display = 'flex';
     }
 
     // --- Друзья ---
@@ -1082,6 +1241,7 @@
         });
         const data = await res.json();
         alert(data.success ? 'Запрос отправлен' : (data.error || 'Ошибка'));
+        loadFriends();
     }
 
     // --- Рендер сообщений ---
@@ -1228,10 +1388,6 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        }).then(res => res.json()).then(data => {
-            if (data.success) {
-                // сообщение будет получено через сокет
-            }
         });
 
         replyingTo = null;
@@ -1263,7 +1419,7 @@
         if (isOwn) html += `<button id="ctx-edit"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg> Редактировать</button>`;
         html += `<button id="ctx-copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Скопировать</button>`;
         if (isOwn) html += `<button id="ctx-delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>`;
-        html += `<button id="ctx-close">Закрыть</button>`;
+        html += `<button id="ctx-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Закрыть</button>`;
         container.innerHTML = html;
 
         const modal = document.getElementById('contextMenuModal');
@@ -1465,8 +1621,15 @@
         });
 
         refreshInterval = setInterval(() => {
-            if (currentChat.id) loadChatMessages().then(renderMessages);
-        }, 5000);
+            if (currentChat.id) {
+                loadChatMessages().then(renderMessages);
+            } else {
+                loadChatsList();
+            }
+            if (document.getElementById('friendsPanel').style.display === 'flex') {
+                loadFriends();
+            }
+        }, 3000);
     }
 
     // --- Настройка модалок ---
