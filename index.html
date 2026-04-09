@@ -189,6 +189,7 @@
             padding: 0.8rem 1rem;
             background: var(--input-bg);
             border-bottom: 1px solid var(--border-light);
+            border-top: 1px solid var(--border-light); /* добавлена верхняя полоска */
         }
         .back-btn {
             background: var(--bg-page);
@@ -458,7 +459,7 @@
             background: var(--bg-page);
             backdrop-filter: none;
             align-items: flex-start;
-            padding-top: 1rem;
+            padding-top: 0.5rem;
         }
         .modal-content {
             background:var(--input-bg); border-radius:2rem; padding:1.8rem; width:90%; max-width:380px;
@@ -548,7 +549,7 @@
         .settings-container {
             display: flex;
             flex-direction: column;
-            gap: 1.2rem;
+            gap: 0.8rem;
         }
         .setting-row {
             display: flex;
@@ -556,7 +557,7 @@
             gap: 0.6rem;
             border-bottom: 1px solid var(--border-light);
             padding-bottom: 0.9rem;
-            padding-top: 0.9rem;
+            padding-top: 0.3rem;
         }
         .setting-row:last-of-type {
             border-bottom: none;
@@ -656,11 +657,15 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             margin-top: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         .chat-time {
             font-size: 0.75rem;
             color: var(--text-secondary);
-            margin-left: auto;
+            margin-left: 8px;
+            white-space: nowrap;
         }
         .friend-actions {
             display: flex;
@@ -718,6 +723,7 @@
             cursor: pointer;
             width: 100%;
             margin-top: 1rem;
+            margin-bottom: 4.5rem;
             border-top: 1px solid var(--border-light);
             padding-top: 1rem;
         }
@@ -772,12 +778,17 @@
             max-width: 320px;
         }
         .chat-menu-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            color: var(--text-secondary);
         }
         .chat-menu-btn svg {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
         }
 
         /* Иконка значка пользователя */
@@ -795,22 +806,39 @@
             fill: none;
         }
 
-        /* Стилизация селекта под тёмную тему */
+        /* Стилизация селекта под тёмную тему (уменьшена ширина) */
         select, .badge-select {
             background: var(--bg-page);
             border: 1px solid var(--border-light);
             border-radius: 1rem;
-            padding: 0.7rem 1rem;
+            padding: 0.5rem 0.8rem;
             color: var(--text-primary);
-            font-size: 1rem;
-            width: 100%;
+            font-size: 0.9rem;
+            width: 70%; /* уменьшено на 30% */
             outline: none;
             -webkit-appearance: none;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.2rem;
+            background-position: right 0.8rem center;
+            background-size: 1rem;
+        }
+
+        /* Исправление высоты заголовков в полноэкранных модалках */
+        .fullscreen .modal-content > div:first-child {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.5rem;
+        }
+        .fullscreen .modal-content > div:first-child h3 {
+            margin-left: 0.5rem;
+            margin-bottom: 0;
+            line-height: 2.5rem;
+        }
+        .fullscreen .modal-back-btn {
+            margin-right: 0.5rem;
         }
     </style>
 </head>
@@ -893,8 +921,8 @@
             <div class="setting-row">
                 <button id="openStyleSettingsBtn" class="profile-menu-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M2 21h20M4 3l2 2 2-2 2 2 2-2 2 2 2-2 2 2"/>
-                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M15 3l5 5-8 8H8v-4l7-7z"/>
+                        <path d="M4 20h16"/>
                     </svg>
                     Стиль
                 </button>
@@ -978,9 +1006,9 @@
 <!-- Полноэкранные модалки настроек -->
 <div id="selfExpressionModal" class="modal fullscreen">
     <div class="modal-content">
-        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+        <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
             <button id="closeSelfExpressionBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:1rem;">Самовыражение</h3>
+            <h3 style="margin-left:0.5rem;">Самовыражение</h3>
         </div>
         <div class="setting-row">
             <div class="setting-header">
@@ -1010,9 +1038,9 @@
 
 <div id="notifSettingsModal" class="modal fullscreen">
     <div class="modal-content">
-        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+        <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
             <button id="closeNotifSettingsBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:1rem;">Уведомления</h3>
+            <h3 style="margin-left:0.5rem;">Уведомления</h3>
         </div>
         <div class="setting-row">
             <div class="setting-header">
@@ -1025,9 +1053,9 @@
 
 <div id="privacySettingsModal" class="modal fullscreen">
     <div class="modal-content">
-        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+        <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
             <button id="closePrivacySettingsBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:1rem;">Приватность</h3>
+            <h3 style="margin-left:0.5rem;">Приватность</h3>
         </div>
         <div class="setting-row"><button id="changePinFromPrivacyBtn" class="profile-menu-btn" style="justify-content:flex-start;">Сменить PIN</button></div>
         <div class="setting-row"><button id="logoutBtn" class="profile-menu-btn" style="justify-content:flex-start;">Выйти из аккаунта</button></div>
@@ -1037,9 +1065,9 @@
 
 <div id="styleSettingsModal" class="modal fullscreen">
     <div class="modal-content">
-        <div style="display:flex; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+        <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
             <button id="closeStyleSettingsBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:1rem;">Стиль</h3>
+            <h3 style="margin-left:0.5rem;">Стиль</h3>
         </div>
         <div class="setting-row">
             <div class="setting-header">
@@ -1115,7 +1143,6 @@
     let selectedChatForMenu = null;
     const onlineUsers = new Set();
 
-    // Применяем сохранённый цвет акцента
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
     // --- Вспомогательные функции ---
@@ -1158,8 +1185,7 @@
             document.getElementById('friendsSearchInput').value = '';
             friendsSearchQuery = '';
             loadFriends();
-        }
-        else if (tabId === 'chats') {
+        } else if (tabId === 'chats') {
             document.getElementById('chatSearchInput').value = '';
             chatSearchQuery = '';
             loadChatsList();
@@ -1222,9 +1248,8 @@
                     ${pinnedIcon}
                     <div style="flex:1">
                         <div class="friend-name">${escapeHtml(chat.name)}</div>
-                        <div class="chat-preview">${escapeHtml(preview)}</div>
+                        <div class="chat-preview">${escapeHtml(preview)}<span class="chat-time">${timeStr}</span></div>
                     </div>
-                    <div class="chat-time">${timeStr}</div>
                 </div>`;
             if (chat.type === 'private') {
                 html += `<button class="message-actions-btn chat-menu-btn" style="position:relative; right:auto; top:auto;" data-chat-id="${chat.id}" data-other="${chat.other}">⋮</button>`;
@@ -1374,7 +1399,7 @@
         list.forEach(user => {
             const badge = getUserBadge(user.full_nick);
             html += `<div class="friend-item">
-                <div class="friend-info">${badge ? `<span class="user-badge">${badge}</span>` : ''}<span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
+                <div class="friend-info"><span class="user-badge">${badge}</span><span class="friend-name">${escapeHtml(user.full_nick)}</span></div>
                 <div class="friend-actions">`;
             if (friendsFilter === 'incoming') {
                 html += `<button class="accept-friend" data-nick="${user.full_nick}">✓</button>
@@ -1437,7 +1462,7 @@
         users.forEach(u => {
             const badge = getUserBadge(u.full_nick);
             html += `<div class="friend-item">
-                <div class="friend-info">${badge ? `<span class="user-badge">${badge}</span>` : ''}<span class="friend-name">${escapeHtml(u.full_nick)}</span></div>
+                <div class="friend-info"><span class="user-badge">${badge}</span><span class="friend-name">${escapeHtml(u.full_nick)}</span></div>
                 <div class="friend-actions">
                     <button class="add-friend-search" data-nick="${u.full_nick}">👤+</button>
                     <button class="write-search" data-nick="${u.full_nick}">💬</button>
@@ -1462,7 +1487,6 @@
 
     // --- Значки пользователей ---
     function getUserBadge(full_nick) {
-        // В будущем будем брать из БД, пока заглушка: только для текущего пользователя
         return full_nick === currentUser.full_nick ? (appSettings.userBadge || '') : '';
     }
 
@@ -1496,7 +1520,7 @@
             const timestamp = formatTimestamp(msg.created_at, appSettings.showDate);
             const badge = getUserBadge(msg.full_nick);
             msgDiv.innerHTML = `
-                <div class="message-header"><div class="message-nick">${badge ? `<span class="user-badge">${badge}</span>` : ''}<span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
+                <div class="message-header"><div class="message-nick"><span class="user-badge">${badge}</span><span class="nick-main">${escapeHtml(nick)}</span><span class="nick-tag">${escapeHtml(tag)}</span></div></div>
                 ${replyHtml}
                 <div class="message-text">${linkify(escapeHtml(msg.text))}</div>
                 <div class="message-footer">
@@ -1762,7 +1786,7 @@
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.classList.add('highlight');
-            setTimeout(() => el.classList.remove('highlight'), 1000);
+            setTimeout(() => el.classList.remove('highlight'), 2000);
         }
     }
 
@@ -1776,7 +1800,7 @@
         document.getElementById('showDateToggle').checked = appSettings.showDate;
         document.getElementById('showReactionsToggle').checked = appSettings.showReactions;
         document.getElementById('notificationsToggle').checked = appSettings.notifications;
-        document.getElementById('badgeSelect').value = appSettings.userBadge || '';
+        document.getElementById('badgeSelect').value = appSettings.userBadge;
         document.getElementById('accentColorSelect').value = appSettings.accentColor;
 
         document.getElementById('showDateToggle').onchange = e => {
@@ -1866,6 +1890,9 @@
             }
             if (document.getElementById('friendsPanel').style.display === 'flex') {
                 loadFriends();
+            }
+            if (currentChat.type === 'private' && currentChat.other) {
+                updateChatStatus(currentChat.other);
             }
         }, 1000);
     }
@@ -2054,7 +2081,6 @@
             autoResizeTextarea(msgInput);
             onTyping(true);
         });
-        // Enter теперь добавляет новую строку (поведение по умолчанию)
 
         window.isUserScrolling = false;
         document.getElementById('messagesContainer')?.addEventListener('scroll', () => {
