@@ -1282,6 +1282,7 @@
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     (function() {
         function addTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.add('tapped'); }
         function removeTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.remove('tapped'); }
@@ -2462,29 +2463,42 @@
                     showTab('chats');
                 } else { localStorage.removeItem('simply_token'); document.getElementById('loginScreen').style.display = 'flex'; }
             });
-    } else { document.getElementById('loginScreen').style.display = 'flex'; }
+    } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+    }
 
-    document.getElementById('loginBtn').onclick = async () => {
-        const nick = document.getElementById('loginNick').value.trim();
-        const pin = document.getElementById('loginPin').value;
-        if (!nick || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) { document.getElementById('loginError').innerText = 'Введите ник и 4-значный PIN'; return; }
-        const res = await fetch('/auth', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ nick, pin }) });
-        const data = await res.json();
-        if (data.success) {
-            currentUser.nick = data.nick; currentUser.badge = data.badge || ''; currentUser.description = data.description || '';
-            authToken = data.token;
-            localStorage.setItem('simply_token', authToken);
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'flex';
-            socket = io();
-            socket.emit('user online', currentUser.nick);
-            await setOneSignalUserId(currentUser.nick);
-            bindUI();
-            setupProfileModals();
-            await initializeApp();
-            showTab('chats');
-        } else { document.getElementById('loginError').innerText = data.error || 'Ошибка входа'; }
-    };
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.onclick = async () => {
+            const nick = document.getElementById('loginNick').value.trim();
+            const pin = document.getElementById('loginPin').value;
+            if (!nick || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) { 
+                document.getElementById('loginError').innerText = 'Введите ник и 4-значный PIN'; 
+                return; 
+            }
+            const res = await fetch('/auth', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ nick, pin }) });
+            const data = await res.json();
+            if (data.success) {
+                currentUser.nick = data.nick; 
+                currentUser.badge = data.badge || ''; 
+                currentUser.description = data.description || '';
+                authToken = data.token;
+                localStorage.setItem('simply_token', authToken);
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                socket = io();
+                socket.emit('user online', currentUser.nick);
+                await setOneSignalUserId(currentUser.nick);
+                bindUI();
+                setupProfileModals();
+                await initializeApp();
+                showTab('chats');
+            } else { 
+                document.getElementById('loginError').innerText = data.error || 'Ошибка входа'; 
+            }
+        };
+    }
+});
 </script>
 </body>
 </html>
