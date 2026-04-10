@@ -214,6 +214,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            cursor: pointer;
         }
         .unread-dot {
             width: 10px;
@@ -653,6 +654,9 @@
             padding: 0.8rem 0;
             border-bottom: 1px solid var(--border-light);
         }
+        .chat-item.muted {
+            opacity: 0.6;
+        }
         .contact-info, .chat-info {
             flex: 1;
             display: flex;
@@ -760,23 +764,31 @@
             stroke-width: 2;
             fill: none;
         }
+        .muted-icon {
+            margin-left: 6px;
+            width: 14px;
+            height: 14px;
+            stroke: var(--text-secondary);
+            stroke-width: 2;
+            fill: none;
+        }
 
         /* Стилизация селекта под тёмную тему */
         select, .badge-select {
             background: var(--bg-page);
             border: 1px solid var(--border-light);
             border-radius: 1rem;
-            padding: 0.25rem 0.4rem;
+            padding: 0.5rem 0.8rem;
             color: var(--text-primary);
-            font-size: 0.8rem;
-            width: 100px;
+            font-size: 0.9rem;
+            width: 125px;
             outline: none;
             -webkit-appearance: none;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 0.4rem center;
-            background-size: 0.9rem;
+            background-position: right 0.8rem center;
+            background-size: 1rem;
         }
 
         /* Исправление высоты заголовков в полноэкранных модалках */
@@ -973,7 +985,6 @@
                 <div class="chat-header-name" id="chatTitle"></div>
                 <div class="chat-header-status" id="chatStatus"></div>
             </div>
-            <button class="message-actions-btn" id="chatInfoBtn" style="position:relative;">i</button>
         </div>
         <div class="chat-messages" id="messagesContainer"></div>
         <div class="typing-indicator hidden" id="typingIndicator"></div>
@@ -1020,13 +1031,7 @@
 <div id="chatMenuModal" class="modal chat-menu-modal">
     <div class="modal-content">
         <div style="margin-bottom:1rem; font-weight:600;" id="chatMenuNick"></div>
-        <div class="context-menu-buttons" id="chatMenuButtons">
-            <button id="chatMenuPin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> <span id="pinButtonText">Закрепить</span></button>
-            <button id="chatMenuContact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> <span id="chatMenuContactText">Добавить в контакты</span></button>
-            <button id="chatMenuBlock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Заблокировать</button>
-            <button id="chatMenuDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
-            <button id="chatMenuClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Закрыть</button>
-        </div>
+        <div class="context-menu-buttons" id="chatMenuButtons"></div>
     </div>
 </div>
 
@@ -1142,7 +1147,7 @@
         <div class="setting-row">
             <div class="setting-header">
                 <span class="setting-label">Ник</span>
-                <button id="openChangeNickModalBtn">Сменить</button>
+                <button id="openChangeNickModalBtn">Изменить</button>
             </div>
         </div>
         <div class="setting-row">
@@ -1260,12 +1265,12 @@
             <div class="setting-header">
                 <span class="setting-label">Оттенок</span>
                 <select id="accentColorSelect" class="badge-select">
-                    <option value="#0a84ff" selected>Небо</option>
-                    <option value="#ff3b30">Алый</option>
-                    <option value="#ff9500">Медный</option>
-                    <option value="#ff2d55">Пинки</option>
-                    <option value="#00c7be">Мята</option>
-                    <option value="#af52de">Лаванда</option>
+                    <option value="#6B9FFF" selected>Небо</option>
+                    <option value="#FF9F9F">Алый</option>
+                    <option value="#FFB87C">Медный</option>
+                    <option value="#FFA6C9">Пинки</option>
+                    <option value="#6CD4C5">Мята</option>
+                    <option value="#C9A6FF">Лаванда</option>
                 </select>
             </div>
         </div>
@@ -1276,6 +1281,7 @@
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
+    <script>
     (function() {
         function addTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.add('tapped'); }
         function removeTapped(e) { const t = e.target.closest('button, .clickable'); if(t) t.classList.remove('tapped'); }
@@ -1295,9 +1301,10 @@
         showDate: true, 
         showReactions: true, 
         notifications: true, 
-        accentColor: '#0a84ff', 
+        accentColor: '#6B9FFF', 
         userBadge: '' 
     };
+    let mutedChats = JSON.parse(localStorage.getItem('muted_chats')) || [];
     
     let messages = [];
     let currentChat = { id: null, type: null, other: null, name: '', owner: null };
@@ -1316,7 +1323,6 @@
     let pendingAction = null;
     let selectedChatForMenu = null;
     let selectedParticipants = new Set();
-    const onlineUsers = new Set();
     const usersInChat = new Map();
 
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
@@ -1357,6 +1363,7 @@
     function hasUnreadMessages(chat) {
         if (!chat.last_message) return false;
         if (chat.last_message.nick === currentUser.nick) return false;
+        if (mutedChats.includes(chat.id)) return false;
         const lastMsgId = chat.last_message.id;
         const lastReadId = lastReadMessage[chat.id] || 0;
         return lastMsgId > lastReadId;
@@ -1364,7 +1371,7 @@
 
     function notifyUnreadSummary() {
         if (!appSettings.notifications) return;
-        const unreadChats = chatsList.filter(c => hasUnreadMessages(c));
+        const unreadChats = chatsList.filter(c => hasUnreadMessages(c) && !mutedChats.includes(c.id));
         if (unreadChats.length > 0 && document.hidden) {
             if (Notification.permission === 'granted') {
                 new Notification('ChatX', {
@@ -1463,11 +1470,15 @@
             }
             const pinnedIcon = chat.pinned ? '<svg class="pinned-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : '';
             const unreadDot = hasUnreadMessages(chat) ? '<span class="unread-dot"></span>' : '';
-            html += `<div class="chat-item clickable" data-chat-id="${chat.id}" data-chat-type="${chat.type}" data-other="${chat.other||''}" data-owner="${chat.owner||''}" data-name="${escapeHtml(chat.name)}">
+            const mutedIcon = mutedChats.includes(chat.id) ? '<svg class="muted-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3L21 21"/><path d="M12 3v18M8 7v10M16 7v10"/></svg>' : '';
+            let typeLabel = '';
+            if (chat.type === 'group') typeLabel = ' · Группа';
+            else if (chat.type === 'channel') typeLabel = ' · Канал';
+            html += `<div class="chat-item clickable ${mutedChats.includes(chat.id) ? 'muted' : ''}" data-chat-id="${chat.id}" data-chat-type="${chat.type}" data-other="${chat.other||''}" data-owner="${chat.owner||''}" data-name="${escapeHtml(chat.name)}">
                 <div class="chat-info">
                     ${pinnedIcon}
                     <div style="flex:1">
-                        <div class="friend-name">${escapeHtml(chat.name)}${unreadDot}</div>
+                        <div class="friend-name">${escapeHtml(chat.name)}${unreadDot}${mutedIcon}<span style="color:var(--text-secondary);font-size:0.8rem;">${typeLabel}</span></div>
                         <div class="chat-preview"><span>${escapeHtml(preview)}</span><span class="chat-time">${timeStr}</span></div>
                     </div>
                 </div>
@@ -1485,29 +1496,20 @@
                 };
                 openChat(chat);
             });
-            if (el.dataset.chatType === 'private') {
-                let pressTimer;
-                el.addEventListener('touchstart', (e) => {
-                    pressTimer = setTimeout(() => {
-                        const chatId = parseInt(el.dataset.chatId);
-                        const other = el.dataset.other;
-                        selectedChatForMenu = { chatId, other };
-                        openChatMenu(chatId, other);
-                    }, 500);
-                });
-                el.addEventListener('touchend', () => clearTimeout(pressTimer));
-                el.addEventListener('touchcancel', () => clearTimeout(pressTimer));
-                el.addEventListener('mousedown', (e) => {
-                    pressTimer = setTimeout(() => {
-                        const chatId = parseInt(el.dataset.chatId);
-                        const other = el.dataset.other;
-                        selectedChatForMenu = { chatId, other };
-                        openChatMenu(chatId, other);
-                    }, 500);
-                });
-                el.addEventListener('mouseup', () => clearTimeout(pressTimer));
-                el.addEventListener('mouseleave', () => clearTimeout(pressTimer));
-            }
+            let pressTimer;
+            const startPress = () => {
+                pressTimer = setTimeout(() => {
+                    const chatId = parseInt(el.dataset.chatId);
+                    const chat = chatsList.find(c => c.id === chatId);
+                    if (chat) {
+                        selectedChatForMenu = chat;
+                        openChatMenu(chat);
+                    }
+                }, 500);
+            };
+            el.addEventListener('touchstart', startPress);
+            el.addEventListener('mousedown', startPress);
+            ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, () => clearTimeout(pressTimer)));
         });
         notifyUnreadSummary();
     }
@@ -1540,7 +1542,9 @@
         } else {
             inputWrapper.style.display = 'block';
         }
-        document.getElementById('chatInfoBtn').style.display = (chat.type === 'group' || chat.type === 'channel') ? 'block' : 'none';
+        document.getElementById('chatTitle').onclick = () => {
+            if (chat.type === 'group' || chat.type === 'channel') showChatInfo(chat);
+        };
     }
 
     async function loadChatMessages() {
@@ -1552,77 +1556,74 @@
     }
 
     // --- Меню чата ---
-    async function openChatMenu(chatId, other) {
-        if (!other) return;
-        document.getElementById('chatMenuNick').innerText = other;
-        const contactBtn = document.getElementById('chatMenuContact');
-        const contactSpan = document.getElementById('chatMenuContactText');
-        const pinBtn = document.getElementById('chatMenuPin');
-        const pinText = document.getElementById('pinButtonText');
-        const blockBtn = document.getElementById('chatMenuBlock');
-        
-        const isPinned = pinnedChats.includes(chatId);
-        pinText.innerText = isPinned ? 'Открепить' : 'Закрепить';
-        
-        const res = await fetch(`/contact-status?user=${encodeURIComponent(currentUser.nick)}&contact=${encodeURIComponent(other)}`);
-        const data = await res.json();
-        
-        if (data.inContacts) {
-            contactSpan.innerText = 'В контактах';
-            contactBtn.onclick = async () => {
-                await fetch('/contact-remove', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user: currentUser.nick, contact: other })
-                });
+    function openChatMenu(chat) {
+        const container = document.getElementById('chatMenuButtons');
+        document.getElementById('chatMenuNick').innerText = chat.name;
+        let html = '';
+        const isMuted = mutedChats.includes(chat.id);
+        html += `<button id="chatMenuMute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3L21 21"/><path d="M12 3v18M8 7v10M16 7v10"/></svg> ${isMuted ? 'Включить уведомления' : 'Заглушить'}</button>`;
+        if (chat.type !== 'public') {
+            html += `<button id="chatMenuPin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${pinnedChats.includes(chat.id) ? 'Открепить' : 'Закрепить'}</button>`;
+            if (chat.type === 'private') {
+                html += `<button id="chatMenuContact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> <span id="chatMenuContactText">Добавить в контакты</span></button>`;
+                html += `<button id="chatMenuBlock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Заблокировать</button>`;
+            }
+            html += `<button id="chatMenuDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>`;
+        }
+        html += `<button id="chatMenuClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Закрыть</button>`;
+        container.innerHTML = html;
+
+        document.getElementById('chatMenuMute').onclick = () => {
+            const idx = mutedChats.indexOf(chat.id);
+            if (idx === -1) mutedChats.push(chat.id);
+            else mutedChats.splice(idx, 1);
+            localStorage.setItem('muted_chats', JSON.stringify(mutedChats));
+            loadChatsList();
+            document.getElementById('chatMenuModal').style.display = 'none';
+        };
+        if (chat.type !== 'public') {
+            document.getElementById('chatMenuPin').onclick = () => {
+                const idx = pinnedChats.indexOf(chat.id);
+                if (idx === -1) pinnedChats.push(chat.id);
+                else pinnedChats.splice(idx, 1);
+                localStorage.setItem('pinned_chats', JSON.stringify(pinnedChats));
+                loadChatsList();
                 document.getElementById('chatMenuModal').style.display = 'none';
-                loadContacts();
             };
-        } else {
-            contactSpan.innerText = 'Добавить в контакты';
-            contactBtn.onclick = async () => {
-                await fetch('/contact-add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user: currentUser.nick, contact: other })
-                });
+            if (chat.type === 'private') {
+                const contactSpan = document.getElementById('chatMenuContactText');
+                fetch(`/contact-status?user=${encodeURIComponent(currentUser.nick)}&contact=${encodeURIComponent(chat.other)}`)
+                    .then(r => r.json()).then(data => {
+                        if (data.inContacts) {
+                            contactSpan.innerText = 'В контактах';
+                            document.getElementById('chatMenuContact').onclick = async () => {
+                                await fetch('/contact-remove', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ user: currentUser.nick, contact: chat.other }) });
+                                document.getElementById('chatMenuModal').style.display = 'none';
+                                loadContacts();
+                            };
+                        } else {
+                            contactSpan.innerText = 'Добавить в контакты';
+                            document.getElementById('chatMenuContact').onclick = async () => {
+                                await fetch('/contact-add', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ user: currentUser.nick, contact: chat.other }) });
+                                document.getElementById('chatMenuModal').style.display = 'none';
+                                loadContacts();
+                            };
+                        }
+                    });
+                document.getElementById('chatMenuBlock').onclick = async () => {
+                    await fetch('/block-user', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ user: currentUser.nick, blocked: chat.other }) });
+                    document.getElementById('chatMenuModal').style.display = 'none';
+                    loadChatsList();
+                    if (currentChat.id === chat.id) closeChatView();
+                };
+            }
+            document.getElementById('chatMenuDelete').onclick = async () => {
+                await fetch('/delete-chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: chat.id, nick: currentUser.nick }) });
                 document.getElementById('chatMenuModal').style.display = 'none';
-                loadContacts();
+                loadChatsList();
+                if (currentChat.id === chat.id) closeChatView();
             };
         }
-        
-        pinBtn.onclick = () => {
-            const index = pinnedChats.indexOf(chatId);
-            if (index === -1) pinnedChats.push(chatId);
-            else pinnedChats.splice(index, 1);
-            localStorage.setItem('pinned_chats', JSON.stringify(pinnedChats));
-            loadChatsList();
-            document.getElementById('chatMenuModal').style.display = 'none';
-        };
-        
-        blockBtn.onclick = async () => {
-            await fetch('/block-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: currentUser.nick, blocked: other })
-            });
-            document.getElementById('chatMenuModal').style.display = 'none';
-            loadChatsList();
-            if (currentChat.id === chatId) closeChatView();
-        };
-        
-        document.getElementById('chatMenuDelete').onclick = async () => {
-            if (!selectedChatForMenu) return;
-            await fetch('/delete-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: selectedChatForMenu.chatId, nick: currentUser.nick })
-            });
-            document.getElementById('chatMenuModal').style.display = 'none';
-            loadChatsList();
-            if (currentChat.id === selectedChatForMenu.chatId) closeChatView();
-        };
-        
         document.getElementById('chatMenuClose').onclick = () => document.getElementById('chatMenuModal').style.display = 'none';
         document.getElementById('chatMenuModal').style.display = 'flex';
     }
@@ -2186,6 +2187,19 @@
     }
     document.getElementById('participantSearchInput').oninput = loadParticipantsList;
 
+    // --- Информация о группе/канале ---
+    async function showChatInfo(chat) {
+        const res = await fetch(`/chat-participants?chat_id=${chat.id}`);
+        const participants = await res.json();
+        let html = `<p>Участники (${participants.length}):</p>`;
+        participants.forEach(p => {
+            html += `<div class="contact-item"><div class="contact-info"><span class="user-badge">${p.badge||''}</span> ${escapeHtml(p.nick)}</div></div>`;
+        });
+        document.getElementById('chatInfoContent').innerHTML = html;
+        document.getElementById('chatInfoModal').style.display = 'flex';
+    }
+    document.getElementById('closeChatInfoBtn').onclick = () => document.getElementById('chatInfoModal').style.display = 'none';
+
     // --- Инициализация сокетов и событий ---
     async function initializeApp() {
         document.getElementById('showDateToggle').checked = appSettings.showDate;
@@ -2237,7 +2251,7 @@
                 localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage));
             }
             loadChatsList();
-            if (appSettings.notifications && newMsg.nick !== currentUser.nick) {
+            if (appSettings.notifications && newMsg.nick !== currentUser.nick && !mutedChats.includes(newMsg.chat_id)) {
                 const isChatOpen = currentChat.id === newMsg.chat_id;
                 if (!isChatOpen && Notification.permission === 'granted') {
                     new Notification(`Новое сообщение от ${newMsg.nick}`, {
