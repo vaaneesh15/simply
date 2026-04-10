@@ -18,7 +18,6 @@ app.use(express.json());
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, 'uploads');
@@ -38,7 +37,6 @@ const pool = new Pool({
 });
 
 async function initDB() {
-  // Пользователи
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -57,7 +55,6 @@ async function initDB() {
     );
   `);
 
-  // Добавляем колонки, если их нет
   const cols = ['badge', 'description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible', 'who_can_invite'];
   for (const col of cols) {
     try {
@@ -65,7 +62,6 @@ async function initDB() {
     } catch (e) {}
   }
 
-  // Чаты (добавлены group, channel)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chats (
       id SERIAL PRIMARY KEY,
@@ -76,7 +72,6 @@ async function initDB() {
     );
   `);
 
-  // Участники чатов
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chat_participants (
       chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
@@ -85,7 +80,6 @@ async function initDB() {
     );
   `);
 
-  // Сообщения (добавлены типы: text, voice, file, media)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
@@ -104,7 +98,6 @@ async function initDB() {
     );
   `);
 
-  // Реакции
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_reactions (
       id SERIAL PRIMARY KEY,
@@ -116,7 +109,6 @@ async function initDB() {
     );
   `);
 
-  // Просмотры сообщений (для каналов)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_views (
       message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
@@ -126,7 +118,6 @@ async function initDB() {
     );
   `);
 
-  // Контакты
   await pool.query(`
     CREATE TABLE IF NOT EXISTS contacts (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
@@ -136,7 +127,6 @@ async function initDB() {
     );
   `);
 
-  // Чёрный список
   await pool.query(`
     CREATE TABLE IF NOT EXISTS blocked_users (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
@@ -146,7 +136,6 @@ async function initDB() {
     );
   `);
 
-  // Удалённые чаты
   await pool.query(`
     CREATE TABLE IF NOT EXISTS deleted_chats (
       chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
@@ -155,7 +144,6 @@ async function initDB() {
     );
   `);
 
-  // Публичный чат
   const publicChat = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
   if (publicChat.rows.length === 0) {
     await pool.query(`INSERT INTO chats (type, name) VALUES ('public', 'Общий чат')`);
@@ -348,7 +336,6 @@ app.post('/block-user', async (req, res) => {
   const { user, blocked } = req.body;
   if (!user || !blocked) return res.status(400).json({ success: false });
   await pool.query(`INSERT INTO blocked_users (user_nick, blocked_nick) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [user, blocked]);
-  // Удаляем чат, если есть
   const chat = await pool.query(`
     SELECT c.id FROM chats c
     JOIN chat_participants cp1 ON cp1.chat_id = c.id AND cp1.nick = $1
@@ -402,7 +389,7 @@ app.get('/chats', async (req, res) => {
   const notebookId = await getOrCreateNotebook(nick);
   
   const privateChats = await pool.query(`
-    SELECT c.id, c.type, c.name, u.nick as other_nick, u.badge as other_badge
+    SELECT c.id, c.type, c.name, c.owner_nick, u.nick as other_nick, u.badge as other_badge
     FROM chats c
     JOIN chat_participants cp1 ON cp1.chat_id = c.id AND cp1.nick = $1
     LEFT JOIN chat_participants cp2 ON cp2.chat_id = c.id AND cp2.nick != $1
@@ -482,7 +469,6 @@ app.post('/create-private-chat', async (req, res) => {
   const { user1, user2 } = req.body;
   if (!user1 || !user2 || user1 === user2) return res.status(400).json({ success: false });
   
-  // Проверка прав на написание
   const target = await pool.query(`SELECT who_can_write FROM users WHERE nick = $1`, [user2]);
   if (target.rows.length > 0) {
     const setting = target.rows[0].who_can_write;
@@ -496,7 +482,6 @@ app.post('/create-private-chat', async (req, res) => {
     }
   }
   
-  // Проверка блокировки
   const blocked = await pool.query(`SELECT 1 FROM blocked_users WHERE (user_nick = $1 AND blocked_nick = $2) OR (user_nick = $2 AND blocked_nick = $1)`, [user1, user2]);
   if (blocked.rows.length > 0) {
     return res.status(403).json({ success: false, error: 'Невозможно написать' });
@@ -550,7 +535,6 @@ app.get('/chat-messages', async (req, res) => {
     ORDER BY m.created_at ASC
   `, [chat_id, nick]);
   
-  // Отмечаем просмотры для каналов
   const chat = await pool.query(`SELECT type FROM chats WHERE id = $1`, [chat_id]);
   if (chat.rows[0]?.type === 'channel') {
     for (const msg of result.rows) {
@@ -565,7 +549,6 @@ app.post('/chat-message', async (req, res) => {
   const { chat_id, nick, text, reply_to_id, type, file_url, file_name, file_size, duration } = req.body;
   if (!chat_id || !nick) return res.status(400).json({ success: false });
   
-  // Проверка прав на отправку в канале
   const chat = await pool.query(`SELECT type, owner_nick FROM chats WHERE id = $1`, [chat_id]);
   if (chat.rows[0]?.type === 'channel' && chat.rows[0].owner_nick !== nick) {
     return res.status(403).json({ success: false, error: 'Только автор канала может писать' });
