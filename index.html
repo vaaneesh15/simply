@@ -50,7 +50,7 @@
         .unread-dot { width:10px; height:10px; border-radius:50%; background:var(--accent-color); display:inline-block; margin-left:6px; }
         .chat-header-status { font-size:0.75rem; color:var(--text-secondary); }
         .chat-messages { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:14px; }
-        .scroll-to-bottom { position:absolute; bottom:80px; right:20px; width:40px; height:40px; border-radius:20px; background:var(--input-bg); border:0.5px solid var(--border-light); color:var(--accent-color); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:60; }
+        .scroll-to-bottom { position:absolute; bottom:calc(70px + env(safe-area-inset-bottom,0px)); right:20px; width:40px; height:40px; border-radius:20px; background:var(--input-bg); border:0.5px solid var(--border-light); color:var(--accent-color); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:60; }
         .message-item { display:flex; flex-direction:column; width:100%; position:relative; background:transparent; }
         .message-text.highlight { color:var(--accent-color)!important; transition:color 0.2s; }
         .message-header { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
@@ -605,8 +605,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderMessages() {
         const cont = document.getElementById('messagesContainer'); if(!cont) return;
+        const prevLength = messages.length;
         const wasNearBottom = cont.scrollHeight - cont.scrollTop - cont.clientHeight < 200;
-        const lastMsgBefore = messages.length ? messages[messages.length-1] : null;
         cont.innerHTML = '';
         const showReact = appSettings.showReactions !== false;
         messages.forEach(msg => {
@@ -638,7 +638,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 else { currentReactionMessage = msg.id; showReactionPicker(); }
             });
         });
-        if((wasNearBottom || (lastMsgBefore && messages.length && lastMsgBefore.id !== messages[messages.length-1].id)) && !window.isUserScrolling) cont.scrollTop = cont.scrollHeight;
+        const hasNewMessages = messages.length > prevLength;
+        if(wasNearBottom && hasNewMessages && !window.isUserScrolling) cont.scrollTop = cont.scrollHeight;
         attachReactionEvents(); attachFileButtons();
         document.querySelectorAll('.message-nick .nick-main, .message-nick .user-badge').forEach(el=>el.addEventListener('click',()=>showUserProfile(el.closest('.message-item').dataset.nick)));
         document.querySelectorAll('.reply-context').forEach(el=>el.addEventListener('click',()=>scrollToMessage(+el.dataset.message)));
@@ -651,7 +652,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const r = await fetch('/add-reaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:msgId, nick:currentUser.nick, reaction, isRoom:false})});
         const d = await r.json(); if(d.success) { const m = messages.find(m=>m.id===msgId); if(m) { m.reactions = d.reactions; if(!m.user_reactions) m.user_reactions=[]; if(m.user_reactions.includes(reaction)) m.user_reactions = m.user_reactions.filter(r=>r!==reaction); else m.user_reactions.push(reaction); renderMessages(); } }
     }
-    function showReactionPicker() { const p = document.getElementById('reactionsPicker'); p.innerHTML = ''; ['❤️','🔥','👍','👎','👌','🖕','👀','😁','😭','😔','😩','😳','😠','�65','💩','👻','👽','👾','💋','💊'].forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.onclick=()=>{ addReaction(currentReactionMessage,e); document.getElementById('reactionPickerModal').style.display='none'; }; p.appendChild(b); }); document.getElementById('reactionPickerModal').style.display='flex'; }
+    function showReactionPicker() { const p = document.getElementById('reactionsPicker'); p.innerHTML = ''; ['❤️','🔥','👍','👎','👌','🖕','👀','😁','😭','😔','😩','😳','😠','😨','💩','👻','👽','👾','💋','💊'].forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.onclick=()=>{ addReaction(currentReactionMessage,e); document.getElementById('reactionPickerModal').style.display='none'; }; p.appendChild(b); }); document.getElementById('reactionPickerModal').style.display='flex'; }
     function sendMessage() { const inp = document.getElementById('messageInput'); const text = inp.value.trim(); if(!text && !replyingTo && !editingMessage) return; if(!currentChat.id) return; if(editingMessage) { editMessage(editingMessage.id, text); editingMessage=null; inp.value=''; autoResize(inp); hideEditIndicator(); inp.focus(); return; } fetch('/chat-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:currentChat.id, nick:currentUser.nick, text, reply_to_id:replyingTo?.messageId, type:'text'})}); replyingTo=null; hideReplyIndicator(); inp.value=''; autoResize(inp); onTyping(false); inp.focus(); }
     async function editMessage(id, newText) { await fetch('/edit-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:id, nick:currentUser.nick, newText})}); }
     function showContextMenu(msg, own) {
@@ -709,7 +710,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('quickReactionSelect').onchange = e=>{ appSettings.quickReaction=e.target.value; localStorage.setItem('simply_settings',JSON.stringify(appSettings)); };
         document.getElementById('accentColorSelect').onchange = e=>{ appSettings.accentColor=e.target.value; localStorage.setItem('simply_settings',JSON.stringify(appSettings)); document.documentElement.style.setProperty('--accent-color',e.target.value); };
         await loadChatsList(); await loadContacts();
-        socket.on('chat message received', newMsg=>{ if(currentChat.id===newMsg.chat_id) { messages.push(newMsg); renderMessages(); lastReadMessage[currentChat.id]=newMsg.id; localStorage.setItem('last_read_message',JSON.stringify(lastReadMessage)); } loadChatsList(); if(appSettings.notifications && newMsg.nick!==currentUser.nick && !mutedChats.includes(newMsg.chat_id) && currentChat.id!==newMsg.chat_id && Notification.permission==='granted') { new Notification(`Новое сообщение от ${newMsg.nick}`,{body:newMsg.type==='text'?newMsg.text.slice(0,100):'Файл',icon:'/favicon.ico'}); } notifyUnreadSummary(); });
+        socket.on('chat message received', newMsg=>{ if(currentChat.id===newMsg.chat_id) { const prevLength = messages.length; messages.push(newMsg); renderMessages(); lastReadMessage[currentChat.id]=newMsg.id; localStorage.setItem('last_read_message',JSON.stringify(lastReadMessage)); } loadChatsList(); if(appSettings.notifications && newMsg.nick!==currentUser.nick && !mutedChats.includes(newMsg.chat_id) && currentChat.id!==newMsg.chat_id && Notification.permission==='granted') { new Notification(`Новое сообщение от ${newMsg.nick}`,{body:newMsg.type==='text'?newMsg.text.slice(0,100):'Файл',icon:'/favicon.ico'}); } notifyUnreadSummary(); });
         socket.on('message deleted', id=>{ messages=messages.filter(m=>m.id!==id); renderMessages(); loadChatsList(); });
         socket.on('message edited', ({messageId,newText})=>{ const m=messages.find(m=>m.id===messageId); if(m){m.text=newText; m.edited=true; renderMessages();} loadChatsList(); });
         socket.on('reaction updated', ({messageId,reactions})=>{ const m=messages.find(m=>m.id===messageId); if(m){m.reactions=reactions; renderMessages();} });
@@ -717,6 +718,8 @@ document.addEventListener('DOMContentLoaded', function() {
         socket.on('user stop typing', d=>{ if(d.chatId===currentChat.id) updateTypingIndicator(null); });
         socket.on('user joined chat', ({chatId,nick})=>{ if(!usersInChat.has(chatId)) usersInChat.set(chatId,new Set()); usersInChat.get(chatId).add(nick); });
         socket.on('user left chat', ({chatId,nick})=>{ if(usersInChat.has(chatId)) usersInChat.get(chatId).delete(nick); });
+        socket.on('chat renamed', ({chat_id,name})=>{ const chat = chatsList.find(c=>c.id===chat_id); if(chat) chat.name = name; if(currentChat.id===chat_id) document.getElementById('chatTitle').innerText = name; renderChatsList(); });
+        socket.on('participant kicked', ({chat_id,nick})=>{ if(currentChat.id===chat_id) openChatInfo(chat_id); loadChatsList(); });
         socket.on('nick changed', ({oldNick,newNick})=>{ if(currentUser.nick===oldNick) { currentUser.nick=newNick; document.getElementById('profileNickDisplay').innerText=newNick; } loadContacts(); loadChatsList(); });
         refreshInterval = setInterval(()=>{ if(currentChat.id) loadChatMessages().then(renderMessages); else loadChatsList(); if(document.getElementById('contactsPanel').style.display==='flex') loadContacts(); notifyUnreadSummary(); },3000);
     }
