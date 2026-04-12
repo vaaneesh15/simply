@@ -20,6 +20,7 @@ const pool = new Pool({
 });
 
 async function initDB() {
+  // ========== Таблица users ==========
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -31,11 +32,13 @@ async function initDB() {
     );
   `);
 
-  const columnsToDrop = ['description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible', 'who_can_invite'];
-  for (const col of columnsToDrop) {
+  // Удаляем ненужные колонки из users, которые могли остаться от старой версии
+  const userColumnsToDrop = ['description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible', 'who_can_invite'];
+  for (const col of userColumnsToDrop) {
     try { await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS ${col}`); } catch (e) {}
   }
 
+  // ========== Таблица chats ==========
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chats (
       id SERIAL PRIMARY KEY,
@@ -45,6 +48,15 @@ async function initDB() {
     );
   `);
 
+  // Удаляем внешний ключ и колонку owner_nick, если они существуют
+  try {
+    await pool.query(`ALTER TABLE chats DROP CONSTRAINT IF EXISTS chats_owner_nick_fkey`);
+  } catch (e) {}
+  try {
+    await pool.query(`ALTER TABLE chats DROP COLUMN IF EXISTS owner_nick`);
+  } catch (e) {}
+
+  // ========== Таблица messages ==========
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
@@ -57,6 +69,7 @@ async function initDB() {
     );
   `);
 
+  // ========== Таблица message_reactions ==========
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_reactions (
       id SERIAL PRIMARY KEY,
@@ -68,11 +81,13 @@ async function initDB() {
     );
   `);
 
+  // ========== Удаление ненужных таблиц ==========
   const tablesToDrop = ['contacts', 'blocked_users', 'deleted_chats', 'chat_participants'];
   for (const table of tablesToDrop) {
     try { await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`); } catch (e) {}
   }
 
+  // ========== Публичный чат ==========
   const publicChat = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
   if (publicChat.rows.length === 0) {
     await pool.query(`INSERT INTO chats (type, name) VALUES ('public', 'Общий чат')`);
@@ -83,6 +98,8 @@ async function initDB() {
   console.log('✅ База данных готова (ChatX Lite)');
 }
 initDB();
+
+// ------------------- ЭНДПОИНТЫ -------------------
 
 app.post('/auth', async (req, res) => {
   const { nick, pin } = req.body;
@@ -245,6 +262,7 @@ app.post('/edit-message', async (req, res) => {
   else res.json({ success: false });
 });
 
+// ------------------- SOCKET.IO -------------------
 io.on('connection', (socket) => {
   let currentNick = null;
 
@@ -260,5 +278,6 @@ io.on('connection', (socket) => {
   socket.on('stop typing', ({ chatId }) => { socket.to(`chat:${chatId}`).emit('user stop typing', { chatId }); });
 });
 
+// ------------------- ЗАПУСК -------------------
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
