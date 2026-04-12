@@ -5,9 +5,6 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,20 +13,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage });
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -37,7 +20,6 @@ const pool = new Pool({
 });
 
 async function initDB() {
-  // ================== СОЗДАНИЕ ТАБЛИЦ ==================
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -49,20 +31,16 @@ async function initDB() {
     );
   `);
 
-  // Удаляем ненужные колонки из users, если они остались от старой версии
+  // Удаляем ненужные колонки
   const columnsToDrop = ['description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible', 'who_can_invite'];
   for (const col of columnsToDrop) {
-    try {
-      await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS ${col}`);
-    } catch (e) {
-      // игнорируем ошибки, если колонки нет
-    }
+    try { await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS ${col}`); } catch (e) {}
   }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chats (
       id SERIAL PRIMARY KEY,
-      type VARCHAR(20) NOT NULL CHECK (type IN ('public', 'private', 'notebook')),
+      type VARCHAR(20) NOT NULL CHECK (type IN ('public', 'notebook')),
       name VARCHAR(100),
       created_at TIMESTAMP DEFAULT NOW()
     );
@@ -84,10 +62,6 @@ async function initDB() {
       text TEXT,
       reply_to_id INTEGER DEFAULT NULL,
       edited BOOLEAN DEFAULT FALSE,
-      type VARCHAR(20) DEFAULT 'text',
-      file_url TEXT,
-      file_name TEXT,
-      file_size INTEGER,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
@@ -111,17 +85,13 @@ async function initDB() {
     );
   `);
 
-  // Удаляем таблицы, которые больше не нужны (контакты, блокировки и т.п.)
+  // Удаляем таблицы, которые больше не нужны
   const tablesToDrop = ['contacts', 'blocked_users'];
   for (const table of tablesToDrop) {
-    try {
-      await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
-    } catch (e) {
-      // таблицы может не быть
-    }
+    try { await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`); } catch (e) {}
   }
 
-  // Создаём публичный чат, если его нет
+  // Публичный чат
   const publicChat = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
   if (publicChat.rows.length === 0) {
     await pool.query(`INSERT INTO chats (type, name) VALUES ('public', 'Общий чат')`);
@@ -148,11 +118,6 @@ async function getOrCreateNotebook(nick) {
   }
   return notebook.rows[0].id;
 }
-
-app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ success: false });
-  res.json({ success: true, file: req.file });
-});
 
 app.post('/auth', async (req, res) => {
   const { nick, pin } = req.body;
@@ -229,105 +194,31 @@ app.delete('/delete-account', async (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/search-users', async (req, res) => {
-  const { q, nick } = req.query;
-  if (!q || !nick) return res.json([]);
-  const result = await pool.query(`
-    SELECT u.nick, u.badge FROM users u
-    WHERE u.nick ILIKE $1 AND u.nick != $2
-    LIMIT 20`, [`%${q}%`, nick]);
-  res.json(result.rows);
-});
-
-app.get('/user-profile', async (req, res) => {
-  const { nick } = req.query;
-  if (!nick) return res.json({});
-  const user = await pool.query('SELECT nick, badge FROM users WHERE nick = $1', [nick]);
-  if (user.rows.length) res.json(user.rows[0]);
-  else res.json({});
-});
-
 app.get('/chats', async (req, res) => {
   const { nick } = req.query;
   if (!nick) return res.json([]);
   
   const publicChat = await pool.query(`SELECT id, name FROM chats WHERE type = 'public'`);
   const publicChatId = publicChat.rows[0]?.id;
-  
   const notebookId = await getOrCreateNotebook(nick);
   
-  const privateChats = await pool.query(`
-    SELECT c.id, c.type, u.nick as other_nick, u.badge as other_badge
-    FROM chats c
-    JOIN chat_participants cp1 ON cp1.chat_id = c.id AND cp1.nick = $1
-    JOIN chat_participants cp2 ON cp2.chat_id = c.id AND cp2.nick != $1
-    JOIN users u ON u.nick = cp2.nick
-    WHERE c.type = 'private'
-      AND NOT EXISTS (SELECT 1 FROM deleted_chats dc WHERE dc.chat_id = c.id AND dc.nick = $1)
-  `, [nick]);
-  
   const chats = [
-    { id: publicChatId, type: 'public', name: publicChat.rows[0]?.name || 'Общий чат', other: null }
+    { id: publicChatId, type: 'public', name: publicChat.rows[0]?.name || 'Общий чат' }
   ];
   if (notebookId) {
-    chats.push({ id: notebookId, type: 'notebook', name: 'Блокнот', other: null });
+    chats.push({ id: notebookId, type: 'notebook', name: 'Блокнот' });
   }
-  privateChats.rows.forEach(row => {
-    chats.push({
-      id: row.id,
-      type: row.type,
-      name: row.other_nick,
-      other: row.other_nick
-    });
-  });
   
   for (let chat of chats) {
     const lastMsg = await pool.query(`
-      SELECT id, text, nick, type, file_name, created_at FROM messages
+      SELECT id, text, nick, created_at FROM messages
       WHERE chat_id = $1
       ORDER BY created_at DESC LIMIT 1
     `, [chat.id]);
     chat.last_message = lastMsg.rows[0] || null;
   }
   
-  // Сортировка только по времени последнего сообщения
-  chats.sort((a, b) => {
-    const aTime = a.last_message ? new Date(a.last_message.created_at).getTime() : 0;
-    const bTime = b.last_message ? new Date(b.last_message.created_at).getTime() : 0;
-    return bTime - aTime;
-  });
-  
   res.json(chats);
-});
-
-app.post('/create-private-chat', async (req, res) => {
-  const { user1, user2 } = req.body;
-  if (!user1 || !user2 || user1 === user2) return res.status(400).json({ success: false });
-  
-  // Проверка существования пользователей
-  const userExists = await pool.query('SELECT 1 FROM users WHERE nick = $1 OR nick = $2', [user1, user2]);
-  if (userExists.rowCount < 2) return res.status(404).json({ success: false, error: 'Пользователь не найден' });
-
-  const existing = await pool.query(`
-    SELECT c.id FROM chats c
-    JOIN chat_participants cp1 ON cp1.chat_id = c.id AND cp1.nick = $1
-    JOIN chat_participants cp2 ON cp2.chat_id = c.id AND cp2.nick = $2
-    WHERE c.type = 'private'
-  `, [user1, user2]);
-  
-  if (existing.rows.length > 0) {
-    // Если чат был удалён одним из участников, восстанавливаем его для текущего пользователя
-    const deleted = await pool.query(`SELECT 1 FROM deleted_chats WHERE chat_id = $1 AND nick = $2`, [existing.rows[0].id, user1]);
-    if (deleted.rows.length > 0) {
-      await pool.query(`DELETE FROM deleted_chats WHERE chat_id = $1 AND nick = $2`, [existing.rows[0].id, user1]);
-    }
-    return res.json({ success: true, chatId: existing.rows[0].id });
-  }
-  
-  const newChat = await pool.query(`INSERT INTO chats (type) VALUES ('private') RETURNING id`);
-  const chatId = newChat.rows[0].id;
-  await pool.query(`INSERT INTO chat_participants (chat_id, nick) VALUES ($1, $2), ($1, $3)`, [chatId, user1, user2]);
-  res.json({ success: true, chatId });
 });
 
 app.post('/delete-chat', async (req, res) => {
@@ -341,7 +232,7 @@ app.get('/chat-messages', async (req, res) => {
   const { chat_id, nick } = req.query;
   if (!chat_id || !nick) return res.json([]);
   const result = await pool.query(`
-    SELECT m.id, m.chat_id, m.nick, m.text, m.reply_to_id, m.edited, m.type, m.file_url, m.file_name, m.file_size, m.created_at,
+    SELECT m.id, m.chat_id, m.nick, m.text, m.reply_to_id, m.edited, m.created_at,
            COALESCE(r.reactions, '[]'::json) as reactions,
            rep.nick as reply_nick, rep.text as reply_text,
            (SELECT array_agg(reaction) FROM message_reactions WHERE message_id = m.id AND nick = $2) as user_reactions,
@@ -360,13 +251,13 @@ app.get('/chat-messages', async (req, res) => {
 });
 
 app.post('/chat-message', async (req, res) => {
-  const { chat_id, nick, text, reply_to_id, type, file_url, file_name, file_size } = req.body;
+  const { chat_id, nick, text, reply_to_id } = req.body;
   if (!chat_id || !nick) return res.status(400).json({ success: false });
   const result = await pool.query(
-    `INSERT INTO messages (chat_id, nick, text, reply_to_id, type, file_url, file_name, file_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, created_at`,
-    [chat_id, nick, text || null, reply_to_id || null, type || 'text', file_url, file_name, file_size]
+    `INSERT INTO messages (chat_id, nick, text, reply_to_id) VALUES ($1, $2, $3, $4) RETURNING id, created_at`,
+    [chat_id, nick, text || null, reply_to_id || null]
   );
-  const newMsg = { id: result.rows[0].id, chat_id, nick, text, reply_to_id: reply_to_id || null, edited: false, type: type || 'text', file_url, file_name, file_size, created_at: result.rows[0].created_at, reactions: [], user_reactions: [] };
+  const newMsg = { id: result.rows[0].id, chat_id, nick, text, reply_to_id: reply_to_id || null, edited: false, created_at: result.rows[0].created_at, reactions: [], user_reactions: [] };
   if (reply_to_id) {
     const replyMsg = await pool.query('SELECT nick, text FROM messages WHERE id = $1', [reply_to_id]);
     if (replyMsg.rows.length) { newMsg.reply_nick = replyMsg.rows[0].nick; newMsg.reply_text = replyMsg.rows[0].text; }
