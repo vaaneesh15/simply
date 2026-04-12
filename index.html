@@ -36,21 +36,11 @@
         .login-card button { width:100%; padding:0.9rem; background:var(--accent-color); border:none; border-radius:1rem; color:white; font-weight:600; font-size:1rem; }
         .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
         .app-container { height:100%; display:flex; flex-direction:column; background:var(--bg-page); position:relative; overflow:hidden; }
-        .panel { flex:1; display:flex; flex-direction:column; overflow-y:auto; padding:0.8rem; padding-bottom:5rem; }
-        .panel-header { padding-bottom:0.8rem; border-bottom:1px solid var(--border-light); margin-bottom:0.8rem; }
-        .panel-title { font-size:1.8rem; font-weight:700; margin-bottom:0.3rem; }
-        .nav-bar { display:flex; background:var(--input-bg); border-top:1px solid var(--border-light); padding:0.5rem 0; padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px)); position:fixed; bottom:0; left:0; right:0; z-index:100; }
-        .nav-bar.hidden { display:none; }
-        .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--text-secondary); font-size:0.7rem; padding:0.3rem; border-radius:0.5rem; transition:all 0.1s; }
-        .nav-item.active { color:var(--accent-color); }
-        .nav-item svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.8; fill:none; }
-        .chat-view { display:none; flex-direction:column; height:100%; position:absolute; top:0; left:0; right:0; bottom:0; background:var(--bg-page); z-index:50; }
-        .chat-header { display:flex; align-items:center; padding:0.8rem 1rem; background:var(--input-bg); border-bottom:1px solid var(--border-light); border-top:1px solid var(--border-light); }
-        .back-btn { background:var(--bg-page); border:none; color:var(--accent-color); font-size:1.5rem; width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:0.8rem; cursor:pointer; border:0.5px solid var(--border-light); }
-        .chat-header-info { flex:1; }
-        .chat-header-name { font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer; }
-        .unread-dot { width:10px; height:10px; border-radius:50%; background:var(--accent-color); display:inline-block; margin-left:6px; }
-        .chat-header-status { font-size:0.75rem; color:var(--text-secondary); }
+        .main-layout { display:flex; height:100%; padding-bottom:70px; }
+        .sidebar { width:100px; background:var(--input-bg); border-right:1px solid var(--border-light); overflow-y:auto; padding:0.5rem; }
+        .chat-area { flex:1; display:flex; flex-direction:column; background:var(--bg-page); }
+        .chat-header { display:flex; align-items:center; padding:0.8rem 1rem; background:var(--input-bg); border-bottom:1px solid var(--border-light); }
+        .chat-header-name { font-weight:600; }
         .chat-messages { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:14px; }
         .message-item { display:flex; flex-direction:column; width:100%; position:relative; background:transparent; }
         .message-text.highlight { color:var(--accent-color)!important; transition:color 0.2s; }
@@ -102,8 +92,6 @@
         .context-menu-buttons button { background:var(--bg-page); border:1px solid var(--border-light); padding:0.8rem 1rem; border-radius:1rem; font-size:1rem; color:var(--text-primary); display:flex; align-items:center; gap:14px; cursor:pointer; }
         .context-menu-buttons button:active { background:rgba(128,128,128,0.2); }
         .context-menu-buttons svg { width:1.3rem; height:1.3rem; stroke:currentColor; stroke-width:1.5; fill:none; }
-        .context-message-nick { font-size:1rem; margin-bottom:0.5rem; }
-        .context-message-preview { font-size:0.9rem; color:var(--text-secondary); padding:0.5rem 0; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light); margin-bottom:0.5rem; word-break:break-word; }
         .reactions-picker { display:grid; grid-template-columns:repeat(5,1fr); gap:0.6rem; justify-items:center; margin-bottom:1.2rem; }
         .reactions-picker button { background:none; border:none; font-size:1.8rem; cursor:pointer; padding:0.4rem; border-radius:1rem; }
         .settings-container { display:flex; flex-direction:column; gap:0; }
@@ -120,40 +108,24 @@
         .slider:before { position:absolute; content:""; height:22px; width:22px; left:2px; bottom:2px; background:white; transition:0.2s; border-radius:50%; }
         input:checked + .slider { background:var(--accent-color); }
         input:checked + .slider:before { transform:translateX(26px); }
-        .contact-item, .chat-item { display:flex; align-items:center; justify-content:space-between; padding:0.8rem 0; border-bottom:1px solid var(--border-light); }
-        .contact-info, .chat-info { flex:1; display:flex; align-items:center; gap:8px; }
-        .contact-name { font-weight:500; display:flex; align-items:center; gap:6px; }
-        .chat-preview { font-size:0.8rem; color:var(--text-secondary); margin-top:0.2rem; display:flex; align-items:center; justify-content:space-between; width:100%; }
-        .chat-time { font-size:0.75rem; color:var(--text-secondary); margin-left:8px; white-space:nowrap; }
-        .contact-actions { display:flex; gap:8px; }
-        .contact-actions button { background:none; border:none; color:var(--text-primary); font-size:1.2rem; padding:0.3rem; }
-        .search-input { width:100%; padding:0.7rem 1rem; background:var(--input-bg); border:1px solid var(--border-light); border-radius:1rem; color:var(--text-primary); font-size:1rem; margin-bottom:0.8rem; }
+        .chat-item { display:flex; align-items:center; justify-content:space-between; padding:0.8rem 0; border-bottom:1px solid var(--border-light); cursor:pointer; }
+        .chat-item.active { background:rgba(107,159,255,0.1); border-radius:0.5rem; }
+        .chat-info { flex:1; display:flex; align-items:center; gap:8px; }
+        .chat-preview { font-size:0.8rem; color:var(--text-secondary); margin-top:0.2rem; }
+        .unread-dot { width:10px; height:10px; border-radius:50%; background:var(--accent-color); display:inline-block; margin-left:6px; }
         .profile-menu-btn { background:var(--bg-page); border:1px solid var(--border-light); border-radius:1rem; padding:0.8rem 1rem; font-size:1rem; color:var(--text-primary); display:flex; align-items:center; gap:14px; cursor:pointer; width:100%; }
         .profile-menu-btn svg { width:1.4rem; height:1.4rem; stroke:currentColor; stroke-width:1.5; fill:none; }
         .modal-back-btn { background:var(--bg-page); border:none; color:var(--accent-color); font-size:1.5rem; width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:0.5px solid var(--border-light); }
-        .chat-menu-modal .modal-content { max-width:320px; }
-        .user-badge { margin-right:4px; font-size:1.1rem; }
         select, .badge-select { background:var(--bg-page); border:1px solid var(--border-light); border-radius:1rem; padding:0.5rem 0.8rem; color:var(--text-primary); font-size:0.9rem; width:125px; outline:none; -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0.8rem center; background-size:1rem; }
         #badgeSelect { width:162px; }
         .fullscreen .modal-content > div:first-child { display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem; }
         .fullscreen .modal-content > div:first-child h3 { margin-left:0.5rem; margin-bottom:0; line-height:2.5rem; }
         .fullscreen .modal-back-btn { margin-right:0.5rem; }
-        .context-message-preview { border-bottom:1px solid var(--border-light); }
-        .attach-btn { background:none; border:none; color:var(--text-secondary); width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; }
-        .attach-btn svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.5; fill:none; }
-        .file-message { display:flex; align-items:center; gap:12px; padding:8px 0; }
-        .file-icon { width:40px; height:40px; background:var(--input-bg); border-radius:8px; display:flex; align-items:center; justify-content:center; }
-        .file-info { flex:1; }
-        .file-name { font-weight:500; }
-        .file-size { font-size:0.8rem; color:var(--text-secondary); }
-        .open-file-btn { background:var(--accent-color); border:none; padding:0.4rem 1rem; border-radius:1rem; color:white; font-size:0.9rem; }
-        .profile-modal .modal-content { text-align:left; }
-        .profile-badge { font-size:3rem; margin-bottom:0.5rem; text-align:center; }
-        .profile-nick { font-size:1.5rem; font-weight:600; margin-bottom:0.5rem; text-align:center; }
-        .profile-actions { display:flex; flex-direction:column; gap:0.6rem; }
-        .profile-actions button { background:var(--bg-page); border:1px solid var(--border-light); padding:0.8rem 1rem; border-radius:1rem; font-size:1rem; color:var(--text-primary); display:flex; align-items:center; gap:14px; cursor:pointer; }
-        .profile-actions button svg { width:1.3rem; height:1.3rem; stroke:currentColor; stroke-width:1.5; fill:none; }
-        .write-btn { background:transparent; border:1px solid var(--border-light); border-radius:1.5rem; padding:0.3rem 0.8rem; color:var(--text-primary); font-size:0.9rem; }
+        .nav-bar { display:flex; background:var(--input-bg); border-top:1px solid var(--border-light); padding:0.5rem 0; padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px)); position:fixed; bottom:0; left:0; right:0; z-index:100; }
+        .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--text-secondary); font-size:0.7rem; padding:0.3rem; border-radius:0.5rem; transition:all 0.1s; }
+        .nav-item.active { color:var(--accent-color); }
+        .nav-item svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.8; fill:none; }
+        .user-badge { margin-right:4px; font-size:1.1rem; }
     </style>
 </head>
 <body>
@@ -167,106 +139,74 @@
     </div>
 </div>
 <div id="appContainer" class="app-container" style="display:none;">
-    <div id="chatsPanel" class="panel" style="display:flex;">
-        <div class="panel-header">
-            <div class="panel-title">Чаты</div>
-            <input type="text" id="chatSearchInput" class="search-input" placeholder="Поиск...">
+    <div class="main-layout">
+        <div class="sidebar" id="sidebar">
+            <!-- Чаты будут вставлены динамически -->
         </div>
-        <div id="chatsListContainer"></div>
-        <div id="userSearchResults" style="margin-top:1rem;"></div>
-    </div>
-    <div id="profilePanel" class="panel" style="display:none;">
-        <div class="panel-header">
-            <div class="panel-title" id="profileNickDisplay"></div>
-        </div>
-        <div class="settings-container">
-            <div class="setting-row"><button id="openSelfExpressionBtn" class="profile-menu-btn"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</button></div>
-            <div class="setting-row"><button id="openStyleSettingsBtn" class="profile-menu-btn"><svg viewBox="0 0 24 24"><path d="M15 3l5 5-8 8H8v-4l7-7z"/><path d="M4 20h16"/></svg>Оформление</button></div>
-        </div>
-    </div>
-    <div id="chatView" class="chat-view">
-        <div class="chat-header">
-            <button class="back-btn" id="backFromChatBtn">←</button>
-            <div class="chat-header-info">
-                <div class="chat-header-name" id="chatTitle"></div>
-                <div class="chat-header-status" id="chatStatus"></div>
+        <div class="chat-area" id="chatArea">
+            <div class="chat-header">
+                <div class="chat-header-name" id="chatTitle">Общий чат</div>
             </div>
-        </div>
-        <div class="chat-messages" id="messagesContainer"></div>
-        <div class="typing-indicator hidden" id="typingIndicator"></div>
-        <div class="input-wrapper">
-            <div class="input-row">
-                <button class="attach-btn" id="attachBtn"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
-                <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
-                <button class="send-btn" id="sendBtn">↑</button>
+            <div class="chat-messages" id="messagesContainer"></div>
+            <div class="typing-indicator hidden" id="typingIndicator"></div>
+            <div class="input-wrapper">
+                <div class="input-row">
+                    <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
+                    <button class="send-btn" id="sendBtn">↑</button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="nav-bar" id="mainNavBar">
-        <button class="nav-item active" data-tab="chats" id="chatsTabBtn"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span>Чаты</span></button>
-        <button class="nav-item" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Настройки</span></button>
+    <div class="nav-bar">
+        <button class="nav-item active" data-tab="chats"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span>Чаты</span></button>
+        <button class="nav-item" data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Настройки</span></button>
     </div>
 </div>
+
 <!-- Модальные окна -->
 <div id="confirmModal" class="modal modal-top"><div class="modal-content"><h3 id="confirmTitle">Подтверждение</h3><p id="confirmMessage">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">OK</button></div></div></div>
 <div id="pinConfirmModal" class="modal modal-top"><div class="modal-content"><h3>Введите PIN</h3><div class="modal-setting"><input type="password" id="pinConfirmInput" placeholder="PIN" maxlength="4"></div><div class="modal-buttons"><button id="pinConfirmCancelBtn">Отмена</button><button id="pinConfirmOkBtn">Подтвердить</button></div></div></div>
 <div id="reactionPickerModal" class="modal"><div class="modal-content"><h3>Реакция</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div>
 <div id="contextMenuModal" class="modal"><div class="modal-content"><div id="contextMessageNick"></div><div id="contextMessagePreview"></div><div class="context-menu-buttons" id="contextMenuButtons"></div></div></div>
-<div id="chatMenuModal" class="modal chat-menu-modal"><div class="modal-content"><div style="margin-bottom:1rem; font-weight:600;" id="chatMenuNick"></div><div class="context-menu-buttons" id="chatMenuButtons"></div></div></div>
 <div id="changeNickModal" class="modal modal-top"><div class="modal-content"><h3>Сменить ник</h3><div class="modal-setting"><input type="text" id="newNickInput" placeholder="Новый ник"></div><div class="modal-buttons"><button id="cancelNickChangeBtn">Отмена</button><button id="applyNickChangeBtn">Применить</button></div></div></div>
-<div id="userProfileModal" class="modal profile-modal"><div class="modal-content"><div class="profile-badge" id="profileBadge"></div><div class="profile-nick" id="profileNick"></div><div class="profile-actions"><button id="profileWriteBtn"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Написать</button><button id="profileCloseBtn">Закрыть</button></div></div></div>
-<!-- Полноэкранные модалки настроек -->
-<div id="selfExpressionModal" class="modal fullscreen">
+<div id="settingsModal" class="modal fullscreen">
     <div class="modal-content">
         <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
-            <button id="closeSelfExpressionBtn" class="modal-back-btn">←</button>
-            <h3 style="margin-left:0.5rem;">Профиль</h3>
+            <button id="closeSettingsBtn" class="modal-back-btn">←</button>
+            <h3 style="margin-left:0.5rem;">Настройки</h3>
         </div>
-        <div class="setting-row">
-            <div class="setting-header"><span class="setting-label">Ник</span><button id="openChangeNickModalBtn">Изменить</button></div>
-        </div>
-        <div class="setting-row">
-            <div class="setting-header"><span class="setting-label">Значок</span>
-                <select id="badgeSelect" class="badge-select">
-                    <option value="" selected>Отсутствует</option>
-                    <option value="⭐">⭐ Звезда</option>
-                    <option value="❤️">❤️ Сердечко</option>
-                    <option value="🔥">🔥 Огонёк</option>
-                    <option value="🍀">🍀 Листочек</option>
-                    <option value="⚡">⚡ Молния</option>
-                    <option value="🌹">🌹 Розочка</option>
-                    <option value="⛔️">⛔️ СТОП</option>
-                    <option value="🎁">🎁 Подарок</option>
-                    <option value="🎉">🎉 Конфетти</option>
-                </select>
-            </div>
-        </div>
-        <div class="setting-row">
-            <button id="changePinBtn" class="profile-menu-btn" style="justify-content:flex-start;">Сменить PIN</button>
-        </div>
-        <div class="setting-row">
-            <button id="logoutBtn" class="profile-menu-btn" style="justify-content:flex-start;">Выйти из аккаунта</button>
-        </div>
-        <div class="setting-row">
-            <button id="deleteAccountBtn" class="profile-menu-btn" style="color:#ff375f; justify-content:flex-start;">Удалить аккаунт</button>
-        </div>
+        <div class="setting-row"><button id="openProfileBtn" class="profile-menu-btn"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</button></div>
+        <div class="setting-row"><button id="openAppearanceBtn" class="profile-menu-btn"><svg viewBox="0 0 24 24"><path d="M15 3l5 5-8 8H8v-4l7-7z"/><path d="M4 20h16"/></svg>Оформление</button></div>
     </div>
 </div>
-<div id="styleSettingsModal" class="modal fullscreen">
+<div id="profileModal" class="modal fullscreen">
     <div class="modal-content">
         <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
-            <button id="closeStyleSettingsBtn" class="modal-back-btn">←</button>
+            <button id="closeProfileModalBtn" class="modal-back-btn">←</button>
+            <h3 style="margin-left:0.5rem;">Профиль</h3>
+        </div>
+        <div class="setting-row"><div class="setting-header"><span class="setting-label">Ник</span><button id="openChangeNickModalBtn">Изменить</button></div></div>
+        <div class="setting-row"><div class="setting-header"><span class="setting-label">Значок</span><select id="badgeSelect" class="badge-select"><option value="" selected>Отсутствует</option><option value="⭐">⭐ Звезда</option><option value="❤️">❤️ Сердечко</option><option value="🔥">🔥 Огонёк</option><option value="🍀">🍀 Листочек</option><option value="⚡">⚡ Молния</option><option value="🌹">🌹 Розочка</option><option value="⛔️">⛔️ СТОП</option><option value="🎁">🎁 Подарок</option><option value="🎉">🎉 Конфетти</option></select></div></div>
+        <div class="setting-row"><button id="changePinBtn" class="profile-menu-btn" style="justify-content:flex-start;">Сменить PIN</button></div>
+        <div class="setting-row"><button id="logoutBtn" class="profile-menu-btn" style="justify-content:flex-start;">Выйти из аккаунта</button></div>
+        <div class="setting-row"><button id="deleteAccountBtn" class="profile-menu-btn" style="color:#ff375f; justify-content:flex-start;">Удалить аккаунт</button></div>
+    </div>
+</div>
+<div id="appearanceModal" class="modal fullscreen">
+    <div class="modal-content">
+        <div style="display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">
+            <button id="closeAppearanceModalBtn" class="modal-back-btn">←</button>
             <h3 style="margin-left:0.5rem;">Оформление</h3>
         </div>
         <div class="setting-row"><div class="setting-header"><span class="setting-label">Показывать дату</span><label class="switch"><input type="checkbox" id="showDateToggle"><span class="slider"></span></label></div></div>
         <div class="setting-row"><div class="setting-header"><span class="setting-label">Реакции</span><label class="switch"><input type="checkbox" id="showReactionsToggle" checked><span class="slider"></span></label></div></div>
         <div class="setting-row"><div class="setting-header"><span class="setting-label">Показывать время</span><label class="switch"><input type="checkbox" id="showTimeToggle" checked><span class="slider"></span></label></div></div>
         <div class="setting-row"><div class="setting-header"><span class="setting-label">Значки</span><label class="switch"><input type="checkbox" id="showBadgesToggle" checked><span class="slider"></span></label></div></div>
-        <div class="setting-row"><div class="setting-header"><span class="setting-label">Быстрая реакция</span><select id="quickReactionSelect" class="badge-select"><option value="">Нет</option><option value="❤️">❤️</option><option value="🔥">🔥</option><option value="👍">👍</option><option value="👎">👎</option><option value="👌">👌</option><option value="🖕">🖕</option><option value="👀">👀</option><option value="😁">😁</option><option value="😭">😭</option><option value="😔">😔</option><option value="😩">😩</option><option value="😳">😳</option><option value="😠">😠</option><option value="😨">😨</option><option value="💩">💩</option><option value="👻">👻</option><option value="👽">👽</option><option value="👾">👾</option><option value="💋">💋</option><option value="💊">💊</option></select></div></div>
         <div class="setting-row"><div class="setting-header"><span class="setting-label">Оттенок</span><select id="accentColorSelect" class="badge-select"><option value="#6B9FFF" selected>Небо</option><option value="#FF9F9F">Алый</option><option value="#FFB87C">Медный</option><option value="#FFA6C9">Пинки</option><option value="#6CD4C5">Мята</option><option value="#C9A6FF">Лаванда</option></select></div></div>
     </div>
 </div>
 <div id="changePinModal" class="modal"><div class="modal-content"><h3>Смена PIN</h3><div class="modal-setting"><label>Старый PIN</label><input type="password" id="oldPinInput" placeholder="Старый PIN" maxlength="4"></div><div class="modal-setting"><label>Новый PIN</label><input type="password" id="newPinInput" placeholder="Новый PIN" maxlength="4"></div><div class="modal-buttons"><button id="cancelPinBtn">Отмена</button><button id="applyPinBtn">Применить</button></div></div></div>
+
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
 (function() {
@@ -283,12 +223,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let socket = null;
     let currentUser = { nick: "", badge: "" };
     let authToken = localStorage.getItem('chatxlite_token');
-    let appSettings = JSON.parse(localStorage.getItem('chatxlite_settings')) || { showDate: true, showReactions: true, showTime: true, showBadges: true, quickReaction: '', accentColor: '#6B9FFF' };
+    let appSettings = JSON.parse(localStorage.getItem('chatxlite_settings')) || { showDate: true, showReactions: true, showTime: true, showBadges: true, accentColor: '#6B9FFF' };
     let messages = [];
-    let currentChat = { id: null, type: null, other: null, name: '' };
+    let currentChat = { id: null, type: null, name: '' };
     let chatsList = [];
     let lastReadMessage = JSON.parse(localStorage.getItem('last_read_message')) || {};
-    let chatSearchQuery = '';
     let editingMessage = null;
     let pendingDeleteMessageId = null;
     let currentReactionMessage = null;
@@ -296,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let typingTimeout = null;
     let refreshInterval = null;
     let pendingAction = null;
-    let selectedChatForMenu = null;
 
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
@@ -325,143 +263,53 @@ document.addEventListener('DOMContentLoaded', function() {
             return `${day}.${mon}.${y} ${timeStr}`;
         } else return timeStr;
     }
-    function formatFileSize(b) { return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB'; }
-    function truncateFileName(name) {
-        const lastDot = name.lastIndexOf('.');
-        if(lastDot === -1) return name.length > 16 ? name.slice(0,14)+'…' : name;
-        const ext = name.slice(lastDot);
-        const base = name.slice(0, lastDot);
-        if(base.length > 14) return base.slice(0,14)+'…'+ext;
-        return name;
-    }
 
     function hasUnreadMessages(chat) { if(!chat.last_message) return false; if(chat.last_message.nick === currentUser.nick) return false; const lastId = chat.last_message.id, readId = lastReadMessage[chat.id]||0; return lastId > readId; }
 
-    function showTab(tabId) {
-        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-        document.getElementById(tabId+'Panel').style.display = 'flex';
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
-        if(tabId === 'chats') { document.getElementById('chatSearchInput').value=''; chatSearchQuery=''; loadChatsList(); document.getElementById('userSearchResults').innerHTML=''; document.getElementById('chatsListContainer').style.display='block'; }
-        else if(tabId === 'profile') { document.getElementById('profileNickDisplay').innerText = currentUser.nick; }
-        if(currentChat.id) closeChatView();
-    }
-    function closeChatView() {
-        document.getElementById('chatView').style.display = 'none';
-        document.getElementById('mainNavBar').classList.remove('hidden');
-        if(currentChat.id) {
-            socket.emit('leave chat', currentChat.id);
-            if(messages.length) { const lm = messages[messages.length-1]; lastReadMessage[currentChat.id] = lm.id; localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage)); }
-            currentChat = { id:null, type:null, other:null, name:'' };
-        }
-        showTab('chats');
-        document.getElementById('chatSearchInput').value = ''; chatSearchQuery = '';
-        loadChatsList();
-        document.getElementById('userSearchResults').innerHTML = '';
-        document.getElementById('chatsListContainer').style.display = 'block';
-    }
-
     async function loadChatsList() {
-        try { const r = await fetch(`/chats?nick=${encodeURIComponent(currentUser.nick)}`); chatsList = await r.json(); renderChatsList(); } catch(e){}
+        try { const r = await fetch(`/chats?nick=${encodeURIComponent(currentUser.nick)}`); chatsList = await r.json(); renderSidebar(); } catch(e){}
     }
-    function renderChatsList() {
-        const cont = document.getElementById('chatsListContainer');
-        const q = chatSearchQuery.toLowerCase();
-        let filt = chatsList.filter(c => c.name.toLowerCase().includes(q));
-        filt.sort((a,b)=>{
-            const at = a.last_message ? new Date(a.last_message.created_at).getTime() : 0;
-            const bt = b.last_message ? new Date(b.last_message.created_at).getTime() : 0;
-            return bt - at;
-        });
+    function renderSidebar() {
+        const sidebar = document.getElementById('sidebar');
         let html = '';
-        filt.forEach(c=>{
-            let preview = '', timeStr = '';
-            if(c.last_message) {
-                const own = c.last_message.nick === currentUser.nick;
-                const pre = (c.type!=='private'?c.last_message.nick+': ': (own?'Вы: ':''));
-                if(c.last_message.type==='file') preview = `📎 ${c.last_message.file_name||'Файл'}`;
-                else preview = pre + (c.last_message.text?.length>30?c.last_message.text.slice(0,30)+'…':c.last_message.text);
-                timeStr = formatTimestamp(c.last_message.created_at, appSettings.showDate, appSettings.showTime);
-            }
+        chatsList.forEach(c => {
             const unread = hasUnreadMessages(c) ? '<span class="unread-dot"></span>' : '';
-            html += `<div class="chat-item clickable" data-chat-id="${c.id}" data-chat-type="${c.type}" data-other="${c.other||''}" data-name="${escapeHtml(c.name)}">
-                <div class="chat-info"><div style="flex:1"><div class="friend-name">${escapeHtml(c.name)}${unread}</div><div class="chat-preview"><span>${escapeHtml(preview)}</span><span class="chat-time">${timeStr}</span></div></div></div>
+            const activeClass = currentChat.id === c.id ? 'active' : '';
+            html += `<div class="chat-item ${activeClass}" data-chat-id="${c.id}" data-chat-type="${c.type}" data-name="${escapeHtml(c.name)}">
+                <div class="chat-info"><div>${escapeHtml(c.name)}${unread}</div></div>
             </div>`;
         });
-        cont.innerHTML = html || '<div style="color:var(--text-secondary);text-align:center;">Нет чатов</div>';
+        sidebar.innerHTML = html || '<div>Нет чатов</div>';
         document.querySelectorAll('.chat-item').forEach(el => {
-            el.addEventListener('click', e => {
-                const chat = { id: +el.dataset.chatId, type: el.dataset.chatType, other: el.dataset.other||null, name: el.dataset.name };
+            el.addEventListener('click', () => {
+                const chat = { id: +el.dataset.chatId, type: el.dataset.chatType, name: el.dataset.name };
                 openChat(chat);
             });
-            let timer;
-            el.addEventListener('touchstart', e => { timer = setTimeout(() => { const id=+el.dataset.chatId, o=el.dataset.other, t=el.dataset.chatType; selectedChatForMenu={id,other:o,type:t}; openChatMenu(id,o,t); }, 500); });
-            el.addEventListener('touchend', ()=>clearTimeout(timer));
-            el.addEventListener('touchcancel', ()=>clearTimeout(timer));
-            el.addEventListener('mousedown', e => { timer = setTimeout(() => { const id=+el.dataset.chatId, o=el.dataset.other, t=el.dataset.chatType; selectedChatForMenu={id,other:o,type:t}; openChatMenu(id,o,t); }, 500); });
-            el.addEventListener('mouseup', ()=>clearTimeout(timer));
-            el.addEventListener('mouseleave', ()=>clearTimeout(timer));
+            if (el.dataset.chatType === 'notebook') {
+                let timer;
+                el.addEventListener('touchstart', e => { timer = setTimeout(() => { showConfirm('Удалить блокнот?', async () => { await fetch('/delete-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:el.dataset.chatId,nick:currentUser.nick})}); loadChatsList(); if(currentChat.id == el.dataset.chatId) openChat(chatsList[0]); }); }, 500); });
+                el.addEventListener('touchend', ()=>clearTimeout(timer));
+                el.addEventListener('touchcancel', ()=>clearTimeout(timer));
+                el.addEventListener('mousedown', e => { timer = setTimeout(() => { showConfirm('Удалить блокнот?', async () => { await fetch('/delete-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:el.dataset.chatId,nick:currentUser.nick})}); loadChatsList(); if(currentChat.id == el.dataset.chatId) openChat(chatsList[0]); }); }, 500); });
+                el.addEventListener('mouseup', ()=>clearTimeout(timer));
+                el.addEventListener('mouseleave', ()=>clearTimeout(timer));
+            }
         });
     }
 
     async function openChat(chat) {
+        if(currentChat.id) {
+            socket.emit('leave chat', currentChat.id);
+            if(messages.length) { const lm = messages[messages.length-1]; lastReadMessage[currentChat.id] = lm.id; localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage)); }
+        }
         currentChat = chat;
-        document.getElementById('chatsPanel').style.display = 'none';
-        document.getElementById('chatView').style.display = 'flex';
-        document.getElementById('mainNavBar').classList.add('hidden');
         document.getElementById('chatTitle').innerHTML = escapeHtml(chat.name);
-        document.getElementById('chatStatus').innerText = '';
         socket.emit('join chat', chat.id);
         messages = []; renderMessages(); await loadChatMessages(); renderMessages();
         if(messages.length) { const lm = messages[messages.length-1]; lastReadMessage[chat.id] = lm.id; localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage)); }
-        document.querySelector('.input-wrapper').style.display = 'block';
+        renderSidebar();
     }
     async function loadChatMessages() { if(!currentChat.id) return; try { const r = await fetch(`/chat-messages?chat_id=${currentChat.id}&nick=${encodeURIComponent(currentUser.nick)}`); messages = await r.json(); } catch(e){} }
-
-    async function openChatMenu(chatId, other, type) {
-        const cont = document.getElementById('chatMenuButtons');
-        document.getElementById('chatMenuNick').innerText = other || currentChat.name;
-        let html = '';
-        if(type==='private' && other) {
-            html += `<button id="chatMenuDelete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>`;
-        }
-        html += `<button id="chatMenuClose"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Закрыть</button>`;
-        cont.innerHTML = html;
-        if(type==='private' && other) {
-            document.getElementById('chatMenuDelete').onclick = async ()=>{ await fetch('/delete-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,nick:currentUser.nick})}); document.getElementById('chatMenuModal').style.display='none'; loadChatsList(); if(currentChat.id===chatId) closeChatView(); };
-        }
-        document.getElementById('chatMenuClose').onclick = ()=> document.getElementById('chatMenuModal').style.display='none';
-        document.getElementById('chatMenuModal').style.display='flex';
-    }
-
-    async function searchUsers(query) {
-        if(!query) { document.getElementById('userSearchResults').innerHTML=''; document.getElementById('chatsListContainer').style.display='block'; return; }
-        document.getElementById('chatsListContainer').style.display='none';
-        const r = await fetch(`/search-users?q=${encodeURIComponent(query)}&nick=${encodeURIComponent(currentUser.nick)}`);
-        const users = await r.json();
-        let html = '';
-        users.forEach(u => {
-            html += `<div class="contact-item"><div class="contact-info"><span class="user-badge">${u.badge||''}</span><span class="contact-name">${escapeHtml(u.nick)}</span></div><div class="contact-actions"><button class="write-search" data-nick="${u.nick}"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></button></div></div>`;
-        });
-        document.getElementById('userSearchResults').innerHTML = html;
-        document.querySelectorAll('.write-search').forEach(b=>b.onclick=()=>createPrivateChat(b.dataset.nick));
-        document.querySelectorAll('.contact-name, .user-badge').forEach(el=>el.addEventListener('click',()=>showUserProfile(el.closest('.contact-item').querySelector('.contact-name').innerText)));
-    }
-
-    async function showUserProfile(nick) {
-        const r = await fetch(`/user-profile?nick=${encodeURIComponent(nick)}`); const d = await r.json();
-        document.getElementById('profileBadge').innerText = d.badge||''; document.getElementById('profileNick').innerText = d.nick;
-        const writeBtn = document.getElementById('profileWriteBtn');
-        writeBtn.onclick = ()=>{ document.getElementById('userProfileModal').style.display='none'; createPrivateChat(nick); };
-        document.getElementById('profileCloseBtn').onclick = ()=> document.getElementById('userProfileModal').style.display='none';
-        document.getElementById('userProfileModal').style.display='flex';
-    }
-
-    async function createPrivateChat(nick) {
-        const r = await fetch('/create-private-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user1:currentUser.nick,user2:nick})});
-        const d = await r.json();
-        if(d.success) openChat({id:d.chatId, type:'private', other:nick, name:nick});
-        else showAlert(d.error||'Не удалось');
-    }
 
     function renderMessages() {
         const cont = document.getElementById('messagesContainer'); if(!cont) return;
@@ -476,11 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let reacts = '';
             if(showReact && msg.reactions?.length) { reacts = '<div class="reactions-container">'; msg.reactions.sort((a,b)=>b.count-a.count).forEach(r=>{ const ur = msg.user_reactions?.includes(r.reaction); reacts += `<button class="reaction-badge ${ur?'user-reacted':''}" data-reaction="${r.reaction}" data-message="${msg.id}"><span>${r.reaction}</span> <span class="reaction-count">${r.count}</span></button>`; }); reacts += '</div>'; }
             const timeStr = formatTimestamp(msg.created_at, appSettings.showDate, appSettings.showTime);
-            let content = '';
-            if(msg.type==='file'||msg.type==='media') {
-                const displayName = truncateFileName(msg.file_name);
-                content = `<div class="file-message"><div class="file-icon">📎</div><div class="file-info"><div class="file-name">${escapeHtml(displayName)}</div><div class="file-size">${formatFileSize(msg.file_size)}</div></div><button class="open-file-btn" data-url="${msg.file_url}">Открыть</button></div>`;
-            } else content = `<div class="message-text">${linkify(escapeHtml(msg.text||''))}</div>`;
+            const content = `<div class="message-text">${linkify(escapeHtml(msg.text||''))}</div>`;
             const badge = (msg.nick === currentUser.nick) ? (currentUser.badge||'') : (msg.user_badge||'');
             const header = appSettings.showBadges ? `<div class="message-header"><div class="message-nick"><span class="user-badge">${badge}</span><span class="nick-main">${escapeHtml(msg.nick)}</span></div></div>` : `<div class="message-header"><div class="message-nick"><span class="nick-main">${escapeHtml(msg.nick)}</span></div></div>`;
             div.innerHTML = `${header}${reply}${content}<div class="message-footer"><div class="footer-left">${reacts}</div><div class="footer-right">${timeStr?`<span class="timestamp">${timeStr}</span>`:''}${msg.edited?'<span class="edited-badge">изменено</span>':''}</div></div><div class="message-divider"></div>`;
@@ -489,16 +333,11 @@ document.addEventListener('DOMContentLoaded', function() {
             act.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>';
             act.onclick = e => { e.stopPropagation(); showContextMenu(msg, own); };
             div.appendChild(act);
-            div.addEventListener('dblclick', e => {
-                if(appSettings.quickReaction) addReaction(msg.id, appSettings.quickReaction);
-                else { currentReactionMessage = msg.id; showReactionPicker(); }
-            });
         });
-        attachReactionEvents(); attachFileButtons();
-        document.querySelectorAll('.message-nick .nick-main, .message-nick .user-badge').forEach(el=>el.addEventListener('click',()=>showUserProfile(el.closest('.message-item').dataset.nick)));
+        attachReactionEvents();
         document.querySelectorAll('.reply-context').forEach(el=>el.addEventListener('click',()=>scrollToMessage(+el.dataset.message)));
+        cont.scrollTop = cont.scrollHeight;
     }
-    function attachFileButtons() { document.querySelectorAll('.open-file-btn').forEach(b=>b.onclick=()=>window.open(b.dataset.url,'_blank')); }
     function attachReactionEvents() { if(!appSettings.showReactions) return; document.querySelectorAll('.reaction-badge').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); addReaction(+b.dataset.message, b.dataset.reaction); })); }
     async function addReaction(msgId, reaction) {
         const r = await fetch('/add-reaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:msgId, nick:currentUser.nick, reaction, isRoom:false})});
@@ -508,27 +347,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessage() { const inp = document.getElementById('messageInput'); const text = inp.value.trim(); if(!text && !replyingTo && !editingMessage) return; if(!currentChat.id) return; if(editingMessage) { editMessage(editingMessage.id, text); editingMessage=null; inp.value=''; autoResize(inp); hideEditIndicator(); inp.focus(); return; } fetch('/chat-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:currentChat.id, nick:currentUser.nick, text, reply_to_id:replyingTo?.messageId, type:'text'})}); replyingTo=null; hideReplyIndicator(); inp.value=''; autoResize(inp); onTyping(false); inp.focus(); }
     async function editMessage(id, newText) { await fetch('/edit-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:id, nick:currentUser.nick, newText})}); }
     function showContextMenu(msg, own) {
-        const isMedia = msg.type === 'file' || msg.type === 'media';
-        const showR = appSettings.showReactions !== false;
         document.getElementById('contextMessageNick').innerHTML = escapeHtml(msg.nick);
-        document.getElementById('contextMessagePreview').innerHTML = isMedia ? `📎 ${msg.file_name}` : linkify(escapeHtml((msg.text||'').slice(0,150)))+((msg.text||'').length>150?'…':'');
+        document.getElementById('contextMessagePreview').innerHTML = linkify(escapeHtml((msg.text||'').slice(0,150)))+((msg.text||'').length>150?'…':'');
         const cont = document.getElementById('contextMenuButtons');
-        let html = showR?`<button id="ctx-react"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Реакция</button>`:'';
-        if(!isMedia) {
-            html += `<button id="ctx-reply"><svg viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/></svg>Ответить</button>`;
-            if(own) html += `<button id="ctx-edit"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg>Редактировать</button>`;
-        }
+        let html = `<button id="ctx-react"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Реакция</button>`;
+        html += `<button id="ctx-reply"><svg viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/></svg>Ответить</button>`;
+        if(own) html += `<button id="ctx-edit"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg>Редактировать</button>`;
         html += `<button id="ctx-copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Скопировать</button>`;
         if(own) html += `<button id="ctx-delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить</button>`;
         html += `<button id="ctx-close"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Закрыть</button>`;
         cont.innerHTML = html;
         const modal = document.getElementById('contextMenuModal');
-        if(showR) document.getElementById('ctx-react').onclick = ()=>{ currentReactionMessage=msg.id; showReactionPicker(); modal.style.display='none'; };
-        if(!isMedia) {
-            document.getElementById('ctx-reply').onclick = ()=>{ if(editingMessage){editingMessage=null;hideEditIndicator();} replyingTo={messageId:msg.id,nick:msg.nick,text:msg.text}; showReplyIndicator(replyingTo); modal.style.display='none'; document.getElementById('messageInput').focus(); };
-            if(own) document.getElementById('ctx-edit').onclick = ()=>{ if(replyingTo){replyingTo=null;hideReplyIndicator();} editingMessage={id:msg.id,text:msg.text}; showEditIndicator(editingMessage); const inp=document.getElementById('messageInput'); inp.value=msg.text; inp.focus(); modal.style.display='none'; };
-        }
-        document.getElementById('ctx-copy').onclick = ()=>{ navigator.clipboard.writeText(isMedia?msg.file_name:msg.text); modal.style.display='none'; };
+        document.getElementById('ctx-react').onclick = ()=>{ currentReactionMessage=msg.id; showReactionPicker(); modal.style.display='none'; };
+        document.getElementById('ctx-reply').onclick = ()=>{ if(editingMessage){editingMessage=null;hideEditIndicator();} replyingTo={messageId:msg.id,nick:msg.nick,text:msg.text}; showReplyIndicator(replyingTo); modal.style.display='none'; document.getElementById('messageInput').focus(); };
+        if(own) document.getElementById('ctx-edit').onclick = ()=>{ if(replyingTo){replyingTo=null;hideReplyIndicator();} editingMessage={id:msg.id,text:msg.text}; showEditIndicator(editingMessage); const inp=document.getElementById('messageInput'); inp.value=msg.text; inp.focus(); modal.style.display='none'; };
+        document.getElementById('ctx-copy').onclick = ()=>{ navigator.clipboard.writeText(msg.text); modal.style.display='none'; };
         if(own) document.getElementById('ctx-delete').onclick = ()=>{ pendingDeleteMessageId=msg.id; showConfirm('Удалить сообщение?', async ()=>{ await fetch('/delete-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:pendingDeleteMessageId, nick:currentUser.nick})}); pendingDeleteMessageId=null; }); modal.style.display='none'; };
         document.getElementById('ctx-close').onclick = ()=> modal.style.display='none';
         modal.style.display='flex';
@@ -541,124 +374,86 @@ document.addEventListener('DOMContentLoaded', function() {
     function onTyping(is) { if(!socket||!currentChat.id) return; if(is) { socket.emit('typing',{chatId:currentChat.id, nick:currentUser.nick}); clearTimeout(typingTimeout); typingTimeout=setTimeout(()=>socket.emit('stop typing',{chatId:currentChat.id}),1500); } else { clearTimeout(typingTimeout); socket.emit('stop typing',{chatId:currentChat.id}); } }
     function scrollToMessage(id) { const el=document.querySelector(`.message-item[data-id="${id}"] .message-text`); if(el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),4000); } }
     function autoResize(ta) { ta.style.height='auto'; ta.style.height = Math.min(ta.scrollHeight,150)+'px'; }
-    document.getElementById('attachBtn').onclick = ()=>{ const inp = document.createElement('input'); inp.type='file'; inp.accept='*/*'; inp.onchange = async e => { const f = e.target.files[0]; if(!f) return; const fd = new FormData(); fd.append('file',f); const r=await fetch('/upload',{method:'POST',body:fd}); const d=await r.json(); if(d.success) fetch('/chat-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:currentChat.id, nick:currentUser.nick, type:f.type.startsWith('image/')||f.type.startsWith('video/')?'media':'file', file_url:'/uploads/'+d.file.filename, file_name:f.name, file_size:f.size})}); }; inp.click(); };
+
+    // Инициализация
     async function initializeApp() {
-        document.getElementById('showDateToggle').checked = appSettings.showDate; document.getElementById('showReactionsToggle').checked = appSettings.showReactions; document.getElementById('showTimeToggle').checked = appSettings.showTime; document.getElementById('showBadgesToggle').checked = appSettings.showBadges; document.getElementById('badgeSelect').value = currentUser.badge||''; document.getElementById('quickReactionSelect').value = appSettings.quickReaction||''; document.getElementById('accentColorSelect').value = appSettings.accentColor;
-        document.getElementById('showDateToggle').onchange = e=>{ appSettings.showDate=e.target.checked; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); renderMessages(); renderChatsList(); };
+        document.getElementById('showDateToggle').checked = appSettings.showDate;
+        document.getElementById('showReactionsToggle').checked = appSettings.showReactions;
+        document.getElementById('showTimeToggle').checked = appSettings.showTime;
+        document.getElementById('showBadgesToggle').checked = appSettings.showBadges;
+        document.getElementById('badgeSelect').value = currentUser.badge||'';
+        document.getElementById('accentColorSelect').value = appSettings.accentColor;
+        document.getElementById('showDateToggle').onchange = e=>{ appSettings.showDate=e.target.checked; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); renderMessages(); };
         document.getElementById('showReactionsToggle').onchange = e=>{ appSettings.showReactions=e.target.checked; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); renderMessages(); };
-        document.getElementById('showTimeToggle').onchange = e=>{ appSettings.showTime=e.target.checked; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); renderMessages(); renderChatsList(); };
+        document.getElementById('showTimeToggle').onchange = e=>{ appSettings.showTime=e.target.checked; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); renderMessages(); };
         document.getElementById('showBadgesToggle').onchange = e=>{ appSettings.showBadges=e.target.checked; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); renderMessages(); };
         document.getElementById('badgeSelect').onchange = async e=>{ currentUser.badge=e.target.value; await fetch('/update-badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:authToken, badge:currentUser.badge})}); renderMessages(); };
-        document.getElementById('quickReactionSelect').onchange = e=>{ appSettings.quickReaction=e.target.value; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); };
         document.getElementById('accentColorSelect').onchange = e=>{ appSettings.accentColor=e.target.value; localStorage.setItem('chatxlite_settings',JSON.stringify(appSettings)); document.documentElement.style.setProperty('--accent-color',e.target.value); };
         await loadChatsList();
+        if (chatsList.length) openChat(chatsList[0]);
+
         socket.on('chat message received', newMsg=>{ if(currentChat.id===newMsg.chat_id) { messages.push(newMsg); renderMessages(); lastReadMessage[currentChat.id]=newMsg.id; localStorage.setItem('last_read_message',JSON.stringify(lastReadMessage)); } loadChatsList(); });
         socket.on('message deleted', id=>{ messages=messages.filter(m=>m.id!==id); renderMessages(); loadChatsList(); });
         socket.on('message edited', ({messageId,newText})=>{ const m=messages.find(m=>m.id===messageId); if(m){m.text=newText; m.edited=true; renderMessages();} loadChatsList(); });
         socket.on('reaction updated', ({messageId,reactions})=>{ const m=messages.find(m=>m.id===messageId); if(m){m.reactions=reactions; renderMessages();} });
         socket.on('user typing', d=>{ if(d.chatId===currentChat.id) updateTypingIndicator(d); });
         socket.on('user stop typing', d=>{ if(d.chatId===currentChat.id) updateTypingIndicator(null); });
-        socket.on('nick changed', ({oldNick,newNick})=>{ if(currentUser.nick===oldNick) { currentUser.nick=newNick; document.getElementById('profileNickDisplay').innerText=newNick; } loadChatsList(); });
-        refreshInterval = setInterval(()=>{ if(currentChat.id) loadChatMessages().then(renderMessages); else loadChatsList(); },3000);
+        socket.on('nick changed', ({oldNick,newNick})=>{ if(currentUser.nick===oldNick) currentUser.nick=newNick; });
+        refreshInterval = setInterval(()=>{ if(currentChat.id) loadChatMessages().then(renderMessages); loadChatsList(); },3000);
     }
-    function setupProfileModals() {
-        document.getElementById('openSelfExpressionBtn').onclick = () => document.getElementById('selfExpressionModal').style.display = 'flex';
-        document.getElementById('closeSelfExpressionBtn').onclick = () => document.getElementById('selfExpressionModal').style.display = 'none';
-        document.getElementById('openChangeNickModalBtn').onclick = () => {
-            document.getElementById('changeNickModal').style.display = 'flex';
-            document.getElementById('newNickInput').value = '';
-        };
-        document.getElementById('cancelNickChangeBtn').onclick = () => document.getElementById('changeNickModal').style.display = 'none';
-        document.getElementById('applyNickChangeBtn').onclick = async () => {
-            const nn = document.getElementById('newNickInput').value.trim();
-            if (!nn) return;
-            const r = await fetch('/change-nick', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: authToken, newNick: nn })
-            });
-            const d = await r.json();
-            if (d.success) {
-                currentUser.nick = d.newNick;
-                document.getElementById('profileNickDisplay').innerText = d.newNick;
-                document.getElementById('changeNickModal').style.display = 'none';
-                showAlert('Ник изменён');
-            } else showAlert(d.error);
-        };
 
-        // Кнопки из модалки Профиль (перенесённые из Приватности)
-        document.getElementById('changePinBtn').onclick = () => {
-            document.getElementById('selfExpressionModal').style.display = 'none';
-            document.getElementById('changePinModal').style.display = 'flex';
-        };
-        document.getElementById('logoutBtn').onclick = () => {
-            showConfirm('Выйти из аккаунта?', () => {
-                localStorage.removeItem('chatxlite_token');
-                location.reload();
-            });
-        };
-        document.getElementById('deleteAccountBtn').onclick = () => {
-            document.getElementById('selfExpressionModal').style.display = 'none';
-            document.getElementById('pinConfirmModal').style.display = 'flex';
-            document.getElementById('pinConfirmInput').value = '';
-            pendingAction = 'delete_account';
-        };
-
-        document.getElementById('openStyleSettingsBtn').onclick = () => document.getElementById('styleSettingsModal').style.display = 'flex';
-        document.getElementById('closeStyleSettingsBtn').onclick = () => document.getElementById('styleSettingsModal').style.display = 'none';
-
-        document.getElementById('applyPinBtn').onclick = async () => {
-            const o = document.getElementById('oldPinInput').value,
-                  n = document.getElementById('newPinInput').value;
-            if (!o || !n || n.length !== 4 || !/^\d+$/.test(n))
-                return showAlert('PIN должен быть 4 цифры');
-            const r = await fetch('/change-pin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: authToken, oldPin: o, newPin: n })
-            });
-            const d = await r.json();
-            if (d.success) {
-                showAlert('PIN изменён');
-                document.getElementById('changePinModal').style.display = 'none';
-            } else showAlert(d.error);
-        };
-        document.getElementById('cancelPinBtn').onclick = () => document.getElementById('changePinModal').style.display = 'none';
-    }
-    document.getElementById('pinConfirmOkBtn').onclick = async () => {
-        const pin = document.getElementById('pinConfirmInput').value;
-        if (!pin) return;
-        if (pendingAction === 'delete_account') {
-            const r = await fetch('/delete-account', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: authToken, pin })
-            });
-            const d = await r.json();
-            if (d.success) {
-                localStorage.removeItem('chatxlite_token');
-                location.reload();
-            } else showAlert(d.error || 'Ошибка');
-        }
-        document.getElementById('pinConfirmModal').style.display = 'none';
-        pendingAction = null;
-    };
-    document.getElementById('pinConfirmCancelBtn').onclick = () => {
-        document.getElementById('pinConfirmModal').style.display = 'none';
-        pendingAction = null;
-    };
-    document.getElementById('closeReactionPickerBtn').onclick = ()=> document.getElementById('reactionPickerModal').style.display='none';
     function bindUI() {
-        document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-        document.getElementById('chatSearchInput').oninput = e=>{ chatSearchQuery=e.target.value; renderChatsList(); searchUsers(e.target.value); };
-        document.getElementById('backFromChatBtn').onclick = closeChatView;
+        document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>{
+            if(b.dataset.tab === 'settings') document.getElementById('settingsModal').style.display='flex';
+        });
+        document.getElementById('closeSettingsBtn').onclick = ()=> document.getElementById('settingsModal').style.display='none';
+        document.getElementById('openProfileBtn').onclick = ()=>{ document.getElementById('settingsModal').style.display='none'; document.getElementById('profileModal').style.display='flex'; };
+        document.getElementById('closeProfileModalBtn').onclick = ()=> document.getElementById('profileModal').style.display='none';
+        document.getElementById('openAppearanceBtn').onclick = ()=>{ document.getElementById('settingsModal').style.display='none'; document.getElementById('appearanceModal').style.display='flex'; };
+        document.getElementById('closeAppearanceModalBtn').onclick = ()=> document.getElementById('appearanceModal').style.display='none';
+        document.getElementById('openChangeNickModalBtn').onclick = ()=>{ document.getElementById('changeNickModal').style.display='flex'; document.getElementById('newNickInput').value=''; };
+        document.getElementById('cancelNickChangeBtn').onclick = ()=> document.getElementById('changeNickModal').style.display='none';
+        document.getElementById('applyNickChangeBtn').onclick = async ()=>{
+            const nn = document.getElementById('newNickInput').value.trim();
+            if(!nn) return;
+            const r = await fetch('/change-nick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:authToken,newNick:nn})});
+            const d = await r.json();
+            if(d.success){ currentUser.nick=d.newNick; document.getElementById('changeNickModal').style.display='none'; showAlert('Ник изменён'); }
+            else showAlert(d.error);
+        };
+        document.getElementById('changePinBtn').onclick = ()=>{ document.getElementById('profileModal').style.display='none'; document.getElementById('changePinModal').style.display='flex'; };
+        document.getElementById('logoutBtn').onclick = ()=>{ showConfirm('Выйти из аккаунта?', ()=>{ localStorage.removeItem('chatxlite_token'); location.reload(); }); };
+        document.getElementById('deleteAccountBtn').onclick = ()=>{ document.getElementById('profileModal').style.display='none'; document.getElementById('pinConfirmModal').style.display='flex'; document.getElementById('pinConfirmInput').value=''; pendingAction='delete_account'; };
+        document.getElementById('applyPinBtn').onclick = async ()=>{
+            const o=document.getElementById('oldPinInput').value, n=document.getElementById('newPinInput').value;
+            if(!o||!n||n.length!==4||!/^\d+$/.test(n)) return showAlert('PIN должен быть 4 цифры');
+            const r=await fetch('/change-pin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:authToken,oldPin:o,newPin:n})});
+            const d=await r.json();
+            if(d.success){ showAlert('PIN изменён'); document.getElementById('changePinModal').style.display='none'; }
+            else showAlert(d.error);
+        };
+        document.getElementById('cancelPinBtn').onclick = ()=> document.getElementById('changePinModal').style.display='none';
+        document.getElementById('pinConfirmOkBtn').onclick = async ()=>{
+            const pin = document.getElementById('pinConfirmInput').value;
+            if(!pin) return;
+            if(pendingAction==='delete_account'){
+                const r=await fetch('/delete-account',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:authToken,pin})});
+                const d=await r.json();
+                if(d.success){ localStorage.removeItem('chatxlite_token'); location.reload(); }
+                else showAlert(d.error||'Ошибка');
+            }
+            document.getElementById('pinConfirmModal').style.display='none'; pendingAction=null;
+        };
+        document.getElementById('pinConfirmCancelBtn').onclick = ()=>{ document.getElementById('pinConfirmModal').style.display='none'; pendingAction=null; };
+        document.getElementById('closeReactionPickerBtn').onclick = ()=> document.getElementById('reactionPickerModal').style.display='none';
         document.getElementById('sendBtn').onclick = sendMessage;
         const inp = document.getElementById('messageInput'); inp.addEventListener('input', ()=>{ autoResize(inp); onTyping(true); });
     }
+
     const token = localStorage.getItem('chatxlite_token');
     if(token) {
         fetch('/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})}).then(r=>r.json()).then(async d=>{
-            if(d.success) { currentUser.nick=d.nick; currentUser.badge=d.badge||''; authToken=token; document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex'; socket=io(); socket.emit('user online',currentUser.nick); bindUI(); setupProfileModals(); await initializeApp(); showTab('chats'); }
+            if(d.success) { currentUser.nick=d.nick; currentUser.badge=d.badge||''; authToken=token; document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex'; socket=io(); socket.emit('user online',currentUser.nick); bindUI(); await initializeApp(); }
             else { localStorage.removeItem('chatxlite_token'); document.getElementById('loginScreen').style.display='flex'; }
         });
     } else document.getElementById('loginScreen').style.display='flex';
@@ -667,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if(!nick||!pin||pin.length!==4||!/^\d+$/.test(pin)) return document.getElementById('loginError').innerText='Введите ник и 4-значный PIN';
         const r = await fetch('/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nick,pin})});
         const d = await r.json();
-        if(d.success) { currentUser.nick=d.nick; currentUser.badge=d.badge||''; authToken=d.token; localStorage.setItem('chatxlite_token',authToken); document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex'; socket=io(); socket.emit('user online',currentUser.nick); bindUI(); setupProfileModals(); await initializeApp(); showTab('chats'); }
+        if(d.success) { currentUser.nick=d.nick; currentUser.badge=d.badge||''; authToken=d.token; localStorage.setItem('chatxlite_token',authToken); document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex'; socket=io(); socket.emit('user online',currentUser.nick); bindUI(); await initializeApp(); }
         else document.getElementById('loginError').innerText = d.error||'Ошибка входа';
     };
 });
