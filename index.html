@@ -225,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let typingTimeout = null;
     let refreshInterval = null;
     let pendingAction = null;
+    let isUserNearBottom = true;
 
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
@@ -282,8 +283,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {}
     }
 
+    function checkIfNearBottom(container) {
+        const threshold = 100;
+        return container.scrollHeight - container.scrollTop - container.clientHeight <= threshold;
+    }
+
     function renderMessages() {
-        const cont = document.getElementById('messagesContainer'); if(!cont) return;
+        const cont = document.getElementById('messagesContainer'); 
+        if(!cont) return;
+        const wasNearBottom = checkIfNearBottom(cont);
         cont.innerHTML = '';
         const showReact = appSettings.showReactions !== false;
         messages.forEach(msg => {
@@ -307,8 +315,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         attachReactionEvents();
         document.querySelectorAll('.reply-context').forEach(el=>el.addEventListener('click',()=>scrollToMessage(+el.dataset.message)));
-        cont.scrollTop = cont.scrollHeight;
+
+        if (wasNearBottom) {
+            setTimeout(() => { cont.scrollTop = cont.scrollHeight; isUserNearBottom = true; }, 10);
+        } else {
+            isUserNearBottom = false;
+        }
     }
+
     function attachReactionEvents() { if(!appSettings.showReactions) return; document.querySelectorAll('.reaction-badge').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); addReaction(+b.dataset.message, b.dataset.reaction); })); }
     async function addReaction(msgId, reaction) {
         const r = await fetch('/add-reaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:msgId, nick:currentUser.nick, reaction, isRoom:false})});
