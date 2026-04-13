@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const r = await fetch('/add-reaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:msgId, nick:currentUser.nick, reaction, isRoom:false})});
         const d = await r.json(); if(d.success) { const m = messages.find(m=>m.id===msgId); if(m) { m.reactions = d.reactions; if(!m.user_reactions) m.user_reactions=[]; if(m.user_reactions.includes(reaction)) m.user_reactions = m.user_reactions.filter(r=>r!==reaction); else m.user_reactions.push(reaction); renderMessages(); } }
     }
-    function showReactionPicker() { const p = $('reactionsPicker'); p.innerHTML = ''; ['❤️','🔥','👍','👎','👌','🖕','👀','😁','😭','😔','😩','😳','😠','�82','💩','👻','👽','👾','💋','💊'].forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.onclick=()=>{ addReaction(currentReactionMessage,e); $('reactionPickerModal').style.display='none'; }; p.appendChild(b); }); $('reactionPickerModal').style.display='flex'; }
+    function showReactionPicker() { const p = $('reactionsPicker'); p.innerHTML = ''; ['❤️','🔥','👍','👎','👌','🖕','👀','😁','😭','😔','😩','😳','😠','😨','💩','👻','👽','👾','💋','💊'].forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.onclick=()=>{ addReaction(currentReactionMessage,e); $('reactionPickerModal').style.display='none'; }; p.appendChild(b); }); $('reactionPickerModal').style.display='flex'; }
 
     // ========== КОНТЕКСТНОЕ МЕНЮ СООБЩЕНИЯ ==========
     function showContextMenu(msg, own) {
@@ -671,7 +671,6 @@ document.addEventListener('DOMContentLoaded', function() {
         ['touchstart','mousedown'].forEach(ev=>chatsTab.addEventListener(ev, e=>{ pressTimer=setTimeout(()=>$('chatsMenuModal').style.display='flex',500); }));
         ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=>chatsTab.addEventListener(ev, ()=>clearTimeout(pressTimer)));
     }
-    const createGroupBtn = $('createGroupMenuBtn'); if(createGroupBtn) createGroupBtn.style.display = 'none';
     const closeChatsMenu = $('closeChatsMenuBtn'); if(closeChatsMenu) closeChatsMenu.onclick = ()=>$('chatsMenuModal').style.display='none';
 
     // ========== НАСТРОЙКИ ==========
