@@ -1,7 +1,7 @@
 {
   "name": "ChatX",
   "short_name": "ChatX",
-  "description": "Простой общий чат",
+  "description": "Веб-мессенджер",
   "theme_color": "#1c1c1e",
   "background_color": "#121212",
   "display": "standalone",
