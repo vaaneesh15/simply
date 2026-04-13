@@ -1,6 +1,6 @@
 {
-  "name": "ChatX Lite",
-  "short_name": "ChatX Lite",
+  "name": "ChatX",
+  "short_name": "ChatX",
   "description": "Простой общий чат",
   "theme_color": "#1c1c1e",
   "background_color": "#121212",
@@ -20,6 +20,18 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "icons/maskable_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
