@@ -37,6 +37,7 @@ const pool = new Pool({
 });
 
 async function initDB() {
+  // Таблица users
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -54,15 +55,10 @@ async function initDB() {
     );
   `);
 
-  const userCols = ['badge', 'description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible'];
-  for (const col of userCols) {
-    try {
-      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ${col} ${col === 'badge' ? "VARCHAR(10) DEFAULT ''" : (col === 'description' ? "TEXT DEFAULT ''" : "VARCHAR(20) DEFAULT 'all'")}`);
-    } catch (e) {}
-  }
   // Удаляем колонку who_can_invite, если осталась
   try { await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS who_can_invite`); } catch (e) {}
 
+  // Таблица chats (без owner_nick и без типа 'group')
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chats (
       id SERIAL PRIMARY KEY,
@@ -71,11 +67,11 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
-
   try { await pool.query(`ALTER TABLE chats DROP CONSTRAINT IF EXISTS chats_type_check`); } catch (e) {}
   try { await pool.query(`ALTER TABLE chats ADD CONSTRAINT chats_type_check CHECK (type IN ('public', 'private', 'notebook'))`); } catch (e) {}
   try { await pool.query(`ALTER TABLE chats DROP COLUMN IF EXISTS owner_nick`); } catch (e) {}
 
+  // Таблица chat_participants
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chat_participants (
       chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
@@ -84,6 +80,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица messages
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
@@ -101,11 +98,7 @@ async function initDB() {
     );
   `);
 
-  const msgCols = ['type', 'file_url', 'file_name', 'file_size', 'duration'];
-  for (const col of msgCols) {
-    try { await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS ${col} ${col === 'type' ? "VARCHAR(20) DEFAULT 'text'" : 'TEXT'}`); } catch (e) {}
-  }
-
+  // Таблица message_reactions
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_reactions (
       id SERIAL PRIMARY KEY,
@@ -117,6 +110,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица contacts
   await pool.query(`
     CREATE TABLE IF NOT EXISTS contacts (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
@@ -126,6 +120,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица blocked_users
   await pool.query(`
     CREATE TABLE IF NOT EXISTS blocked_users (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
@@ -135,6 +130,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица deleted_chats
   await pool.query(`
     CREATE TABLE IF NOT EXISTS deleted_chats (
       chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
@@ -143,9 +139,10 @@ async function initDB() {
     );
   `);
 
-  // Удаляем таблицу групп, если осталась
+  // Удаляем таблицу group_participants, если осталась
   try { await pool.query(`DROP TABLE IF EXISTS group_participants CASCADE`); } catch (e) {}
 
+  // Публичный чат
   const publicChat = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
   if (publicChat.rows.length === 0) {
     await pool.query(`INSERT INTO chats (type, name) VALUES ('public', 'Общий чат')`);
@@ -173,6 +170,7 @@ async function getOrCreateNotebook(nick) {
   return notebook.rows[0].id;
 }
 
+// Эндпоинты (полностью совместимы с клиентом)
 app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ success: false });
   res.json({ success: true, file: req.file });
