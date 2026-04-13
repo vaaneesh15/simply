@@ -320,8 +320,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function hasUnreadMessages(chat) { if(!chat.last_message) return false; if(chat.last_message.nick === currentUser.nick) return false; const lastId = chat.last_message.id, readId = lastReadMessage[chat.id]||0; return lastId > readId; }
 
-    // ========== СВАЙПЫ ДЛЯ ЧАТА И МОДАЛОК ==========
+    // ========== СВАЙПЫ ==========
     function initSwipeToClose(element, onClose) {
+        if (!element) return;
         let startX = 0, currentX = 0, isDragging = false;
         const threshold = 100;
         element.addEventListener('touchstart', e => {
@@ -388,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messages = []; renderMessages(); await loadChatMessages(); renderMessages();
         if(messages.length) { const lm = messages[messages.length-1]; lastReadMessage[chat.id] = lm.id; localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage)); }
         document.querySelector('.input-wrapper').style.display = 'block';
-        document.getElementById('chatTitle').onclick = null; // Групп нет, ничего не делаем
+        document.getElementById('chatTitle').onclick = null;
     }
     async function loadChatMessages() { if(!currentChat.id) return; try { const r = await fetch(`/chat-messages?chat_id=${currentChat.id}&nick=${encodeURIComponent(currentUser.nick)}`); messages = await r.json(); } catch(e){} }
 
@@ -626,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let pressTimer;
     ['touchstart','mousedown'].forEach(ev=>document.getElementById('chatsTabBtn').addEventListener(ev, e=>{ pressTimer=setTimeout(()=>document.getElementById('chatsMenuModal').style.display='flex',500); }));
     ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=>document.getElementById('chatsTabBtn').addEventListener(ev, ()=>clearTimeout(pressTimer)));
-    document.getElementById('createGroupMenuBtn').style.display = 'none'; // Групп нет, скрываем кнопку
+    document.getElementById('createGroupMenuBtn').style.display = 'none'; // Групп нет
     document.getElementById('closeChatsMenuBtn').onclick = ()=>document.getElementById('chatsMenuModal').style.display='none';
 
     // ========== НАСТРОЙКИ ПРОФИЛЯ И ПРИВАТНОСТИ ==========
@@ -695,20 +696,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== ЗАПУСК ==========
     const token = localStorage.getItem('simply_token');
     if(token) {
         fetch('/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})}).then(r=>r.json()).then(async d=>{
             if(d.success) { currentUser.nick=d.nick; currentUser.badge=d.badge||''; currentUser.description=d.description||''; authToken=token; document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex'; socket=io(); socket.emit('user online',currentUser.nick); bindUI(); setupProfileModals(); await initializeApp(); showTab('chats'); }
             else { localStorage.removeItem('simply_token'); document.getElementById('loginScreen').style.display='flex'; }
-        });
-    } else document.getElementById('loginScreen').style.display='flex';
+        }).catch(e => { document.getElementById('loginScreen').style.display='flex'; });
+    } else { document.getElementById('loginScreen').style.display='flex'; }
+
+    // Обработчик входа
     document.getElementById('loginBtn').onclick = async ()=>{
-        const nick = document.getElementById('loginNick').value.trim(), pin = document.getElementById('loginPin').value;
-        if(!nick||!pin||pin.length!==4||!/^\d+$/.test(pin)) return document.getElementById('loginError').innerText='Введите ник и 4-значный PIN';
+        const nick = document.getElementById('loginNick').value.trim();
+        const pin = document.getElementById('loginPin').value;
+        if(!nick||!pin||pin.length!==4||!/^\d+$/.test(pin)) {
+            document.getElementById('loginError').innerText = 'Введите ник и 4-значный PIN';
+            return;
+        }
         const r = await fetch('/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nick,pin})});
         const d = await r.json();
-        if(d.success) { currentUser.nick=d.nick; currentUser.badge=d.badge||''; currentUser.description=d.description||''; authToken=d.token; localStorage.setItem('simply_token',authToken); document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='flex'; socket=io(); socket.emit('user online',currentUser.nick); bindUI(); setupProfileModals(); await initializeApp(); showTab('chats'); }
-        else document.getElementById('loginError').innerText = d.error||'Ошибка входа';
+        if(d.success) {
+            currentUser.nick = d.nick;
+            currentUser.badge = d.badge || '';
+            currentUser.description = d.description || '';
+            authToken = d.token;
+            localStorage.setItem('simply_token', authToken);
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            socket = io();
+            socket.emit('user online', currentUser.nick);
+            bindUI();
+            setupProfileModals();
+            await initializeApp();
+            showTab('chats');
+        } else {
+            document.getElementById('loginError').innerText = d.error||'Ошибка входа';
+        }
     };
 });
 </script>
