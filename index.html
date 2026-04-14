@@ -45,7 +45,7 @@
         .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--text-secondary); font-size:0.7rem; padding:0.3rem; border-radius:0.5rem; transition:all 0.1s; }
         .nav-item.active { color:var(--accent-color); }
         .nav-item svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.8; fill:none; }
-        .chat-view { display:flex; flex-direction:column; height:100%; background:var(--bg-page); position:absolute; top:0; left:0; right:0; bottom:0; z-index:50; transition:transform 0.2s; }
+        .chat-view { display:flex; flex-direction:column; height:100%; background:var(--bg-page); position:absolute; top:0; left:0; right:0; bottom:0; z-index:50; transition:transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1); will-change:transform; }
         .chat-header { display:flex; align-items:center; padding:0.8rem 1rem; background:var(--input-bg); border-bottom:1px solid var(--border-light); border-top:1px solid var(--border-light); }
         .back-btn { background:var(--bg-page); border:none; color:var(--accent-color); font-size:1.5rem; width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:0.8rem; cursor:pointer; border:0.5px solid var(--border-light); }
         .chat-header-info { flex:1; }
@@ -91,12 +91,11 @@
         .reply-indicator .reply-text, .edit-indicator .edit-text { font-size:0.85rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .cancel-reply, .cancel-edit { background:var(--bg-page); border:none; border-radius:1rem; width:2.2rem; height:2.2rem; color:var(--text-primary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center; justify-content:center; margin-left:auto; }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; justify-content:center; align-items:center; }
-        .modal-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); transition:transform 0.2s; }
-        .modal-container { position:relative; z-index:10001; width:90%; max-width:380px; max-height:90%; overflow-y:auto; transition:transform 0.2s; }
+        .modal-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); transition:transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1); will-change:transform; }
+        .modal-container { position:relative; z-index:10001; width:90%; max-width:380px; max-height:90%; overflow-y:auto; transition:transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1); will-change:transform; }
         .modal.fullscreen { align-items:flex-start; padding-top:0.5rem; }
         .modal.fullscreen .modal-overlay { background:rgba(18,18,18,0.8); backdrop-filter:blur(20px); }
-        .modal.fullscreen .modal-container { width:100%; max-width:100%; height:100%; max-height:none; background:transparent; border-radius:0; }
-        .modal.fullscreen .modal-container { transform: translateX(100%); }
+        .modal.fullscreen .modal-container { width:100%; max-width:100%; height:100%; max-height:none; background:transparent; border-radius:0; transform: translateX(100%); }
         .modal.fullscreen.show .modal-container { transform: translateX(0); }
         .modal-content { background:var(--input-bg); border-radius:2rem; padding:1.8rem; border:0.5px solid var(--border-light); box-shadow:0 8px 20px rgba(0,0,0,0.3); }
         .fullscreen .modal-content { border-radius:0; background:transparent; box-shadow:none; border:none; padding:1rem; backdrop-filter: none; }
@@ -257,7 +256,7 @@
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
-// === ЧИСТЫЙ РАБОЧИЙ JS СО ВСЕМИ ФУНКЦИЯМИ ===
+// === ПОЛНЫЙ ИСПРАВЛЕННЫЙ JS ===
 (function() {
     function addTapped(e) { const t = e.target.closest?.('button, .clickable'); if (t) t.classList.add('tapped'); }
     function removeTapped(e) { const t = e.target.closest?.('button, .clickable'); if (t) t.classList.remove('tapped'); }
@@ -308,11 +307,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function hideModal(modalId) {
         const modal = $(modalId); if (!modal) return;
         modal.classList.remove('show');
-        setTimeout(() => { if (!modal.classList.contains('show')) modal.style.display = 'none'; }, 200);
+        setTimeout(() => { if (!modal.classList.contains('show')) modal.style.display = 'none'; }, 300);
     }
     function openFullscreenModal(modalId) {
         const modal = $(modalId); if (!modal) return;
         modal.style.zIndex = '10001';
+        showModal(modalId);
+    }
+    // Вложенные модалки поверх родительских
+    function openStackedModal(modalId) {
+        const modal = $(modalId); if (!modal) return;
+        modal.style.zIndex = '10002';
         showModal(modalId);
     }
 
@@ -340,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function hasUnreadMessages(chat) { if(!chat.last_message) return false; if(chat.last_message.nick === currentUser.nick) return false; const lastId = chat.last_message.id, readId = lastReadMessage[chat.id]||0; return lastId > readId; }
 
-    // === СВАЙП ===
+    // === СВАЙП (плавный, как в Telegram) ===
     function initSwipeToClose(element, onClose) {
         if (!element) return;
         let startX = 0, currentX = 0, isDragging = false;
@@ -362,10 +367,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isDragging) return;
             isDragging = false; element.classList.remove('dragging');
             const diff = currentX - startX;
-            element.style.transform = '';
+            element.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1)';
             const overlay = element.closest('.modal')?.querySelector('.modal-overlay');
-            if (overlay) overlay.style.transform = '';
-            if (diff > threshold) onClose();
+            if (overlay) overlay.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1)';
+            if (diff > threshold) {
+                element.style.transform = 'translateX(100%)';
+                if (overlay) overlay.style.transform = 'translateX(100%)';
+                setTimeout(() => { onClose(); element.style.transform = ''; if (overlay) overlay.style.transform = ''; }, 300);
+            } else {
+                element.style.transform = '';
+                if (overlay) overlay.style.transform = '';
+            }
+            setTimeout(() => { element.style.transition = ''; if (overlay) overlay.style.transition = ''; }, 300);
             startX = 0; currentX = 0;
         });
     }
@@ -400,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         $('mainNavBar').classList.add('hidden');
         $('chatTitle').innerHTML = escapeHtml(chat.name); $('chatStatus').innerText = '';
         socket.emit('join chat', chat.id);
-        messages = []; renderMessages(); await loadChatMessages(); renderMessages();
+        messages = []; await loadChatMessages(); renderMessages(); // Сразу показываем
         if(messages.length) { const lm = messages[messages.length-1]; lastReadMessage[chat.id] = lm.id; localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage)); }
         document.querySelector('.input-wrapper').style.display = 'block';
         $('chatTitle').onclick = null;
@@ -559,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
         openFullscreenModal('userProfileModal');
     }
 
-    // === АУДИОПЛЕЕР ===
+    // === АУДИОПЛЕЕР (исправлен) ===
     function renderAudioPlayer(msg) {
         const playerDiv = document.createElement('div'); playerDiv.className = 'audio-player';
         const audio = new Audio(msg.file_url);
@@ -740,7 +753,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupProfileModals() {
         $('openSelfExpressionBtn').onclick = ()=> openFullscreenModal('selfExpressionModal');
         $('closeSelfExpressionBtn').onclick = ()=> hideModal('selfExpressionModal');
-        $('openChangeNickModalBtn').onclick = ()=>{ openFullscreenModal('changeNickModal'); $('newNickInput').value=''; };
+        $('openChangeNickModalBtn').onclick = ()=>{ openStackedModal('changeNickModal'); $('newNickInput').value=''; };
         $('cancelNickChangeBtn').onclick = ()=> hideModal('changeNickModal');
         $('applyNickChangeBtn').onclick = async ()=>{
             const nn = $('newNickInput').value.trim(); if(!nn) return;
@@ -749,7 +762,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if(d.success){ currentUser.nick = d.newNick; $('profileNickDisplay').innerText = d.newNick; hideModal('changeNickModal'); showAlert('Ник изменён'); }
             else showAlert(d.error);
         };
-        $('openDescriptionModalBtn').onclick = ()=>{ $('descriptionInput').value = currentUser.description||''; openFullscreenModal('descriptionModal'); };
+        $('openDescriptionModalBtn').onclick = ()=>{ $('descriptionInput').value = currentUser.description||''; openStackedModal('descriptionModal'); };
         $('cancelDescriptionBtn').onclick = ()=> hideModal('descriptionModal');
         $('applyDescriptionBtn').onclick = async ()=>{
             const d = $('descriptionInput').value.trim();
@@ -758,10 +771,10 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         $('openPrivacySettingsBtn').onclick = ()=> openFullscreenModal('privacySettingsModal');
         $('closePrivacySettingsBtn').onclick = ()=> hideModal('privacySettingsModal');
-        $('changePinFromPrivacyBtn').onclick = ()=> openFullscreenModal('changePinModal');
+        $('changePinFromPrivacyBtn').onclick = ()=> openStackedModal('changePinModal');
         $('logoutBtn').onclick = ()=> showConfirm('Выйти из аккаунта?', ()=>{ localStorage.removeItem('simply_token'); location.reload(); });
-        $('deleteAccountBtn').onclick = ()=> { showModal('pinConfirmModal'); $('pinConfirmInput').value=''; pendingAction='delete_account'; };
-        $('openBlockedListBtn').onclick = ()=> { loadBlockedList(); openFullscreenModal('blockedListModal'); };
+        $('deleteAccountBtn').onclick = ()=> { openStackedModal('pinConfirmModal'); $('pinConfirmInput').value=''; pendingAction='delete_account'; };
+        $('openBlockedListBtn').onclick = ()=> { loadBlockedList(); openStackedModal('blockedListModal'); };
         $('openStyleSettingsBtn').onclick = ()=> openFullscreenModal('styleSettingsModal');
         $('closeStyleSettingsBtn').onclick = ()=> hideModal('styleSettingsModal');
         $('applyPinBtn').onclick = async ()=>{
