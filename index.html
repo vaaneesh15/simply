@@ -300,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = $(modalId);
         if (!modal) return;
         modal.style.display = 'flex';
-        // Принудительно перерисовываем, затем добавляем класс для анимации
         setTimeout(() => modal.classList.add('show'), 10);
     }
     function hideModal(modalId) {
@@ -312,7 +311,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function openFullscreenModal(modalId) {
         const modal = $(modalId);
         if (!modal) return;
-        // Убедимся, что все полноэкранные модалки имеют z-index выше
         modal.style.zIndex = '10001';
         showModal(modalId);
     }
@@ -343,13 +341,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function hasUnreadMessages(chat) { if(!chat.last_message) return false; if(chat.last_message.nick === currentUser.nick) return false; const lastId = chat.last_message.id, readId = lastReadMessage[chat.id]||0; return lastId > readId; }
 
-    // ========== Свайп для закрытия (слева направо) ==========
+    // ========== Свайп ==========
     function initSwipeToClose(element, onClose) {
         if (!element) return;
         let startX = 0, currentX = 0, isDragging = false;
         const threshold = 100;
         element.addEventListener('touchstart', e => {
-            if (e.touches[0].clientX > 30) return; // только от левого края
+            if (e.touches[0].clientX > 30) return;
             startX = e.touches[0].clientX;
             isDragging = true;
             element.classList.add('dragging');
@@ -600,7 +598,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return playerDiv;
     }
 
-    // ========== Рендер сообщений ==========
+    // ========== Рендер сообщений и отправка ==========
+    function sendMessage() {
+        const inp = $('messageInput'); const text = inp.value.trim();
+        if(!text && !replyingTo && !editingMessage) return;
+        if(!currentChat.id) return;
+        if(editingMessage) {
+            editMessage(editingMessage.id, text);
+            editingMessage=null; inp.value=''; autoResize(inp); hideEditIndicator(); inp.focus();
+            return;
+        }
+        fetch('/chat-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:currentChat.id, nick:currentUser.nick, text, reply_to_id:replyingTo?.messageId, type:'text'})});
+        replyingTo=null; hideReplyIndicator(); inp.value=''; autoResize(inp); onTyping(false); inp.focus();
+    }
+    async function editMessage(id, newText) { await fetch('/edit-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:id, nick:currentUser.nick, newText})}); }
+
     function renderMessages() {
         const cont = $('messagesContainer'); if(!cont) return;
         const wasNearBottom = cont.scrollHeight - cont.scrollTop - cont.clientHeight < 200;
@@ -720,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadBlockedList() { const r=await fetch(`/blocked-list?nick=${encodeURIComponent(currentUser.nick)}`); const blocked=await r.json(); let html=''; blocked.forEach(b=>{ html+=`<div class="contact-item"><div class="contact-info">${escapeHtml(b.blocked_nick)}</div><div class="contact-actions"><button class="unblock-btn" data-nick="${b.blocked_nick}">Разблокировать</button></div></div>`; }); $('blockedListContainer').innerHTML=html||'<div class="empty-state">Список пуст</div>'; document.querySelectorAll('.unblock-btn').forEach(b=>b.onclick=async ()=>{ await fetch('/unblock-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:currentUser.nick,blocked:b.dataset.nick})}); loadBlockedList(); }); }
     $('closeBlockedListBtn').onclick = ()=> hideModal('blockedListModal');
 
-    // ========== Инициализация приложения ==========
+    // ========== Инициализация ==========
     async function initializeApp() {
         $('showDateToggle').checked = appSettings.showDate; $('showReactionsToggle').checked = appSettings.showReactions; $('showTimeToggle').checked = appSettings.showTime; $('showBadgesToggle').checked = appSettings.showBadges; $('badgeSelect').value = currentUser.badge||''; $('quickReactionSelect').value = appSettings.quickReaction||''; $('accentColorSelect').value = appSettings.accentColor;
         $('showDateToggle').onchange = e=>{ appSettings.showDate=e.target.checked; localStorage.setItem('simply_settings',JSON.stringify(appSettings)); renderMessages(); renderChatsList(); };
