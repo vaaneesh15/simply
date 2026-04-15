@@ -42,9 +42,10 @@
         .panel-header { padding-bottom:0.8rem; border-bottom:1px solid var(--border-light); margin-bottom:0.8rem; text-align:center; }
         .panel-title { font-size:1.8rem; font-weight:700; margin-bottom:0.3rem; }
         .nav-bar { display:flex; background:var(--input-bg); border-top:1px solid var(--border-light); padding:0.5rem 0; padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px)); position:fixed; bottom:0; left:0; right:0; z-index:40; }
-        .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--text-secondary); font-size:0.7rem; padding:0.3rem; border-radius:0.5rem; transition:all 0.1s; }
+        .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--text-secondary); font-size:0.7rem; padding:0.3rem; border-radius:0.5rem; transition:all 0.1s; position:relative; }
         .nav-item.active { color:var(--accent-color); }
         .nav-item svg { width:1.5rem; height:1.5rem; stroke:currentColor; stroke-width:1.8; fill:none; }
+        .notification-badge { position:absolute; top:0; right:calc(50% - 1.2rem); background:var(--accent-color); color:white; font-size:0.6rem; font-weight:600; min-width:1rem; height:1rem; border-radius:0.5rem; display:flex; align-items:center; justify-content:center; padding:0 0.2rem; }
         .chat-view, .post-view { display:flex; flex-direction:column; height:100%; background:var(--bg-page); position:absolute; top:0; left:0; right:0; bottom:0; z-index:50; transition:transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1); will-change:transform; }
         .chat-header, .post-header { display:flex; align-items:center; padding:0.8rem 1rem; background:var(--input-bg); border-bottom:1px solid var(--border-light); border-top:1px solid var(--border-light); }
         .back-btn { background:var(--bg-page); border:none; color:var(--accent-color); font-size:1.5rem; width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:0.8rem; cursor:pointer; border:0.5px solid var(--border-light); }
@@ -142,8 +143,8 @@
         .fullscreen .modal-content > div:first-child { display:flex; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem; }
         .fullscreen .modal-content > div:first-child h3 { margin-left:0.5rem; margin-bottom:0; line-height:2.5rem; }
         .fullscreen .modal-back-btn { margin-right:0.5rem; }
-        #contactsPanel, #feedPanel, #chatsPanel, #profilePanel { display:flex; flex-direction:column; }
-        #contactsListContainer, #chatsListContainer, #feedContainer { flex:1; }
+        #contactsPanel, #feedPanel, #chatsPanel, #notificationsPanel, #profilePanel { display:flex; flex-direction:column; }
+        #contactsListContainer, #chatsListContainer, #feedContainer, #notificationsContainer { flex:1; }
         .file-message { display:flex; align-items:center; gap:12px; padding:8px 0; }
         .file-icon { width:40px; height:40px; background:var(--input-bg); border-radius:8px; display:flex; align-items:center; justify-content:center; }
         .file-info { flex:1; }
@@ -184,13 +185,17 @@
         .create-post-attach { background:none; border:none; color:var(--text-secondary); margin-right:1rem; }
         .create-post-publish-btn { background:var(--accent-color); border:none; padding:0.8rem 1.5rem; border-radius:2rem; color:white; font-weight:600; margin-left:auto; }
         .create-post-publish-btn:disabled { background:#3a3a3c; color:#8e8e93; }
-        .post-item { background:var(--input-bg); border-radius:1rem; padding:1rem; border:0.5px solid var(--border-light); }
+        .post-item { background:var(--input-bg); border-radius:1rem; padding:1rem; border:0.5px solid var(--border-light); margin-bottom:16px; }
         .post-author { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
         .post-author-badge { font-size:1.2rem; }
         .post-author-nick { font-weight:600; }
         .post-text { margin-bottom:8px; white-space:pre-wrap; word-break:break-word; }
         .post-media img { max-width:100%; border-radius:0.5rem; margin-top:8px; }
         .post-time { font-size:0.75rem; color:var(--text-secondary); text-align:right; }
+        .notification-item { padding:12px 0; border-bottom:1px solid var(--border-light); cursor:pointer; }
+        .notification-item:active { background:rgba(255,255,255,0.05); }
+        .notification-text { margin-bottom:4px; }
+        .notification-time { font-size:0.75rem; color:var(--text-secondary); }
         .modal-stack { z-index:10002 !important; }
     </style>
 </head>
@@ -230,6 +235,12 @@
         <div id="chatsListContainer"></div>
         <div id="userSearchResults" style="margin-top:1rem;"></div>
     </div>
+    <div id="notificationsPanel" class="panel" style="display:none;">
+        <div class="panel-header">
+            <div class="panel-title">Уведы</div>
+        </div>
+        <div id="notificationsContainer"></div>
+    </div>
     <div id="profilePanel" class="panel" style="display:none;">
         <div class="panel-header">
             <div class="panel-title" id="profileNickDisplay"></div>
@@ -263,13 +274,14 @@
     <!-- Навигация -->
     <div class="nav-bar" id="mainNavBar">
         <button class="nav-item" data-tab="contacts"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Контакты</span></button>
-        <button class="nav-item active" data-tab="feed"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Лента</span></button>
+        <button class="nav-item active" data-tab="feed"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"/><line x1="7" y1="2" x2="7" y2="6"/><line x1="17" y1="2" x2="17" y2="6"/></svg><span>Лента</span></button>
         <button class="nav-item" data-tab="chats" id="chatsTabBtn"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span>Чаты</span></button>
+        <button class="nav-item" data-tab="notifications" id="notificationsTabBtn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg><span>Уведы</span><span class="notification-badge" id="notificationBadge" style="display:none;">0</span></button>
         <button class="nav-item" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Настройки</span></button>
     </div>
 </div>
 
-<!-- Модальные окна -->
+<!-- Модальные окна (все как раньше) -->
 <div id="confirmModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3 id="confirmTitle">Подтверждение</h3><p id="confirmMessage">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">OK</button></div></div></div></div>
 <div id="pinConfirmModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3>Введите PIN</h3><div class="modal-setting"><input type="password" id="pinConfirmInput" placeholder="PIN" maxlength="4"></div><div class="modal-buttons"><button id="pinConfirmCancelBtn">Отмена</button><button id="pinConfirmOkBtn">Подтвердить</button></div></div></div></div>
 <div id="reactionPickerModal" class="modal fullscreen"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3>Реакция</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div></div>
@@ -312,7 +324,6 @@
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
-// ПОЛНЫЙ JS (исправлен)
 (function() {
     function addTapped(e) { const t = e.target.closest?.('button, .clickable'); if (t) t.classList.add('tapped'); }
     function removeTapped(e) { const t = e.target.closest?.('button, .clickable'); if (t) t.classList.remove('tapped'); }
@@ -353,10 +364,67 @@ document.addEventListener('DOMContentLoaded', function() {
     let notebookChatId = null;
     let feedPosts = [];
     let postImageFile = null;
+    let notifications = [];
+    let unreadCount = 0;
 
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
-    // === МОДАЛКИ ===
+    // ========== УВЕДОМЛЕНИЯ ==========
+    function updateNotificationBadge() {
+        const badge = $('notificationBadge');
+        if (!badge) return;
+        const count = notifications.filter(n => !n.read).length;
+        unreadCount = count;
+        if (count > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = count > 9 ? '9+' : count;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function addNotification(notification) {
+        notifications.unshift(notification);
+        renderNotifications();
+        updateNotificationBadge();
+        if (notification.type === 'message' && currentChat.id !== notification.chatId) {
+            // Можно показать системное уведомление, но мы ограничились бейджем
+        }
+    }
+
+    function renderNotifications() {
+        const cont = $('notificationsContainer');
+        if (!cont) return;
+        let html = '';
+        notifications.forEach(n => {
+            const timeStr = formatTimestamp(n.created_at, appSettings.showDate, appSettings.showTime);
+            html += `<div class="notification-item" data-chat-id="${n.chatId || ''}" data-message-id="${n.messageId || ''}">
+                <div class="notification-text">${escapeHtml(n.text)}</div>
+                <div class="notification-time">${timeStr}</div>
+            </div>`;
+        });
+        cont.innerHTML = html || '<div class="empty-state">Нет уведомлений</div>';
+        document.querySelectorAll('.notification-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const chatId = el.dataset.chatId;
+                const messageId = el.dataset.messageId;
+                if (chatId) {
+                    const chat = chatsList.find(c => c.id == chatId);
+                    if (chat) {
+                        showTab('chats');
+                        openChat(chat);
+                        if (messageId) setTimeout(() => scrollToMessage(+messageId), 500);
+                    }
+                }
+                // Пометить как прочитанное
+                const idx = notifications.findIndex(n => n.chatId == chatId && n.messageId == messageId);
+                if (idx !== -1) notifications[idx].read = true;
+                updateNotificationBadge();
+            });
+        });
+    }
+
+    // ========== МОДАЛКИ ==========
     function showModal(modalId) {
         const modal = $(modalId); if (!modal) return;
         modal.style.display = 'flex';
@@ -403,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function hasUnreadMessages(chat) { if(!chat.last_message) return false; if(chat.last_message.nick === currentUser.nick) return false; const lastId = chat.last_message.id, readId = lastReadMessage[chat.id]||0; return lastId > readId; }
 
-    // === СВАЙП ===
+    // ========== СВАЙП ==========
     function initSwipeToClose(element, onClose) {
         if (!element) return;
         let startX = 0, currentX = 0, isDragging = false;
@@ -441,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // === НАВИГАЦИЯ ===
+    // ========== НАВИГАЦИЯ ==========
     function showTab(tabId) {
         document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
         const panel = $(tabId+'Panel'); if (panel) panel.style.display = 'flex';
@@ -449,6 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if(tabId === 'contacts') { $('contactsSearchInput').value=''; contactsSearchQuery=''; loadContacts(); }
         else if(tabId === 'feed') { loadFeed(); }
         else if(tabId === 'chats') { $('chatSearchInput').value=''; chatSearchQuery=''; loadChatsList(); $('userSearchResults').innerHTML=''; $('chatsListContainer').style.display='block'; }
+        else if(tabId === 'notifications') { renderNotifications(); }
         else if(tabId === 'profile') { $('profileNickDisplay').innerText = currentUser.nick; $('profileDescriptionDisplay').innerText = currentUser.description || ''; loadPrivacySettings(); }
         if(currentChat.id) closeChatView();
     }
@@ -465,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadChatsList(); $('userSearchResults').innerHTML = ''; $('chatsListContainer').style.display = 'block';
     }
 
-    // === ЛЕНТА ===
+    // ========== ЛЕНТА ==========
     async function loadFeed() {
         try {
             const r = await fetch('/feed');
@@ -495,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cont.innerHTML = html || '<div class="empty-state">Пока нет постов</div>';
     }
 
-    // === СОЗДАНИЕ ПОСТА ===
+    // ========== СОЗДАНИЕ ПОСТА ==========
     function openCreatePostModal() {
         $('createPostBadge').innerText = currentUser.badge || '';
         $('createPostNick').innerText = currentUser.nick;
@@ -553,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-        // ========== ЧАТЫ ==========
+    // ========== ЧАТЫ ==========
     async function openChat(chat) {
         currentChat = chat;
         $('chatsPanel').style.display = 'none';
@@ -875,7 +944,26 @@ document.addEventListener('DOMContentLoaded', function() {
         $('quickReactionSelect').onchange = e=>{ appSettings.quickReaction=e.target.value; localStorage.setItem('simply_settings',JSON.stringify(appSettings)); };
         $('accentColorSelect').onchange = e=>{ appSettings.accentColor=e.target.value; localStorage.setItem('simply_settings',JSON.stringify(appSettings)); document.documentElement.style.setProperty('--accent-color',e.target.value); };
         await loadChatsList(); await loadContacts(); loadFeed();
-        socket.on('chat message received', newMsg=>{ if(currentChat.id===newMsg.chat_id) { messages.push(newMsg); renderMessages(); lastReadMessage[currentChat.id]=newMsg.id; localStorage.setItem('last_read_message',JSON.stringify(lastReadMessage)); } loadChatsList(); });
+        socket.on('chat message received', newMsg => {
+            if(currentChat.id === newMsg.chat_id) {
+                messages.push(newMsg); renderMessages();
+                lastReadMessage[currentChat.id] = newMsg.id;
+                localStorage.setItem('last_read_message', JSON.stringify(lastReadMessage));
+            } else {
+                const chat = chatsList.find(c => c.id === newMsg.chat_id);
+                if (chat && !mutedChats.includes(chat.id)) {
+                    addNotification({
+                        type: 'message',
+                        chatId: newMsg.chat_id,
+                        messageId: newMsg.id,
+                        text: `${newMsg.nick}: ${newMsg.type === 'text' ? newMsg.text : '📎 Медиа'}`,
+                        created_at: newMsg.created_at,
+                        read: false
+                    });
+                }
+            }
+            loadChatsList();
+        });
         socket.on('message deleted', id=>{ messages=messages.filter(m=>m.id!==id); renderMessages(); loadChatsList(); });
         socket.on('message edited', ({messageId,newText})=>{ const m=messages.find(m=>m.id===messageId); if(m){m.text=newText; m.edited=true; renderMessages();} loadChatsList(); });
         socket.on('reaction updated', ({messageId,reactions})=>{ const m=messages.find(m=>m.id===messageId); if(m){m.reactions=reactions; renderMessages();} });
@@ -920,6 +1008,7 @@ document.addEventListener('DOMContentLoaded', function() {
             bindUI(); setupProfileModals(); await initializeApp(); showTab('feed');
         } else $('loginError').innerText = d.error||'Ошибка входа';
     };
+});
 </script>
 </body>
 </html>
