@@ -469,7 +469,6 @@ app.post('/chat-message', async (req, res) => {
     const replyMsg = await pool.query('SELECT nick, text FROM messages WHERE id = $1', [reply_to_id]);
     if (replyMsg.rows.length) { newMsg.reply_nick = replyMsg.rows[0].nick; newMsg.reply_text = replyMsg.rows[0].text; }
   }
-  // Получаем значок пользователя для уведомлений
   const userRes = await pool.query('SELECT badge FROM users WHERE nick = $1', [nick]);
   newMsg.user_badge = userRes.rows[0]?.badge || '';
   io.to(`chat:${chat_id}`).emit('chat message received', newMsg);
@@ -551,12 +550,11 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
 
 app.delete('/delete-post/:id', async (req, res) => {
   const { id } = req.params;
-  const { nick } = req.query; // можно передавать ник для проверки владельца
+  const { nick } = req.query;
   try {
     const post = await pool.query('SELECT nick, media_url FROM posts WHERE id = $1', [id]);
     if (post.rows.length === 0) return res.status(404).json({ success: false });
     if (nick && post.rows[0].nick !== nick) return res.status(403).json({ success: false, error: 'Не ваш пост' });
-    // Удаляем файл, если есть
     if (post.rows[0].media_url) {
       const filePath = path.join(__dirname, post.rows[0].media_url);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
