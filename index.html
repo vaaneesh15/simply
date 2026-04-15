@@ -324,7 +324,6 @@
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
-// === ПОЛНЫЙ JS (исправлен) ===
 (function() {
     function addTapped(e) { const t = e.target.closest?.('button, .clickable'); if (t) t.classList.add('tapped'); }
     function removeTapped(e) { const t = e.target.closest?.('button, .clickable'); if (t) t.classList.remove('tapped'); }
@@ -367,6 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let postImageFile = null;
     let notifications = [];
     let unreadCount = 0;
+    let currentPostForMenu = null;
 
     document.documentElement.style.setProperty('--accent-color', appSettings.accentColor);
 
@@ -384,8 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function addNotification(notification) {
-        notifications.unshift(notification);
+    function addNotification(notif) {
+        notifications.unshift(notif);
         renderNotifications();
         updateNotificationBadge();
     }
@@ -397,7 +397,12 @@ document.addEventListener('DOMContentLoaded', function() {
         notifications.forEach(n => {
             const timeStr = formatTimestamp(n.created_at, appSettings.showDate, appSettings.showTime);
             html += `<div class="notification-item" data-chat-id="${n.chatId || ''}" data-message-id="${n.messageId || ''}">
-                <div class="notification-text">${escapeHtml(n.text)}</div>
+                <div><strong>${escapeHtml(n.chatName || '')}</strong></div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="user-badge">${escapeHtml(n.badge||'')}</span>
+                    <span style="font-weight:500;">${escapeHtml(n.nick)}:</span>
+                    <span style="flex:1;">${escapeHtml(n.preview)}</span>
+                </div>
                 <div class="notification-time">${timeStr}</div>
             </div>`;
         });
@@ -468,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function hasUnreadMessages(chat) { if(!chat.last_message) return false; if(chat.last_message.nick === currentUser.nick) return false; const lastId = chat.last_message.id, readId = lastReadMessage[chat.id]||0; return lastId > readId; }
 
-    // ========== СВАЙП (исправлен) ==========
+    // ========== СВАЙП ==========
     function initSwipeToClose(element, onClose) {
         if (!element) return;
         let startX = 0, currentX = 0, isDragging = false;
@@ -544,21 +549,142 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         feedPosts.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
         feedPosts.forEach(post => {
+            const isOwn = post.nick === currentUser.nick;
             let mediaHtml = '';
             if (post.media_url) {
-                mediaHtml = `<div class="post-media"><img src="${post.media_url}" alt=""></div>`;
+                mediaHtml = `<div class="post-media"><img src="${post.media_url}" alt="" style="max-height:300px; object-fit:cover;" data-full-img="${post.media_url}"></div>`;
             }
-            html += `<div class="post-item">
+            const heartReaction = post.user_reacted ? '❤️' : '🤍';
+            html += `<div class="post-item ${isOwn ? 'own-post' : ''}" data-post-id="${post.id}" data-post-nick="${escapeHtml(post.nick)}" data-post-text="${escapeHtml(post.text||'')}" data-post-media="${post.media_url||''}">
                 <div class="post-author">
                     <span class="post-author-badge">${escapeHtml(post.badge||'')}</span>
                     <span class="post-author-nick">${escapeHtml(post.nick)}</span>
                 </div>
                 <div class="post-text">${linkify(escapeHtml(post.text||''))}</div>
                 ${mediaHtml}
-                <div class="post-time">${formatTimestamp(post.created_at, appSettings.showDate, appSettings.showTime)}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="post-time">${formatTimestamp(post.created_at, appSettings.showDate, appSettings.showTime)}</div>
+                    <button class="react-post-btn" data-post-id="${post.id}" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">${heartReaction} ${post.reaction_count||0}</button>
+                </div>
             </div>`;
         });
         cont.innerHTML = html || '<div class="empty-state">Пока нет постов</div>';
+        // Обработчики для реакций и просмотра фото
+        document.querySelectorAll('.react-post-btn').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                e.stopPropagation();
+                const postId = btn.dataset.postId;
+                const r = await fetch('/react-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ postId, nick: currentUser.nick })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    const post = feedPosts.find(p => p.id == postId);
+                    if (post) {
+                        post.user_reacted = !post.user_reacted;
+                        post.reaction_count = d.reaction_count;
+                        renderFeed();
+                    }
+                }
+            });
+        });
+        document.querySelectorAll('.post-media img').forEach(img => {
+            img.addEventListener('click', e => {
+                e.stopPropagation();
+                const url = img.dataset.fullImg;
+                showImageViewer(url);
+            });
+        });
+        // Контекстное меню для своих постов
+        document.querySelectorAll('.post-item.own-post').forEach(el => {
+            let timer;
+            el.addEventListener('touchstart', e => {
+                timer = setTimeout(() => {
+                    currentPostForMenu = {
+                        id: el.dataset.postId,
+                        text: el.dataset.postText,
+                        media: el.dataset.postMedia
+                    };
+                    showPostContextMenu(currentPostForMenu);
+                }, 500);
+            });
+            el.addEventListener('touchend', () => clearTimeout(timer));
+            el.addEventListener('touchcancel', () => clearTimeout(timer));
+            el.addEventListener('mousedown', e => {
+                timer = setTimeout(() => {
+                    currentPostForMenu = {
+                        id: el.dataset.postId,
+                        text: el.dataset.postText,
+                        media: el.dataset.postMedia
+                    };
+                    showPostContextMenu(currentPostForMenu);
+                }, 500);
+            });
+            el.addEventListener('mouseup', () => clearTimeout(timer));
+            el.addEventListener('mouseleave', () => clearTimeout(timer));
+        });
+    }
+
+    function showImageViewer(url) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fullscreen';
+        modal.style.zIndex = '10010';
+        modal.innerHTML = `<div class="modal-overlay"></div><div class="modal-container" style="display:flex; align-items:center; justify-content:center;"><img src="${url}" style="max-width:100%; max-height:100%; object-fit:contain;"></div>`;
+        document.body.appendChild(modal);
+        showModal(modal);
+        initSwipeToClose(modal.querySelector('.modal-container'), () => {
+            hideModal(modal);
+            setTimeout(() => modal.remove(), 300);
+        });
+        modal.querySelector('.modal-overlay').onclick = () => {
+            hideModal(modal);
+            setTimeout(() => modal.remove(), 300);
+        };
+    }
+
+    function showPostContextMenu(post) {
+        const cont = $('contextMenuButtons');
+        let html = `
+            <button id="ctx-edit-post"><svg viewBox="0 0 24 24"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg>Редактировать</button>
+            <button id="ctx-copy-post"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Скопировать</button>
+            <button id="ctx-delete-post"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить</button>
+            <button id="ctx-close-post"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Закрыть</button>
+        `;
+        cont.innerHTML = html;
+        const modal = $('contextMenuModal');
+        $('contextMessageNick').innerHTML = '';
+        $('contextMessagePreview').innerHTML = '';
+        showModal('contextMenuModal');
+        $('ctx-edit-post').onclick = async () => {
+            const newText = prompt('Редактировать пост', post.text);
+            if (newText !== null) {
+                await fetch('/edit-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ postId: post.id, text: newText, nick: currentUser.nick })
+                });
+                loadFeed();
+            }
+            hideModal('contextMenuModal');
+        };
+        $('ctx-copy-post').onclick = () => {
+            navigator.clipboard.writeText(post.text);
+            hideModal('contextMenuModal');
+        };
+        $('ctx-delete-post').onclick = () => {
+            showConfirm('Удалить пост?', async () => {
+                await fetch('/delete-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ postId: post.id, nick: currentUser.nick })
+                });
+                loadFeed();
+            });
+            hideModal('contextMenuModal');
+        };
+        $('ctx-close-post').onclick = () => hideModal('contextMenuModal');
     }
 
     // ========== СОЗДАНИЕ ПОСТА ==========
@@ -953,7 +1079,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: 'message',
                         chatId: newMsg.chat_id,
                         messageId: newMsg.id,
-                        text: `${newMsg.nick}: ${newMsg.type === 'text' ? newMsg.text : '📎 Медиа'}`,
+                        chatName: chat.name,
+                        nick: newMsg.nick,
+                        badge: newMsg.user_badge,
+                        preview: newMsg.type === 'text' ? newMsg.text : '📎 Медиа',
                         created_at: newMsg.created_at,
                         read: false
                     });
