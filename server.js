@@ -37,6 +37,7 @@ const pool = new Pool({
 });
 
 async function initDB() {
+  // Таблица пользователей
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -56,6 +57,7 @@ async function initDB() {
 
   try { await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS who_can_invite`); } catch (e) {}
 
+  // Таблица чатов
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chats (
       id SERIAL PRIMARY KEY,
@@ -76,6 +78,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица сообщений
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
@@ -93,6 +96,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица реакций
   await pool.query(`
     CREATE TABLE IF NOT EXISTS message_reactions (
       id SERIAL PRIMARY KEY,
@@ -104,6 +108,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица контактов
   await pool.query(`
     CREATE TABLE IF NOT EXISTS contacts (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
@@ -113,6 +118,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица заблокированных
   await pool.query(`
     CREATE TABLE IF NOT EXISTS blocked_users (
       user_nick VARCHAR(50) NOT NULL REFERENCES users(nick) ON DELETE CASCADE,
@@ -122,6 +128,7 @@ async function initDB() {
     );
   `);
 
+  // Таблица удалённых чатов
   await pool.query(`
     CREATE TABLE IF NOT EXISTS deleted_chats (
       chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
@@ -130,7 +137,7 @@ async function initDB() {
     );
   `);
 
-  // Таблица постов для ленты
+  // Таблица постов
   await pool.query(`
     CREATE TABLE IF NOT EXISTS posts (
       id SERIAL PRIMARY KEY,
@@ -393,15 +400,6 @@ app.get('/chats', async (req, res) => {
     const lastMsg = await pool.query(`SELECT id, text, nick, type, file_name, created_at FROM messages WHERE chat_id = $1 ORDER BY created_at DESC LIMIT 1`, [chat.id]);
     chat.last_message = lastMsg.rows[0] || null;
   }
-  chats.sort((a, b) => {
-    if (a.type === 'public') return -1;
-    if (b.type === 'public') return 1;
-    if (a.type === 'notebook') return -1;
-    if (b.type === 'notebook') return 1;
-    const aTime = a.last_message ? new Date(a.last_message.created_at).getTime() : 0;
-    const bTime = b.last_message ? new Date(b.last_message.created_at).getTime() : 0;
-    return bTime - aTime;
-  });
   res.json(chats);
 });
 
@@ -471,6 +469,9 @@ app.post('/chat-message', async (req, res) => {
     const replyMsg = await pool.query('SELECT nick, text FROM messages WHERE id = $1', [reply_to_id]);
     if (replyMsg.rows.length) { newMsg.reply_nick = replyMsg.rows[0].nick; newMsg.reply_text = replyMsg.rows[0].text; }
   }
+  // Получаем значок пользователя для уведомлений
+  const userRes = await pool.query('SELECT badge FROM users WHERE nick = $1', [nick]);
+  newMsg.user_badge = userRes.rows[0]?.badge || '';
   io.to(`chat:${chat_id}`).emit('chat message received', newMsg);
   res.json({ success: true, message: newMsg });
 });
@@ -517,7 +518,7 @@ app.post('/edit-message', async (req, res) => {
   else res.json({ success: false });
 });
 
-// === ЛЕНТА ===
+// Лента
 app.get('/feed', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -545,6 +546,25 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ success: false, error: 'Ошибка создания поста' });
+  }
+});
+
+app.delete('/delete-post/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nick } = req.query; // можно передавать ник для проверки владельца
+  try {
+    const post = await pool.query('SELECT nick, media_url FROM posts WHERE id = $1', [id]);
+    if (post.rows.length === 0) return res.status(404).json({ success: false });
+    if (nick && post.rows[0].nick !== nick) return res.status(403).json({ success: false, error: 'Не ваш пост' });
+    // Удаляем файл, если есть
+    if (post.rows[0].media_url) {
+      const filePath = path.join(__dirname, post.rows[0].media_url);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
+    await pool.query('DELETE FROM posts WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Ошибка удаления' });
   }
 });
 
