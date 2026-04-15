@@ -39,7 +39,7 @@
         .login-card .error { color:#ff6b6b; font-size:0.8rem; margin-top:0.5rem; text-align:center; }
         .app-container { height:100%; display:flex; flex-direction:column; background:var(--bg-page); position:relative; overflow:hidden; }
         .panel { flex:1; display:flex; flex-direction:column; overflow-y:auto; padding:0.8rem; padding-bottom:5rem; }
-        .panel-header { padding-bottom:0.8rem; border-bottom:1px solid var(--border-light); margin-bottom:0.8rem; text-align:center; background:var(--bg-page); position:sticky; top:0; z-index:5; }
+        .panel-header { padding-bottom:0.8rem; border-bottom:1px solid var(--border-light); margin-bottom:0.8rem; text-align:center; position:sticky; top:0; background:var(--bg-page); z-index:5; }
         .panel-title { font-size:1.8rem; font-weight:700; margin-bottom:0.3rem; }
         .nav-bar { display:flex; background:var(--input-bg); border-top:1px solid var(--border-light); padding:0.5rem 0; padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px)); position:fixed; bottom:0; left:0; right:0; z-index:40; }
         .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--text-secondary); font-size:0.7rem; padding:0.3rem; border-radius:0.5rem; transition:all 0.1s; position:relative; }
@@ -132,7 +132,7 @@
         .chat-time { font-size:0.75rem; color:var(--text-secondary); margin-left:8px; white-space:nowrap; }
         .contact-actions { display:flex; gap:8px; }
         .contact-actions button { background:none; border:none; color:var(--text-primary); font-size:1.2rem; padding:0.3rem; }
-        .search-input { width:100%; padding:0.7rem 1rem; background:var(--input-bg); border:1px solid var(--border-light); border-radius:1rem; color:var(--text-primary); font-size:1rem; margin-top:0.5rem; }
+        .search-input { width:100%; padding:0.7rem 1rem; background:var(--input-bg); border:1px solid var(--border-light); border-radius:1rem; color:var(--text-primary); font-size:1rem; margin-bottom:0.8rem; }
         .profile-menu-btn { background:var(--bg-page); border:1px solid var(--border-light); border-radius:1rem; padding:0.8rem 1rem; font-size:1rem; color:var(--text-primary); display:flex; align-items:center; gap:14px; cursor:pointer; width:100%; }
         .profile-menu-btn svg { width:1.4rem; height:1.4rem; stroke:currentColor; stroke-width:1.5; fill:none; }
         .modal-back-btn { background:var(--bg-page); border:none; color:var(--accent-color); font-size:1.5rem; width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:0.5px solid var(--border-light); }
@@ -180,22 +180,27 @@
         .create-post-input { width:100%; background:transparent; border:none; color:var(--text-primary); font-size:1rem; outline:none; resize:none; }
         .create-post-input::placeholder { color:var(--text-secondary); }
         .create-post-media-preview { margin-top:1rem; }
-        .create-post-media-preview img { max-width:100%; border-radius:0.5rem; }
+        .create-post-media-preview img { max-width:100%; max-height:200px; border-radius:0.5rem; object-fit:contain; }
         .create-post-actions { display:flex; align-items:center; padding:1rem; border-top:1px solid var(--border-light); }
         .create-post-attach { background:none; border:none; color:var(--text-secondary); margin-right:1rem; }
         .create-post-publish-btn { background:var(--accent-color); border:none; padding:0.8rem 1.5rem; border-radius:2rem; color:white; font-weight:600; margin-left:auto; }
         .create-post-publish-btn:disabled { background:#3a3a3c; color:#8e8e93; }
-        .post-item { background:var(--input-bg); border-radius:1rem; padding:1rem; border:0.5px solid var(--border-light); margin-bottom:16px; }
+        .post-item { background:var(--input-bg); border-radius:1rem; padding:1rem; border:0.5px solid var(--border-light); margin-bottom:16px; position:relative; }
         .post-author { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
         .post-author-badge { font-size:1.2rem; }
         .post-author-nick { font-weight:600; }
         .post-text { margin-bottom:8px; white-space:pre-wrap; word-break:break-word; }
-        .post-media img { max-width:100%; border-radius:0.5rem; margin-top:8px; }
-        .post-time { font-size:0.75rem; color:var(--text-secondary); text-align:right; }
+        .post-media { margin-top:8px; }
+        .post-media img { max-width:100%; max-height:300px; border-radius:0.5rem; cursor:pointer; object-fit:contain; }
+        .post-time { font-size:0.75rem; color:var(--text-secondary); text-align:right; margin-top:8px; }
+        .post-menu-btn { position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; color:var(--text-secondary); width:32px; height:32px; border-radius:16px; display:flex; align-items:center; justify-content:center; }
         .notification-item { padding:12px 0; border-bottom:1px solid var(--border-light); cursor:pointer; }
         .notification-item:active { background:rgba(255,255,255,0.05); }
         .notification-text { margin-bottom:4px; }
         .notification-time { font-size:0.75rem; color:var(--text-secondary); }
+        .image-viewer-modal .modal-container { display:flex; align-items:center; justify-content:center; background:transparent; }
+        .image-viewer-modal .modal-content { background:transparent; padding:0; display:flex; align-items:center; justify-content:center; }
+        .image-viewer-modal img { max-width:100%; max-height:90vh; object-fit:contain; }
         .modal-stack { z-index:10002 !important; }
     </style>
 </head>
@@ -214,8 +219,8 @@
     <div id="contactsPanel" class="panel" style="display:none;">
         <div class="panel-header">
             <div class="panel-title">Контакты</div>
-            <input type="text" id="contactsSearchInput" class="search-input" placeholder="Поиск...">
         </div>
+        <input type="text" id="contactsSearchInput" class="search-input" placeholder="Поиск...">
         <div id="contactsListContainer"></div>
     </div>
     <div id="feedPanel" class="panel" style="display:flex;">
@@ -230,8 +235,8 @@
     <div id="chatsPanel" class="panel" style="display:none;">
         <div class="panel-header">
             <div class="panel-title">Чаты</div>
-            <input type="text" id="chatSearchInput" class="search-input" placeholder="Поиск...">
         </div>
+        <input type="text" id="chatSearchInput" class="search-input" placeholder="Поиск...">
         <div id="chatsListContainer"></div>
         <div id="userSearchResults" style="margin-top:1rem;"></div>
     </div>
@@ -281,11 +286,12 @@
     </div>
 </div>
 
-<!-- Модальные окна (все как раньше) -->
+<!-- Модальные окна -->
 <div id="confirmModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3 id="confirmTitle">Подтверждение</h3><p id="confirmMessage">Вы уверены?</p><div class="modal-buttons"><button id="confirmCancelBtn">Отмена</button><button id="confirmOkBtn">OK</button></div></div></div></div>
 <div id="pinConfirmModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3>Введите PIN</h3><div class="modal-setting"><input type="password" id="pinConfirmInput" placeholder="PIN" maxlength="4"></div><div class="modal-buttons"><button id="pinConfirmCancelBtn">Отмена</button><button id="pinConfirmOkBtn">Подтвердить</button></div></div></div></div>
 <div id="reactionPickerModal" class="modal fullscreen"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3>Реакция</h3><div class="reactions-picker" id="reactionsPicker"></div><div class="modal-buttons"><button id="closeReactionPickerBtn">Закрыть</button></div></div></div></div>
 <div id="contextMenuModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><div id="contextMessageNick"></div><div id="contextMessagePreview"></div><div class="context-menu-buttons" id="contextMenuButtons"></div></div></div></div>
+<div id="postMenuModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><div class="context-menu-buttons" id="postMenuButtons"></div></div></div></div>
 <div id="chatMenuModal" class="modal"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><div style="margin-bottom:1rem; font-weight:600;" id="chatMenuNick"></div><div class="context-menu-buttons" id="chatMenuButtons"></div></div></div></div>
 <div id="changeNickModal" class="modal fullscreen"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3>Сменить ник</h3><div class="modal-setting"><input type="text" id="newNickInput" placeholder="Новый ник"></div><div class="modal-buttons"><button id="cancelNickChangeBtn">Отмена</button><button id="applyNickChangeBtn">Применить</button></div></div></div></div>
 <div id="descriptionModal" class="modal fullscreen"><div class="modal-overlay"></div><div class="modal-container"><div class="modal-content"><h3>Описание</h3><div class="modal-setting"><textarea id="descriptionInput" placeholder="О себе..." rows="4" style="font-size:1.1rem;"></textarea></div><div class="modal-buttons"><button id="cancelDescriptionBtn">Закрыть</button><button id="applyDescriptionBtn">Применить</button></div></div></div></div>
@@ -318,6 +324,14 @@
                 </button>
                 <button class="create-post-publish-btn" id="publishPostBtn" disabled>Опубликовать</button>
             </div>
+        </div>
+    </div>
+</div>
+<div id="imageViewerModal" class="modal fullscreen image-viewer-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-content">
+            <img id="viewerImage" src="" alt="">
         </div>
     </div>
 </div>
@@ -586,12 +600,16 @@ document.addEventListener('DOMContentLoaded', function() {
         openFullscreenModal('imageViewerModal');
     };
 
-    $('imageViewerModal').addEventListener('click', (e) => {
-        if (e.target === $('imageViewerModal') || e.target.classList.contains('modal-overlay')) {
-            hideModal('imageViewerModal');
-        }
-    });
-    initSwipeToClose($('imageViewerModal').querySelector('.modal-container'), () => hideModal('imageViewerModal'));
+    const imageViewer = $('imageViewerModal');
+    if (imageViewer) {
+        imageViewer.addEventListener('click', (e) => {
+            if (e.target === imageViewer || e.target.classList.contains('modal-overlay')) {
+                hideModal('imageViewerModal');
+            }
+        });
+        const viewerContainer = imageViewer.querySelector('.modal-container');
+        if (viewerContainer) initSwipeToClose(viewerContainer, () => hideModal('imageViewerModal'));
+    }
 
     // ========== СОЗДАНИЕ ПОСТА ==========
     function openCreatePostModal() {
@@ -612,7 +630,8 @@ document.addEventListener('DOMContentLoaded', function() {
     $('postTextInput').addEventListener('input', updatePublishButton);
     $('createPostFab').onclick = openCreatePostModal;
     $('closeCreatePostBtn').onclick = () => hideModal('createPostModal');
-    initSwipeToClose($('createPostModal').querySelector('.modal-container'), () => hideModal('createPostModal'));
+    const createPostContainer = $('createPostModal')?.querySelector('.modal-container');
+    if (createPostContainer) initSwipeToClose(createPostContainer, () => hideModal('createPostModal'));
 
     $('attachPostImageBtn').onclick = () => {
         const inp = document.createElement('input');
