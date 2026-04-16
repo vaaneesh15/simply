@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function scrollToMessage(id) { const el=document.querySelector(`.message-item[data-id="${id}"] .message-text`); if(el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),4000); } }
     function autoResize(ta) { ta.style.height='auto'; ta.style.height = Math.min(ta.scrollHeight,150)+'px'; }
 
-    // === ОТПРАВКА СООБЩЕНИЙ (ИСПРАВЛЕНО) ===
+    // === ОТПРАВКА СООБЩЕНИЙ ===
     function sendMessage() {
         const inp = $('messageInput'); const text = inp.value.trim();
         if(!text && !replyingTo && !editingMessage) return;
@@ -709,10 +709,9 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chat_id: currentChat.id, nick: currentUser.nick, text, reply_to_id: replyingTo?.messageId, type: 'text' })
-        }).then(() => {
-            replyingTo = null; hideReplyIndicator();
-            inp.value = ''; autoResize(inp); onTyping(false); inp.focus();
-        }).catch(e => console.error('Send error:', e));
+        });
+        replyingTo = null; hideReplyIndicator();
+        inp.value = ''; autoResize(inp); onTyping(false); inp.focus();
     }
     async function editMessage(id, newText) {
         await fetch('/edit-message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId: id, nick: currentUser.nick, newText }) });
