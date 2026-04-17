@@ -37,26 +37,45 @@ const pool = new Pool({
 });
 
 async function initDB() {
-  // Таблица пользователей
+  // Удаляем все таблицы, которые не относятся к упрощённому чату
+  const tablesToDrop = [
+    'contacts', 'blocked_users', 'deleted_chats', 'chat_participants',
+    'message_reactions', 'posts', 'post_likes'
+  ];
+  for (const table of tablesToDrop) {
+    try { await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`); } catch (e) {}
+  }
+
+  // Таблица users – только ник и created_at
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      nick VARCHAR(50) UNIQUE NOT NULL,
-      pin_hash TEXT NOT NULL,
-      token TEXT UNIQUE,
+      nick VARCHAR(50) PRIMARY KEY,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
-  // Удаляем все ненужные колонки (badge, description, visibility и т.д.)
-  const userCols = ['badge', 'description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible', 'who_can_invite'];
-  for (const col of userCols) {
+
+  // Удаляем лишние колонки, если они остались
+  const userColumnsToDrop = ['id', 'pin_hash', 'token', 'badge', 'description', 'visibility', 'who_can_write', 'online_visible', 'who_can_voice', 'description_visible'];
+  for (const col of userColumnsToDrop) {
     try { await pool.query(`ALTER TABLE users DROP COLUMN IF EXISTS ${col}`); } catch (e) {}
   }
 
-  // Таблица сообщений (без привязки к чатам, просто общий чат)
+  // Таблица chats – только id и type='public'
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS chats (
+      id SERIAL PRIMARY KEY,
+      type VARCHAR(20) NOT NULL DEFAULT 'public'
+    );
+  `);
+  // Удаляем колонку name, если осталась
+  try { await pool.query(`ALTER TABLE chats DROP COLUMN IF EXISTS name`); } catch (e) {}
+  try { await pool.query(`ALTER TABLE chats DROP COLUMN IF EXISTS created_at`); } catch (e) {}
+
+  // Таблица messages
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
+      chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
       nick VARCHAR(50) NOT NULL,
       text TEXT,
       reply_to_id INTEGER DEFAULT NULL,
@@ -68,144 +87,138 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
-  // Удаляем колонку chat_id, если осталась от старой версии
-  try { await pool.query(`ALTER TABLE messages DROP COLUMN IF EXISTS chat_id`); } catch (e) {}
-  // Удаляем duration
+  // Удаляем колонку duration, если осталась
   try { await pool.query(`ALTER TABLE messages DROP COLUMN IF EXISTS duration`); } catch (e) {}
 
-  // Удаляем все остальные таблицы
-  const tablesToDrop = ['chats', 'chat_participants', 'contacts', 'blocked_users', 'deleted_chats', 'posts', 'post_likes', 'message_reactions', 'group_participants'];
-  for (const table of tablesToDrop) {
-    try { await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`); } catch (e) {}
+  // Публичный чат
+  const publicChat = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
+  if (publicChat.rows.length === 0) {
+    await pool.query(`INSERT INTO chats (type) VALUES ('public')`);
   }
 
-  console.log('✅ База данных готова (только общий чат)');
+  console.log('✅ База данных готова');
 }
 initDB();
 
+// Эндпоинты
 app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ success: false });
   res.json({ success: true, file: req.file });
 });
 
-app.post('/auth', async (req, res) => {
-  const { nick, pin } = req.body;
-  if (!nick || nick.trim() === '' || !pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
-    return res.status(400).json({ success: false, error: 'Неверный ник или PIN (4 цифры)' });
-  }
-  const cleanNick = nick.trim();
-  const existing = await pool.query('SELECT nick, pin_hash FROM users WHERE nick = $1', [cleanNick]);
-  if (existing.rows.length > 0) {
-    const valid = await bcrypt.compare(pin, existing.rows[0].pin_hash);
-    if (!valid) return res.json({ success: false, error: 'Неверный PIN' });
-    const token = uuidv4();
-    await pool.query('UPDATE users SET token = $1 WHERE nick = $2', [token, cleanNick]);
-    return res.json({ success: true, nick: cleanNick, token });
-  } else {
-    const pinHash = await bcrypt.hash(pin, 10);
-    const token = uuidv4();
-    try {
-      await pool.query('INSERT INTO users (nick, pin_hash, token) VALUES ($1, $2, $3)', [cleanNick, pinHash, token]);
-      return res.json({ success: true, nick: cleanNick, token });
-    } catch (err) {
-      if (err.code === '23505') return res.status(400).json({ success: false, error: 'Ник уже занят' });
-      throw err;
-    }
-  }
-});
-
-app.post('/verify', async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.json({ success: false });
-  const user = await pool.query('SELECT nick FROM users WHERE token = $1', [token]);
-  if (user.rows.length > 0) res.json({ success: true, nick: user.rows[0].nick });
-  else res.json({ success: false });
-});
-
-app.get('/public-chat-id', (req, res) => {
-  res.json({ chatId: 1 }); // фиксированный ID общего чата
+app.get('/public-chat-id', async (req, res) => {
+  const result = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
+  if (result.rows.length) res.json({ chatId: result.rows[0].id });
+  else res.status(500).json({ error: 'Нет публичного чата' });
 });
 
 app.get('/chat-messages', async (req, res) => {
-  const { nick } = req.query;
-  if (!nick) return res.json([]);
+  const { chat_id } = req.query;
+  if (!chat_id) return res.json([]);
   const result = await pool.query(`
-    SELECT m.id, m.nick, m.text, m.reply_to_id, m.edited, m.type, m.file_url, m.file_name, m.file_size, m.created_at,
+    SELECT m.id, m.chat_id, m.nick, m.text, m.reply_to_id, m.edited, m.type, m.file_url, m.file_name, m.file_size, m.created_at,
            rep.nick as reply_nick, rep.text as reply_text
     FROM messages m
     LEFT JOIN messages rep ON m.reply_to_id = rep.id
+    WHERE m.chat_id = $1
     ORDER BY m.created_at ASC
-  `);
+  `, [chat_id]);
   res.json(result.rows);
 });
 
 app.post('/chat-message', async (req, res) => {
-  const { nick, text, reply_to_id, type, file_url, file_name, file_size } = req.body;
-  if (!nick) return res.status(400).json({ success: false });
+  const { chat_id, nick, text, reply_to_id, type, file_url, file_name, file_size } = req.body;
+  if (!chat_id || !nick) return res.status(400).json({ success: false });
+
+  // Убедимся, что пользователь существует (создаём, если нет)
+  await pool.query(`INSERT INTO users (nick) VALUES ($1) ON CONFLICT (nick) DO NOTHING`, [nick]);
+
   const result = await pool.query(
-    `INSERT INTO messages (nick, text, reply_to_id, type, file_url, file_name, file_size) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
-    [nick, text || null, reply_to_id || null, type || 'text', file_url, file_name, file_size]
+    `INSERT INTO messages (chat_id, nick, text, reply_to_id, type, file_url, file_name, file_size)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, created_at`,
+    [chat_id, nick, text || null, reply_to_id || null, type || 'text', file_url, file_name, file_size]
   );
-  const newMsg = { id: result.rows[0].id, nick, text, reply_to_id: reply_to_id || null, edited: false, type: type || 'text', file_url, file_name, file_size, created_at: result.rows[0].created_at };
+  const newMsg = {
+    id: result.rows[0].id, chat_id, nick, text,
+    reply_to_id: reply_to_id || null, edited: false,
+    type: type || 'text', file_url, file_name, file_size,
+    created_at: result.rows[0].created_at
+  };
   if (reply_to_id) {
     const replyMsg = await pool.query('SELECT nick, text FROM messages WHERE id = $1', [reply_to_id]);
-    if (replyMsg.rows.length) { newMsg.reply_nick = replyMsg.rows[0].nick; newMsg.reply_text = replyMsg.rows[0].text; }
+    if (replyMsg.rows.length) {
+      newMsg.reply_nick = replyMsg.rows[0].nick;
+      newMsg.reply_text = replyMsg.rows[0].text;
+    }
   }
-  io.emit('chat message received', newMsg);
+  io.to(`chat:${chat_id}`).emit('chat message received', newMsg);
   res.json({ success: true, message: newMsg });
 });
 
 app.post('/delete-message', async (req, res) => {
   const { nick, messageId } = req.body;
   if (!nick || !messageId) return res.status(400).json({ success: false });
-  const msg = await pool.query('SELECT nick FROM messages WHERE id = $1', [messageId]);
+  const msg = await pool.query('SELECT nick, chat_id FROM messages WHERE id = $1', [messageId]);
   if (msg.rows.length === 0) return res.json({ success: false });
   if (msg.rows[0].nick !== nick) return res.json({ success: false });
-  await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
-  io.emit('message deleted', messageId);
-  res.json({ success: true });
+  const result = await pool.query('DELETE FROM messages WHERE id = $1 RETURNING id, chat_id', [messageId]);
+  if (result.rowCount > 0) {
+    io.to(`chat:${result.rows[0].chat_id}`).emit('message deleted', messageId);
+    res.json({ success: true });
+  } else res.json({ success: false });
 });
 
 app.post('/edit-message', async (req, res) => {
   const { messageId, nick, newText } = req.body;
   if (!messageId || !nick || !newText?.trim()) return res.status(400).json({ success: false });
-  const result = await pool.query('UPDATE messages SET text = $1, edited = TRUE WHERE id = $2 AND nick = $3 RETURNING id', [newText.trim(), messageId, nick]);
+  const result = await pool.query(
+    'UPDATE messages SET text = $1, edited = TRUE WHERE id = $2 AND nick = $3 RETURNING id, chat_id',
+    [newText.trim(), messageId, nick]
+  );
   if (result.rowCount > 0) {
-    io.emit('message edited', { messageId, newText: newText.trim() });
+    io.to(`chat:${result.rows[0].chat_id}`).emit('message edited', { messageId, newText: newText.trim() });
     res.json({ success: true });
   } else res.json({ success: false });
 });
 
-const typingUsers = new Set();
+// Сокеты
+const typingUsers = new Map(); // chatId -> Set of nicks
 
 io.on('connection', (socket) => {
   let currentNick = null;
+  let currentChatId = null;
 
-  socket.on('user online', (nick) => {
+  socket.on('user online', async (nick) => {
     currentNick = nick;
-    socket.join('public_chat');
-  });
-
-  socket.on('join chat', () => {
-    socket.join('public_chat');
-  });
-
-  socket.on('typing', ({ nick }) => {
-    if (!typingUsers.has(nick)) {
-      typingUsers.add(nick);
-      socket.to('public_chat').emit('user typing', { nick });
+    const result = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
+    if (result.rows.length) {
+      currentChatId = result.rows[0].id;
+      socket.join(`chat:${currentChatId}`);
     }
   });
 
-  socket.on('stop typing', ({ nick }) => {
-    typingUsers.delete(nick);
-    socket.to('public_chat').emit('user stop typing', { nick });
+  socket.on('join chat', (chatId) => {
+    socket.join(`chat:${chatId}`);
+    currentChatId = chatId;
+  });
+
+  socket.on('typing', ({ chatId, nick }) => {
+    if (!typingUsers.has(chatId)) typingUsers.set(chatId, new Set());
+    typingUsers.get(chatId).add(nick);
+    socket.to(`chat:${chatId}`).emit('user typing', { chatId, nick });
+  });
+
+  socket.on('stop typing', ({ chatId, nick }) => {
+    if (typingUsers.has(chatId)) {
+      typingUsers.get(chatId).delete(nick);
+      socket.to(`chat:${chatId}`).emit('user stop typing', { chatId, nick });
+    }
   });
 
   socket.on('disconnect', () => {
-    if (currentNick) {
-      typingUsers.delete(currentNick);
-      socket.to('public_chat').emit('user stop typing', { nick: currentNick });
+    if (currentNick && currentChatId && typingUsers.has(currentChatId)) {
+      typingUsers.get(currentChatId).delete(currentNick);
+      io.to(`chat:${currentChatId}`).emit('user stop typing', { chatId: currentChatId, nick: currentNick });
     }
   });
 });
