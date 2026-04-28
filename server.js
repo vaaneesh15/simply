@@ -35,7 +35,14 @@ const pool = new Pool({
 });
 
 async function initDB() {
-  // Таблица users (только ник)
+  // Удаляем таблицы, которые больше не нужны (если остались от старых версий)
+  const tablesToDrop = ['contacts', 'blocked_users', 'deleted_chats', 'chat_participants',
+                        'message_reactions', 'posts', 'post_likes', 'subscriptions', 'config'];
+  for (const table of tablesToDrop) {
+    try { await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`); } catch (e) {}
+  }
+
+  // Таблица пользователей
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       nick VARCHAR(50) PRIMARY KEY,
@@ -43,7 +50,7 @@ async function initDB() {
     );
   `);
 
-  // Таблица chats (только id и type)
+  // Таблица чатов
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chats (
       id SERIAL PRIMARY KEY,
@@ -51,7 +58,7 @@ async function initDB() {
     );
   `);
 
-  // Таблица messages (все нужные колонки)
+  // Таблица сообщений
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
@@ -67,6 +74,12 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+
+  // Удаляем столбцы, которые могли остаться от прошлых миграций
+  const msgCols = ['duration', 'reply_nick', 'reply_text'];
+  for (const col of msgCols) {
+    try { await pool.query(`ALTER TABLE messages DROP COLUMN IF EXISTS ${col}`); } catch (e) {}
+  }
 
   // Публичный чат
   const publicChat = await pool.query(`SELECT id FROM chats WHERE type = 'public'`);
@@ -130,6 +143,32 @@ app.post('/chat-message', async (req, res) => {
   }
   io.to(`chat:${chat_id}`).emit('chat message received', newMsg);
   res.json({ success: true, message: newMsg });
+});
+
+app.post('/delete-message', async (req, res) => {
+  const { nick, messageId } = req.body;
+  if (!nick || !messageId) return res.status(400).json({ success: false });
+  const msg = await pool.query('SELECT nick, chat_id FROM messages WHERE id = $1', [messageId]);
+  if (msg.rows.length === 0) return res.json({ success: false });
+  if (msg.rows[0].nick !== nick) return res.json({ success: false });
+  const result = await pool.query('DELETE FROM messages WHERE id = $1 RETURNING id, chat_id', [messageId]);
+  if (result.rowCount > 0) {
+    io.to(`chat:${result.rows[0].chat_id}`).emit('message deleted', messageId);
+    res.json({ success: true });
+  } else res.json({ success: false });
+});
+
+app.post('/edit-message', async (req, res) => {
+  const { messageId, nick, newText } = req.body;
+  if (!messageId || !nick || !newText?.trim()) return res.status(400).json({ success: false });
+  const result = await pool.query(
+    'UPDATE messages SET text = $1, edited = TRUE WHERE id = $2 AND nick = $3 RETURNING id, chat_id',
+    [newText.trim(), messageId, nick]
+  );
+  if (result.rowCount > 0) {
+    io.to(`chat:${result.rows[0].chat_id}`).emit('message edited', { messageId, newText: newText.trim() });
+    res.json({ success: true });
+  } else res.json({ success: false });
 });
 
 // Сокеты
